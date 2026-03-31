@@ -120,7 +120,7 @@ export function AddEventPage({ familyId, babyId, userId }: AddEventPageProps) {
           type: 'medication',
           medicationName: name,
           dose: d,
-        });
+        } as Parameters<typeof addEvent>[1]);
       } else {
         await addEvent(familyId, base as Parameters<typeof addEvent>[1]);
       }
