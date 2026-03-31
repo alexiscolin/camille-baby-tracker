@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: user email is in the allowedEmails whitelist
+    function isAllowedUser() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/allowedEmails/$(request.auth.token.email));
+    }
+
+    // Helper: user is authenticated and member of the family
+    function isFamilyMember(familyId) {
+      return isAllowedUser()
+        && request.auth.uid in get(/databases/$(database)/documents/families/$(familyId)).data.members;
+    }
+
+    // Users can only read their own allowedEmails document (to check access)
+    match /allowedEmails/{email} {
+      allow read: if request.auth != null
+        && request.auth.token.email == email;
+      allow write: if false;
+    }
+
+    // Helper: validate event base fields
+    function hasValidBaseFields() {
+      let data = request.resource.data;
+      return data.babyId is string
+        && data.type in ['feeding', 'pee', 'poop', 'medication']
+        && data.timestamp is timestamp
+        && data.createdBy == request.auth.uid
+        && data.createdAt is timestamp
+        // Reject timestamps more than 48h in the future
+        && data.timestamp <= request.time + duration.value(48, 'h')
+        // Notes: optional, max 500 chars
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 500));
+    }
+
+    // Helper: validate feeding-specific fields
+    function hasValidFeedingFields() {
+      let data = request.resource.data;
+      return data.type == 'feeding'
+        && data.feedingType in ['left', 'right', 'bottle']
+        && (!('durationMinutes' in data)
+          || (data.durationMinutes is int && data.durationMinutes > 0 && data.durationMinutes <= 300))
+        && (!('infection' in data) || data.infection is bool)
+        && (!('engorgement' in data) || data.engorgement is bool);
+    }
+
+    // Helper: validate medication-specific fields
+    function hasValidMedicationFields() {
+      let data = request.resource.data;
+      return data.type == 'medication'
+        && data.medicationName is string
+        && data.medicationName.size() > 0
+        && data.medicationName.size() <= 200
+        && data.dose is string
+        && data.dose.size() > 0
+        && data.dose.size() <= 200;
+    }
+
+    // Helper: validate event by type
+    function isValidEvent() {
+      let data = request.resource.data;
+      return hasValidBaseFields()
+        && (
+          (data.type == 'feeding' && hasValidFeedingFields())
+          || (data.type == 'pee')
+          || (data.type == 'poop')
+          || (data.type == 'medication' && hasValidMedicationFields())
+        );
+    }
+
+    // Helper: validate event update — prevent changing immutable fields
+    function isValidEventUpdate() {
+      let data = request.resource.data;
+      let prev = resource.data;
+      return data.babyId == prev.babyId
+        && data.type == prev.type
+        && data.createdBy == prev.createdBy
+        && data.createdAt == prev.createdAt;
+    }
+
+    // Families
+    match /families/{familyId} {
+      allow read: if isAllowedUser()
+        && request.auth.uid in resource.data.members;
+
+      // CRITICAL: members array MUST contain ONLY the creator on creation.
+      // This prevents a user from adding arbitrary UIDs to gain access to other users' data.
+      allow create: if isAllowedUser()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.members is list
+        && request.resource.data.members.size() == 1
+        && request.resource.data.members[0] == request.auth.uid;
+
+      // Update: only family members, and cannot remove themselves (prevent orphan families)
+      allow update: if isFamilyMember(familyId)
+        && request.auth.uid in request.resource.data.members;
+
+      allow delete: if false;
+
+      // Babies
+      match /babies/{babyId} {
+        allow read: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId)
+          && request.resource.data.firstName is string
+          && request.resource.data.firstName.size() > 0
+          && request.resource.data.firstName.size() <= 100
+          && request.resource.data.birthDate is timestamp;
+        allow update: if isFamilyMember(familyId);
+        allow delete: if false;
+      }
+
+      // Events
+      match /events/{eventId} {
+        allow read: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId) && isValidEvent();
+        allow update: if isFamilyMember(familyId) && isValidEventUpdate();
+        allow delete: if isFamilyMember(familyId);
+      }
+    }
+  }
+}
