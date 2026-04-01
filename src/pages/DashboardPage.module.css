@@ -132,6 +132,7 @@
   height: 200px;
   margin-left: calc(-1 * var(--space-sm));
   margin-right: calc(-1 * var(--space-sm));
+  overflow: hidden;
 }
 
 /* ─── Averages Row ─── */

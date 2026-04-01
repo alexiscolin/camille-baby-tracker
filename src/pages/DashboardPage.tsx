@@ -270,7 +270,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
                     date={date}
                     events={dayEvents}
                     onEventClick={(event) => setEditEvent(event)}
-                    onAddClick={() => setAddDate(date)}
+                    onAddClick={() => setAddDate(new Date())}
                     showHourMarkers
                   />
                 </div>

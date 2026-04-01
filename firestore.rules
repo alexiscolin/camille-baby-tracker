@@ -39,7 +39,9 @@ service cloud.firestore {
     function hasValidFeedingFields() {
       let data = request.resource.data;
       return data.type == 'feeding'
-        && data.feedingType in ['left', 'right', 'bottle']
+        && data.feedingType in ['breast', 'bottle']
+        && (!('leftCount' in data) || (data.leftCount is int && data.leftCount >= 0))
+        && (!('rightCount' in data) || (data.rightCount is int && data.rightCount >= 0))
         && (!('durationMinutes' in data)
           || (data.durationMinutes is int && data.durationMinutes > 0 && data.durationMinutes <= 300))
         && (!('infection' in data) || data.infection is bool)
