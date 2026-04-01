@@ -293,6 +293,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
           familyId={familyId}
           babyId={babyId}
           userId={userId}
+          babyBirthDate={baby?.birthDate.toDate()}
           onClose={() => setEditEvent(null)}
         />
       )}
@@ -304,6 +305,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
           familyId={familyId}
           babyId={babyId}
           userId={userId}
+          babyBirthDate={baby?.birthDate.toDate()}
           onClose={() => setAddDate(null)}
         />
       )}

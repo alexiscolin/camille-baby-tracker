@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { EventModal } from './EventModal';
-import type { FeedingEvent, PeeEvent, MedicationEvent } from '../types/events';
+import type { FeedingEvent, PeeEvent, PoopEvent, MedicationEvent } from '../types/events';
 
 const mockAddEvent = vi.fn();
 const mockUpdateEvent = vi.fn();
@@ -38,6 +38,18 @@ function makeFeedingEvent(): FeedingEvent {
     timestamp: Timestamp.fromDate(new Date(2026, 3, 1, 9, 0)),
     createdBy: 'user-1',
     createdAt: Timestamp.fromDate(new Date()),
+  };
+}
+
+function makePoopEvent(overrides?: Partial<PoopEvent>): PoopEvent {
+  return {
+    id: 'evt-4',
+    babyId: 'baby-1',
+    type: 'poop',
+    timestamp: Timestamp.fromDate(new Date(2026, 3, 1, 11, 0)),
+    createdBy: 'user-1',
+    createdAt: Timestamp.fromDate(new Date()),
+    ...overrides,
   };
 }
 
@@ -308,5 +320,114 @@ describe('EventModal', () => {
     const overlay = container.firstChild as HTMLElement;
     await user.click(overlay);
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  describe('poop color', () => {
+    it('should show color selector when adding a poop event', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Poops'));
+      expect(screen.getByText('Color (optional)')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Yellow' })).toBeInTheDocument();
+    });
+
+    it('should not show color selector for non-poop events', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Pees'));
+      expect(screen.queryByText('Color (optional)')).not.toBeInTheDocument();
+    });
+
+    it('should pre-fill color in edit mode', () => {
+      const event = makePoopEvent({ color: 'yellow' });
+      render(
+        <EventModal {...baseProps} mode="edit" event={event} />,
+      );
+
+      const yellowBtn = screen.getByRole('button', { name: 'Yellow' });
+      expect(yellowBtn).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('should save poop event with selected color', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Poops'));
+      await user.click(screen.getByRole('button', { name: 'Brown' }));
+      await user.click(screen.getByText('Save'));
+
+      expect(mockAddEvent).toHaveBeenCalledOnce();
+      const savedData = mockAddEvent.mock.calls[0][1];
+      expect(savedData.color).toBe('brown');
+    });
+
+    it('should save poop event without color when none selected', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Poops'));
+      await user.click(screen.getByText('Save'));
+
+      expect(mockAddEvent).toHaveBeenCalledOnce();
+      const savedData = mockAddEvent.mock.calls[0][1];
+      expect(savedData.color).toBeUndefined();
+    });
+
+    it('should show warning for abnormal color when babyBirthDate is provided', async () => {
+      const user = userEvent.setup();
+      // Baby born 30 days ago
+      const birthDate = new Date();
+      birthDate.setDate(birthDate.getDate() - 30);
+
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} babyBirthDate={birthDate} />,
+      );
+
+      await user.click(screen.getByText('Poops'));
+      await user.click(screen.getByRole('button', { name: 'Red' }));
+
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+      expect(screen.getByText(/contact your pediatrician/i)).toBeInTheDocument();
+    });
+
+    it('should not show warning for normal color', async () => {
+      const user = userEvent.setup();
+      const birthDate = new Date();
+      birthDate.setDate(birthDate.getDate() - 30);
+
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} babyBirthDate={birthDate} />,
+      );
+
+      await user.click(screen.getByText('Poops'));
+      await user.click(screen.getByRole('button', { name: 'Yellow' }));
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('should update color in edit mode', async () => {
+      const user = userEvent.setup();
+      const event = makePoopEvent({ color: 'yellow' });
+      render(
+        <EventModal {...baseProps} mode="edit" event={event} />,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Brown' }));
+      await user.click(screen.getByText('Update'));
+
+      expect(mockUpdateEvent).toHaveBeenCalledOnce();
+      const updates = mockUpdateEvent.mock.calls[0][2];
+      expect(updates.color).toBe('brown');
+    });
   });
 });

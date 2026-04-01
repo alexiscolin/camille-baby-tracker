@@ -3,7 +3,9 @@ import { Check, AlertCircle, Trash2, X } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { addEvent, updateEvent, deleteEvent } from '../services/events';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
-import type { EventType, FeedingType, BabyEvent, FeedingEvent, MedicationEvent } from '../types/events';
+import { getStoolColorWarning, type StoolColorId } from '../utils/stool-color';
+import { ColorSelector } from './ColorSelector';
+import type { EventType, FeedingType, BabyEvent, FeedingEvent, PoopEvent, MedicationEvent } from '../types/events';
 import styles from './EventModal.module.css';
 
 const MAX_TEXT_LENGTH = 200;
@@ -15,6 +17,7 @@ type EventModalProps = {
   babyId: string;
   userId: string;
   onClose: () => void;
+  babyBirthDate?: Date;
 } & (
   | { mode: 'edit'; event: BabyEvent }
   | { mode: 'add'; date: Date }
@@ -36,7 +39,7 @@ function getTimeString(date: Date): string {
 }
 
 export function EventModal(props: EventModalProps) {
-  const { familyId, babyId, userId, onClose, mode } = props;
+  const { familyId, babyId, userId, onClose, mode, babyBirthDate } = props;
 
   const editEvent = mode === 'edit' ? props.event : null;
   const targetDate = mode === 'add' ? props.date : editEvent!.timestamp.toDate();
@@ -65,6 +68,9 @@ export function EventModal(props: EventModalProps) {
   const [dose, setDose] = useState(
     editEvent?.type === 'medication' ? (editEvent as MedicationEvent).dose : '',
   );
+  const [stoolColor, setStoolColor] = useState<StoolColorId | undefined>(
+    editEvent?.type === 'poop' ? ((editEvent as PoopEvent).color as StoolColorId | undefined) : undefined,
+  );
   const [notes, setNotes] = useState(editEvent?.notes ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -72,6 +78,13 @@ export function EventModal(props: EventModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const saveInFlight = useRef(false);
+
+  const babyAgeDays = babyBirthDate
+    ? Math.floor((Date.now() - babyBirthDate.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+  const stoolColorWarning = stoolColor && babyAgeDays !== null
+    ? getStoolColorWarning(stoolColor, babyAgeDays)
+    : null;
 
   useEffect(() => {
     document.body.classList.add('modal-open');
@@ -131,6 +144,8 @@ export function EventModal(props: EventModalProps) {
           updates.engorgement = engorgement;
           const dur = parseDuration(duration);
           if (dur !== undefined) updates.durationMinutes = dur;
+        } else if (selectedType === 'poop') {
+          updates.color = stoolColor ?? '';
         } else if (selectedType === 'medication') {
           const name = sanitizeText(medicationName, MAX_TEXT_LENGTH);
           const d = sanitizeText(dose, MAX_TEXT_LENGTH);
@@ -175,6 +190,11 @@ export function EventModal(props: EventModalProps) {
             ...base,
             medicationName: name,
             dose: d,
+          } as Parameters<typeof addEvent>[1]);
+        } else if (selectedType === 'poop' && stoolColor) {
+          await addEvent(familyId, {
+            ...base,
+            color: stoolColor,
           } as Parameters<typeof addEvent>[1]);
         } else {
           await addEvent(familyId, base as Parameters<typeof addEvent>[1]);
@@ -327,6 +347,17 @@ export function EventModal(props: EventModalProps) {
                   </label>
                 </div>
               </>
+            )}
+
+            {selectedType === 'poop' && (
+              <div className={styles.field}>
+                <label className={styles.label}>Color (optional)</label>
+                <ColorSelector
+                  value={stoolColor}
+                  onChange={setStoolColor}
+                  warning={stoolColorWarning}
+                />
+              </div>
             )}
 
             {selectedType === 'medication' && (

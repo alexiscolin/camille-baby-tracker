@@ -270,7 +270,7 @@ export const StatsCharts = memo(function StatsCharts({
                 dataKey="label"
                 tick={AXIS_TICK_SM}
                 tickLine={false}
-                interval={1}
+                interval="preserveStartEnd"
               />
               <YAxis allowDecimals={false} tick={AXIS_TICK_SM} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [value, 'Feedings']} />

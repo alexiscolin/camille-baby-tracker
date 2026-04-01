@@ -137,6 +137,17 @@
   padding: var(--space-lg) var(--space-sm) var(--space-md);
   box-shadow: var(--shadow-sm);
   height: 240px;
+  overflow: hidden;
+}
+
+/* Smaller legend on mobile to give more room to the chart area */
+.chartCard :global(.recharts-legend-wrapper) {
+  font-size: 11px !important;
+}
+
+/* Prevent X-axis labels from overflowing */
+.chartCard :global(.recharts-xAxis .recharts-cartesian-axis-tick-value) {
+  font-size: 10px;
 }
 
 /* ─── Daily Averages ─── */
@@ -299,6 +310,14 @@
   .chartCard {
     height: 300px;
     padding: var(--space-xl) var(--space-md) var(--space-lg);
+  }
+
+  .chartCard :global(.recharts-legend-wrapper) {
+    font-size: 13px !important;
+  }
+
+  .chartCard :global(.recharts-xAxis .recharts-cartesian-axis-tick-value) {
+    font-size: 12px;
   }
 
   /* First chart (Daily Overview) is taller */

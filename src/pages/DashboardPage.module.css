@@ -130,13 +130,15 @@
 
 .chartContainer {
   height: 200px;
+  margin-left: calc(-1 * var(--space-sm));
+  margin-right: calc(-1 * var(--space-sm));
 }
 
 /* ─── Averages Row ─── */
 .averagesRow {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-sm);
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-xs) var(--space-sm);
   border-top: 1px solid var(--color-border-light);
   padding-top: var(--space-md);
 }
@@ -144,20 +146,24 @@
 .avgItem {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
+  gap: var(--space-2xs);
+  min-width: 0;
 }
 
 .avgValue {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .avgLabel {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ─── Timeline Panel ─── */
@@ -205,6 +211,14 @@
 @media (min-width: 768px) {
   .chartContainer {
     height: 260px;
+  }
+
+  .averagesRow {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .avgValue {
+    font-size: var(--font-size-md);
   }
 }
 
@@ -295,6 +309,8 @@
 
   .chartContainer {
     height: 280px;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .averagesRow {

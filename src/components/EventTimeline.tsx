@@ -92,15 +92,13 @@ export const EventTimeline = memo(function EventTimeline({ events, onEventClick,
                 <Icon size={18} />
               </div>
               <div className={styles.content}>
-                <div className={styles.header}>
-                  <span className={styles.label}>{config.label}</span>
-                  <span className={styles.time}>
-                    {formatTime(event.timestamp)}
-                    {showHourMarkers && (
-                      <span className={styles.timeAgo}> ({timeAgo(event.timestamp)})</span>
-                    )}
-                  </span>
-                </div>
+                <span className={styles.label}>{config.label}</span>
+                <span className={styles.time}>
+                  {formatTime(event.timestamp)}
+                  {showHourMarkers && (
+                    <span className={styles.timeAgo}> · {timeAgo(event.timestamp)}</span>
+                  )}
+                </span>
                 {detail && <span className={styles.detail}>{detail}</span>}
                 {event.notes && <span className={styles.notes}>{event.notes}</span>}
               </div>
