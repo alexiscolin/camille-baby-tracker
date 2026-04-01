@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { BabyEvent, FeedingEvent, PeeEvent, PoopEvent, MedicationEvent } from '../types/events';
+import { normalizeFeedingEvent } from '../utils/feeding-helpers';
 
 type NewEvent =
   | Omit<FeedingEvent, 'id' | 'createdAt'>
@@ -88,7 +89,8 @@ export function subscribeToEvents(
       for (const d of snapshot.docs) {
         const raw = d.data();
         if (!isValidEventData(raw)) continue;
-        events.push({ id: d.id, ...raw } as BabyEvent);
+        const normalized = raw.type === 'feeding' ? normalizeFeedingEvent(raw) : raw;
+        events.push({ id: d.id, ...normalized } as BabyEvent);
       }
       callback({
         events,

@@ -4,13 +4,16 @@ import { Timestamp } from 'firebase/firestore';
 import { QuickStats } from './QuickStats';
 import type { BabyEvent, FeedingEvent, PeeEvent } from '../types/events';
 
-function makeFeedingEvent(minutesAgo: number, side: 'left' | 'right' = 'left'): FeedingEvent {
+function makeFeedingEvent(minutesAgo: number, leftCount: number = 1, rightCount: number = 0): FeedingEvent {
   const date = new Date(Date.now() - minutesAgo * 60 * 1000);
+  const isBottle = leftCount === 0 && rightCount === 0;
   return {
     id: `f-${minutesAgo}`,
     babyId: 'baby1',
     type: 'feeding',
-    feedingType: side,
+    feedingType: isBottle ? 'bottle' : 'breast',
+    leftCount,
+    rightCount,
     timestamp: Timestamp.fromDate(date),
     createdBy: 'user1',
     createdAt: Timestamp.fromDate(date),
@@ -45,9 +48,9 @@ describe('QuickStats', () => {
 
   it('should show breast balance', () => {
     const events: BabyEvent[] = [
-      makeFeedingEvent(30, 'left'),
-      makeFeedingEvent(120, 'left'),
-      makeFeedingEvent(180, 'right'),
+      makeFeedingEvent(30, 1, 0),
+      makeFeedingEvent(120, 1, 0),
+      makeFeedingEvent(180, 0, 1),
     ];
     render(<QuickStats todayEvents={events} recentEvents={events} />);
     expect(screen.getByText('L:2')).toBeInTheDocument();

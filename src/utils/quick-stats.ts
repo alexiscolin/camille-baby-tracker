@@ -1,10 +1,12 @@
 import { differenceInMinutes } from 'date-fns';
-import type { BabyEvent, FeedingEvent, FeedingType } from '../types/events';
+import type { BabyEvent, FeedingEvent } from '../types/events';
+import { getNextSide } from './feeding-helpers';
 
 export interface TimeSinceLast {
   minutes: number;
   label: string;
   type: string;
+  sideHint: string;
 }
 
 export function getTimeSinceLastFeeding(events: BabyEvent[]): TimeSinceLast | null {
@@ -14,14 +16,25 @@ export function getTimeSinceLastFeeding(events: BabyEvent[]): TimeSinceLast | nu
 
   if (feedings.length === 0) return null;
 
-  const last = feedings[0];
+  const last = feedings[0] as FeedingEvent;
   const now = new Date();
   const mins = differenceInMinutes(now, last.timestamp.toDate());
+
+  let sideHint: string;
+  if (last.feedingType === 'bottle') {
+    sideHint = 'Bottle';
+  } else {
+    const parts: string[] = [];
+    if (last.leftCount > 0) parts.push('Left');
+    if (last.rightCount > 0) parts.push('Right');
+    sideHint = parts.join(' + ') || 'Breast';
+  }
 
   return {
     minutes: mins,
     label: formatMinutes(mins),
-    type: (last as FeedingEvent).feedingType,
+    type: last.feedingType,
+    sideHint,
   };
 }
 
@@ -36,7 +49,7 @@ export function getTimeSinceLastEvent(events: BabyEvent[], eventType: string): T
   const now = new Date();
   const mins = differenceInMinutes(now, last.timestamp.toDate());
 
-  return { minutes: mins, label: formatMinutes(mins), type: eventType };
+  return { minutes: mins, label: formatMinutes(mins), type: eventType, sideHint: '' };
 }
 
 function formatMinutes(mins: number): string {
@@ -52,27 +65,32 @@ export interface FeedingBalance {
   left: number;
   right: number;
   bottle: number;
-  nextSide: FeedingType | null;
-  lastSide: FeedingType | null;
+  nextSide: 'left' | 'right' | null;
 }
 
 export function getFeedingBalance(todayEvents: BabyEvent[]): FeedingBalance {
   const feedings = todayEvents.filter((e) => e.type === 'feeding') as FeedingEvent[];
 
-  const left = feedings.filter((f) => f.feedingType === 'left').length;
-  const right = feedings.filter((f) => f.feedingType === 'right').length;
-  const bottle = feedings.filter((f) => f.feedingType === 'bottle').length;
+  let left = 0;
+  let right = 0;
+  let bottle = 0;
 
-  const sorted = feedings.sort(
+  for (const f of feedings) {
+    if (f.feedingType === 'bottle') {
+      bottle++;
+    } else {
+      left += f.leftCount;
+      right += f.rightCount;
+    }
+  }
+
+  const sorted = [...feedings].sort(
     (a, b) => b.timestamp.toDate().getTime() - a.timestamp.toDate().getTime(),
   );
-  const lastSide = sorted.length > 0 ? sorted[0].feedingType : null;
 
-  let nextSide: FeedingType | null = null;
-  if (lastSide === 'left') nextSide = 'right';
-  else if (lastSide === 'right') nextSide = 'left';
+  const nextSide = sorted.length > 0 ? getNextSide(sorted[0]) : null;
 
-  return { left, right, bottle, nextSide, lastSide };
+  return { left, right, bottle, nextSide };
 }
 
 export type DiaperStatus = 'ok' | 'warning' | 'alert';
@@ -266,7 +284,12 @@ export function buildLRTrend(events: BabyEvent[], days: { date: string; label: s
   for (const f of feedings) {
     const key = f.timestamp.toDate().toISOString().slice(0, 10);
     const entry = grouped.get(key) || { left: 0, right: 0, bottle: 0 };
-    entry[f.feedingType]++;
+    if (f.feedingType === 'bottle') {
+      entry.bottle++;
+    } else {
+      entry.left += f.leftCount;
+      entry.right += f.rightCount;
+    }
     grouped.set(key, entry);
   }
 

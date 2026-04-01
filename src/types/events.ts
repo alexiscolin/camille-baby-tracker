@@ -2,7 +2,10 @@ import type { Timestamp } from 'firebase/firestore';
 
 export type EventType = 'feeding' | 'pee' | 'poop' | 'medication';
 
-export type FeedingType = 'left' | 'right' | 'bottle';
+export type FeedingType = 'breast' | 'bottle';
+
+/** @deprecated Legacy type from when each event tracked a single side */
+export type LegacyFeedingType = 'left' | 'right';
 
 export interface BaseEvent {
   id: string;
@@ -17,6 +20,8 @@ export interface BaseEvent {
 export interface FeedingEvent extends BaseEvent {
   type: 'feeding';
   feedingType: FeedingType;
+  leftCount: number;
+  rightCount: number;
   durationMinutes?: number;
   infection?: boolean;
   engorgement?: boolean;

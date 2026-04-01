@@ -31,7 +31,9 @@ function makeFeedingEvent(): FeedingEvent {
     id: 'evt-2',
     babyId: 'baby-1',
     type: 'feeding',
-    feedingType: 'right',
+    feedingType: 'breast',
+    leftCount: 0,
+    rightCount: 1,
     durationMinutes: 15,
     infection: true,
     engorgement: false,
@@ -140,6 +142,9 @@ describe('EventModal', () => {
       expect(screen.getByDisplayValue('15')).toBeInTheDocument();
       expect(screen.getByLabelText(/infection/i)).toBeChecked();
       expect(screen.getByLabelText(/engorgement/i)).not.toBeChecked();
+      // Right count should be 1 (from makeFeedingEvent)
+      expect(screen.getByLabelText('Right count')).toHaveTextContent('1');
+      expect(screen.getByLabelText('Left count')).toHaveTextContent('0');
     });
 
     it('should pre-fill medication fields', () => {

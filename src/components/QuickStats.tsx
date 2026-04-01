@@ -33,7 +33,7 @@ export function QuickStats({ todayEvents, recentEvents }: QuickStatsProps) {
           <span className={styles.cardLabel}>Last feeding</span>
           {lastFeed && (
             <span className={styles.cardHint}>
-              {lastFeed.type === 'left' ? 'Left side' : lastFeed.type === 'right' ? 'Right side' : 'Bottle'}
+              {lastFeed.sideHint}
             </span>
           )}
         </div>

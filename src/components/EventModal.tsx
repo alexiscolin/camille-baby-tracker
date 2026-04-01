@@ -49,7 +49,13 @@ export function EventModal(props: EventModalProps) {
   );
   const [time, setTime] = useState(getTimeString(targetDate));
   const [feedingType, setFeedingType] = useState<FeedingType>(
-    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).feedingType : 'left',
+    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).feedingType : 'breast',
+  );
+  const [leftCount, setLeftCount] = useState(
+    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).leftCount : 1,
+  );
+  const [rightCount, setRightCount] = useState(
+    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).rightCount : 0,
   );
   const [duration, setDuration] = useState(
     editEvent?.type === 'feeding' && (editEvent as FeedingEvent).durationMinutes
@@ -141,7 +147,15 @@ export function EventModal(props: EventModalProps) {
         }
 
         if (selectedType === 'feeding') {
+          if (feedingType === 'breast' && leftCount === 0 && rightCount === 0) {
+            setError('Select at least one side');
+            setSaving(false);
+            saveInFlight.current = false;
+            return;
+          }
           updates.feedingType = feedingType;
+          updates.leftCount = leftCount;
+          updates.rightCount = rightCount;
           updates.infection = infection;
           updates.engorgement = engorgement;
           const dur = parseDuration(duration);
@@ -171,9 +185,17 @@ export function EventModal(props: EventModalProps) {
         if (sanitizedNotes) base.notes = sanitizedNotes;
 
         if (selectedType === 'feeding') {
+          if (feedingType === 'breast' && leftCount === 0 && rightCount === 0) {
+            setError('Select at least one side');
+            setSaving(false);
+            saveInFlight.current = false;
+            return;
+          }
           const feedingData: Record<string, unknown> = {
             ...base,
             feedingType,
+            leftCount,
+            rightCount,
             infection,
             engorgement,
           };
@@ -308,17 +330,78 @@ export function EventModal(props: EventModalProps) {
                 <div className={styles.field}>
                   <label className={styles.label}>Type</label>
                   <div className={styles.segmented}>
-                    {(['left', 'right', 'bottle'] as FeedingType[]).map((ft) => (
+                    {(['breast', 'bottle'] as FeedingType[]).map((ft) => (
                       <button
                         key={ft}
                         className={`${styles.segmentBtn} ${feedingType === ft ? styles.segmentActive : ''}`}
-                        onClick={() => setFeedingType(ft)}
+                        onClick={() => {
+                          setFeedingType(ft);
+                          if (ft === 'bottle') {
+                            setLeftCount(0);
+                            setRightCount(0);
+                          } else if (leftCount === 0 && rightCount === 0) {
+                            setLeftCount(1);
+                          }
+                        }}
                       >
-                        {ft === 'left' ? 'Left' : ft === 'right' ? 'Right' : 'Bottle'}
+                        {ft === 'breast' ? 'Breast' : 'Bottle'}
                       </button>
                     ))}
                   </div>
                 </div>
+                {feedingType === 'breast' && (
+                  <div className={styles.field}>
+                    <label className={styles.label}>Sides</label>
+                    <div className={styles.sideCounters}>
+                      <div className={styles.sideCounter}>
+                        <span className={styles.sideLabel}>Left</span>
+                        <div className={styles.counterControls}>
+                          <button
+                            type="button"
+                            className={styles.counterBtn}
+                            onClick={() => setLeftCount((c) => Math.max(0, c - 1))}
+                            disabled={leftCount === 0}
+                            aria-label="Decrease left"
+                          >
+                            −
+                          </button>
+                          <span className={styles.counterValue} aria-label="Left count">{leftCount}</span>
+                          <button
+                            type="button"
+                            className={styles.counterBtn}
+                            onClick={() => setLeftCount((c) => c + 1)}
+                            aria-label="Increase left"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      <div className={styles.sideCounter}>
+                        <span className={styles.sideLabel}>Right</span>
+                        <div className={styles.counterControls}>
+                          <button
+                            type="button"
+                            className={styles.counterBtn}
+                            onClick={() => setRightCount((c) => Math.max(0, c - 1))}
+                            disabled={rightCount === 0}
+                            aria-label="Decrease right"
+                          >
+                            −
+                          </button>
+                          <span className={styles.counterValue} aria-label="Right count">{rightCount}</span>
+                          <button
+                            type="button"
+                            className={styles.counterBtn}
+                            onClick={() => setRightCount((c) => c + 1)}
+                            aria-label="Increase right"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className={styles.field}>
                   <label className={styles.label}>Duration (min)</label>
                   <input

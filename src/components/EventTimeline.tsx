@@ -2,13 +2,14 @@ import { memo } from 'react';
 import type { BabyEvent, FeedingEvent, MedicationEvent } from '../types/events';
 import { EVENT_CONFIG } from '../utils/event-config';
 import { formatTime, timeAgo } from '../utils/date';
+import { formatSides } from '../utils/feeding-helpers';
 import styles from './EventTimeline.module.css';
 
 function getEventDetail(event: BabyEvent): string {
   switch (event.type) {
     case 'feeding': {
       const f = event as FeedingEvent;
-      const side = f.feedingType === 'left' ? 'Left' : f.feedingType === 'right' ? 'Right' : 'Bottle';
+      const side = formatSides(f);
       const duration = f.durationMinutes ? ` - ${f.durationMinutes}min` : '';
       const flags = [
         f.infection && 'Infection',

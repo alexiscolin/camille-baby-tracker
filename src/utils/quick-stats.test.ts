@@ -10,17 +10,30 @@ import {
 } from './quick-stats';
 import type { FeedingEvent, PeeEvent, BabyEvent } from '../types/events';
 
-function makeFeedingEvent(date: Date, side: 'left' | 'right' | 'bottle' = 'left', duration?: number): FeedingEvent {
+function makeFeedingEvent(
+  date: Date,
+  leftCount: number = 1,
+  rightCount: number = 0,
+  duration?: number,
+): FeedingEvent {
+  const isBottle = leftCount === 0 && rightCount === 0;
   return {
-    id: `f-${date.getTime()}`,
+    id: `f-${date.getTime()}-${Math.random()}`,
     babyId: 'baby-1',
     type: 'feeding',
-    feedingType: side,
+    feedingType: isBottle ? 'bottle' : 'breast',
+    leftCount,
+    rightCount,
     timestamp: Timestamp.fromDate(date),
     createdBy: 'user-1',
     createdAt: Timestamp.fromDate(new Date()),
     ...(duration !== undefined ? { durationMinutes: duration } : {}),
   };
+}
+
+/** Shorthand for bottle events */
+function makeBottleEvent(date: Date, duration?: number): FeedingEvent {
+  return makeFeedingEvent(date, 0, 0, duration);
 }
 
 function makePeeEvent(date: Date): PeeEvent {
@@ -67,13 +80,13 @@ describe('getTimeSinceLastFeeding', () => {
 });
 
 describe('getFeedingBalance', () => {
-  it('should count left, right, and bottle feedings', () => {
+  it('should sum leftCount and rightCount across events', () => {
     const now = new Date();
     const events: BabyEvent[] = [
-      makeFeedingEvent(now, 'left'),
-      makeFeedingEvent(now, 'left'),
-      makeFeedingEvent(now, 'right'),
-      makeFeedingEvent(now, 'bottle'),
+      makeFeedingEvent(now, 1, 0),  // left only
+      makeFeedingEvent(now, 1, 0),  // left only
+      makeFeedingEvent(now, 0, 1),  // right only
+      makeBottleEvent(now),         // bottle
     ];
 
     const balance = getFeedingBalance(events);
@@ -82,20 +95,49 @@ describe('getFeedingBalance', () => {
     expect(balance.bottle).toBe(1);
   });
 
-  it('should recommend opposite side from last feeding', () => {
+  it('should count both sides from a single event', () => {
+    const now = new Date();
     const events: BabyEvent[] = [
-      makeFeedingEvent(new Date(2026, 3, 1, 10, 0), 'left'),
-      makeFeedingEvent(new Date(2026, 3, 1, 12, 0), 'right'),
+      makeFeedingEvent(now, 2, 1),  // left ×2, right ×1
     ];
 
     const balance = getFeedingBalance(events);
-    expect(balance.lastSide).toBe('right');
-    expect(balance.nextSide).toBe('left');
+    expect(balance.left).toBe(2);
+    expect(balance.right).toBe(1);
+    expect(balance.bottle).toBe(0);
+  });
+
+  it('should suggest next side based on last event imbalance', () => {
+    const events: BabyEvent[] = [
+      makeFeedingEvent(new Date(2026, 3, 1, 10, 0), 1, 0),
+      makeFeedingEvent(new Date(2026, 3, 1, 12, 0), 0, 1),
+    ];
+
+    const balance = getFeedingBalance(events);
+    expect(balance.nextSide).toBe('left'); // last event was right-heavy
+  });
+
+  it('should suggest right when last event was left-heavy', () => {
+    const events: BabyEvent[] = [
+      makeFeedingEvent(new Date(2026, 3, 1, 12, 0), 2, 1),
+    ];
+
+    const balance = getFeedingBalance(events);
+    expect(balance.nextSide).toBe('right');
   });
 
   it('should return null nextSide when last was bottle', () => {
     const events: BabyEvent[] = [
-      makeFeedingEvent(new Date(), 'bottle'),
+      makeBottleEvent(new Date()),
+    ];
+
+    const balance = getFeedingBalance(events);
+    expect(balance.nextSide).toBeNull();
+  });
+
+  it('should return null nextSide when last event had equal counts', () => {
+    const events: BabyEvent[] = [
+      makeFeedingEvent(new Date(), 1, 1),
     ];
 
     const balance = getFeedingBalance(events);
@@ -142,8 +184,8 @@ describe('getDiaperStatus', () => {
     const now = new Date();
     const events: BabyEvent[] = [
       makePeeEvent(now),
-      makeFeedingEvent(now),
-      makeFeedingEvent(now),
+      makeFeedingEvent(now, 1, 0),
+      makeFeedingEvent(now, 0, 1),
     ];
     expect(getDiaperStatus(events).count).toBe(1);
   });
