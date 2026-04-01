@@ -1,4 +1,4 @@
-import { differenceInMinutes, differenceInHours } from 'date-fns';
+import { differenceInMinutes } from 'date-fns';
 import type { BabyEvent, FeedingEvent, FeedingType } from '../types/events';
 
 export interface TimeSinceLast {

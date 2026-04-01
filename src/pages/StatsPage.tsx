@@ -2,22 +2,16 @@ import { useState, useMemo, lazy, Suspense } from 'react';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 import {
   TrendingUp,
-  Moon,
-  Sun,
-  ArrowLeftRight,
   Timer,
   Clock,
-  BarChart3,
   Activity,
   Zap,
-  Calendar,
-  Layers,
 } from 'lucide-react';
 import { useToday } from '../hooks/useToday';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { buildChartData } from '../utils/chart-data';
 import { formatBabyAge } from '../utils/date';
-import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
+
 import {
   getDayNightSplit,
   getFeedingHourDistribution,
@@ -27,8 +21,6 @@ import {
   getAverageFeedingInterval,
 } from '../utils/quick-stats';
 import {
-  CHART_COLORS,
-  TOOLTIP_STYLE,
   computeAverageSummary,
   computeDailyAverages,
   getRangeDays,

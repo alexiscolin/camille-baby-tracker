@@ -19,6 +19,19 @@ type NewEvent =
   | Omit<PoopEvent, 'id' | 'createdAt'>
   | Omit<MedicationEvent, 'id' | 'createdAt'>;
 
+const VALID_EVENT_TYPES = new Set(['feeding', 'pee', 'poop', 'medication']);
+
+function isValidEventData(data: Record<string, unknown>): boolean {
+  return (
+    typeof data.babyId === 'string' &&
+    typeof data.type === 'string' &&
+    VALID_EVENT_TYPES.has(data.type) &&
+    data.timestamp != null &&
+    typeof (data.timestamp as { toDate?: unknown }).toDate === 'function' &&
+    typeof data.createdBy === 'string'
+  );
+}
+
 function eventsCollection(familyId: string) {
   return collection(db, 'families', familyId, 'events');
 }
@@ -71,9 +84,12 @@ export function subscribeToEvents(
     q,
     { includeMetadataChanges: true },
     (snapshot) => {
-      const events = snapshot.docs.map(
-        (d) => ({ id: d.id, ...d.data() }) as BabyEvent,
-      );
+      const events: BabyEvent[] = [];
+      for (const d of snapshot.docs) {
+        const raw = d.data();
+        if (!isValidEventData(raw)) continue;
+        events.push({ id: d.id, ...raw } as BabyEvent);
+      }
       callback({
         events,
         fromCache: snapshot.metadata.fromCache,

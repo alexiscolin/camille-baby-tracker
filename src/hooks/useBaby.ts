@@ -22,8 +22,7 @@ export function useBaby(familyId: string | undefined, babyId: string | undefined
           setLoading(false);
         }
       })
-      .catch((err) => {
-        console.error('Failed to load baby:', err);
+      .catch(() => {
         if (!cancelled) setLoading(false);
       });
 

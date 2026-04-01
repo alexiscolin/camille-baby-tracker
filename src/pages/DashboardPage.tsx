@@ -8,8 +8,6 @@ import { getDayKey, parseDayKey, formatBabyAge } from '../utils/date';
 import { computeSummary } from '../utils/summary';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import {
-  CHART_COLORS,
-  TOOLTIP_STYLE,
   computeAverageSummary,
   computeDailyAverages,
   getRangeDays,

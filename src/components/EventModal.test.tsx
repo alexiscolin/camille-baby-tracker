@@ -194,6 +194,99 @@ describe('EventModal', () => {
     });
   });
 
+  describe('validation', () => {
+    it('should show error for time more than 24h in the future', async () => {
+      const user = userEvent.setup();
+      // Use a date far in the future
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 2);
+
+      render(
+        <EventModal {...baseProps} mode="add" date={futureDate} />,
+      );
+
+      await user.click(screen.getByText('Pees'));
+      await user.click(screen.getByText('Save'));
+
+      expect(screen.getByText('Time cannot be more than 24 hours in the future')).toBeInTheDocument();
+      expect(mockAddEvent).not.toHaveBeenCalled();
+    });
+
+    it('should require medication name and dose', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Meds'));
+
+      // Save button should be disabled when name and dose are empty
+      const saveBtn = screen.getByText('Save');
+      expect(saveBtn).toBeDisabled();
+    });
+
+    it('should disable save when medication name is cleared in edit mode', async () => {
+      const user = userEvent.setup();
+      const event = makeMedicationEvent();
+      render(
+        <EventModal {...baseProps} mode="edit" event={event} />,
+      );
+
+      // Clear the medication name
+      const nameInput = screen.getByDisplayValue('Vitamin D');
+      await user.clear(nameInput);
+
+      // Update button should be disabled
+      expect(screen.getByText('Update')).toBeDisabled();
+    });
+
+    it('should truncate notes to max length', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Pees'));
+
+      const notesInput = screen.getByPlaceholderText(/additional notes/i);
+      // Type a long string — the input has maxLength=500, so it will be truncated by the browser
+      const longText = 'a'.repeat(500);
+      await user.type(notesInput, longText);
+
+      // Should show character count when near limit
+      expect(screen.getByText(/\/500/)).toBeInTheDocument();
+    });
+
+    it('should show error when save fails', async () => {
+      const user = userEvent.setup();
+      mockAddEvent.mockRejectedValueOnce(new Error('Network error'));
+
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Pees'));
+      await user.click(screen.getByText('Save'));
+
+      expect(await screen.findByText('Failed to save. Please try again.')).toBeInTheDocument();
+    });
+
+    it('should show error when delete fails', async () => {
+      const user = userEvent.setup();
+      mockDeleteEvent.mockRejectedValueOnce(new Error('Network error'));
+
+      const event = makePeeEvent();
+      render(
+        <EventModal {...baseProps} mode="edit" event={event} />,
+      );
+
+      await user.click(screen.getByText('Delete'));
+      await user.click(screen.getByText('Yes, delete'));
+
+      expect(await screen.findByText('Failed to delete. Please try again.')).toBeInTheDocument();
+    });
+  });
+
   it('should close on Escape key', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();

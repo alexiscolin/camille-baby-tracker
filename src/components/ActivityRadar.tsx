@@ -8,7 +8,7 @@ import {
   Tooltip,
 } from 'recharts';
 import type { DailySummary } from '../types/events';
-import { EVENT_CONFIG } from '../utils/event-config';
+
 import styles from './ActivityRadar.module.css';
 
 interface ActivityRadarProps {

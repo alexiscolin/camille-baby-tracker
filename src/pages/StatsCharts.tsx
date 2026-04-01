@@ -227,7 +227,7 @@ export const StatsCharts = memo(function StatsCharts({
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
                 <XAxis dataKey="label" tick={AXIS_TICK_SM} tickLine={false} />
                 <YAxis allowDecimals={false} tick={AXIS_TICK_SM} tickLine={false} unit="m" axisLine={false} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value: number) => [`${value}min`, 'Interval']} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value}min`, 'Interval']} />
                 <Line type="monotone" dataKey="avgMinutes" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} connectNulls />
               </LineChart>
             </ResponsiveContainer>
@@ -247,7 +247,7 @@ export const StatsCharts = memo(function StatsCharts({
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
                 <XAxis dataKey="label" tick={AXIS_TICK_SM} tickLine={false} />
                 <YAxis allowDecimals={false} tick={AXIS_TICK_SM} tickLine={false} unit="m" axisLine={false} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value: number) => [`${value}min`, 'Duration']} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value}min`, 'Duration']} />
                 <Line type="monotone" dataKey="avgMinutes" stroke="var(--color-feeding)" strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} connectNulls />
               </LineChart>
             </ResponsiveContainer>
@@ -273,7 +273,7 @@ export const StatsCharts = memo(function StatsCharts({
                 interval={1}
               />
               <YAxis allowDecimals={false} tick={AXIS_TICK_SM} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value: number) => [value, 'Feedings']} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [value, 'Feedings']} />
               <Bar dataKey="count" fill="var(--color-feeding)" radius={[4, 4, 0, 0]} name="Feedings" />
             </BarChart>
           </ResponsiveContainer>

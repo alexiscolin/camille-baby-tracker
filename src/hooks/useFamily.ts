@@ -24,9 +24,8 @@ export function useFamily(userId: string | undefined) {
           setLoading(false);
         }
       })
-      .catch((err) => {
+      .catch(() => {
         if (!cancelled) {
-          console.error('Failed to load family:', err);
           setError('Failed to load family data');
           setLoading(false);
         }
