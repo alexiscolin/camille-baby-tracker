@@ -207,6 +207,31 @@ describe('EventModal', () => {
   });
 
   describe('validation', () => {
+    it('should allow saving again after an invalid time error', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Pees'));
+
+      // Clear time to trigger "Invalid time" validation
+      const timeInput = screen.getByLabelText(/time/i);
+      await user.clear(timeInput);
+      await user.click(screen.getByText('Save'));
+
+      expect(screen.getByText('Invalid time')).toBeInTheDocument();
+      expect(mockAddEvent).not.toHaveBeenCalled();
+
+      // Fix time and try again — this should NOT be blocked by stale saveInFlight
+      const now = new Date();
+      const validTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      await user.type(timeInput, validTime);
+      await user.click(screen.getByText('Save'));
+
+      expect(mockAddEvent).toHaveBeenCalledOnce();
+    });
+
     it('should show error for time more than 24h in the future', async () => {
       const user = userEvent.setup();
       // Use a date far in the future

@@ -61,7 +61,7 @@ export function StatsPage({ familyId, babyId, baby }: StatsPageProps) {
   const startDate = useMemo(() => startOfDay(subDays(today, days)), [today, days]);
   const endDate = useMemo(() => endOfDay(today), [today]);
 
-  const { events, loading, fromCache } = useRangeEvents(familyId, babyId, startDate, endDate);
+  const { events, loading, fromCache, hasPendingWrites } = useRangeEvents(familyId, babyId, startDate, endDate);
 
   const chartData = useMemo(
     () => buildChartData(events, startDate, today),
@@ -130,7 +130,7 @@ export function StatsPage({ familyId, babyId, baby }: StatsPageProps) {
             </p>
           )}
         </div>
-        <CacheIndicator fromCache={fromCache} hasPendingWrites={false} />
+        <CacheIndicator fromCache={fromCache} hasPendingWrites={hasPendingWrites} />
       </div>
 
       {/* Controls */}

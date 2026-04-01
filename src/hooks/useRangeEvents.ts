@@ -9,18 +9,16 @@ export function useRangeEvents(
   endDate: Date,
 ) {
   const [events, setEvents] = useState<BabyEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [settled, setSettled] = useState(false);
   const [fromCache, setFromCache] = useState(false);
+  const [hasPendingWrites, setHasPendingWrites] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (!familyId || !babyId) {
-      setLoading(false);
-      return;
-    }
+  const canSubscribe = !!(familyId && babyId);
 
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    if (!familyId || !babyId) return;
+
     const unsubscribe = subscribeToEvents(
       familyId,
       babyId,
@@ -29,16 +27,23 @@ export function useRangeEvents(
       (result) => {
         setEvents(result.events);
         setFromCache(result.fromCache);
-        setLoading(false);
+        setHasPendingWrites(result.hasPendingWrites);
+        setSettled(true);
       },
       (err) => {
         setError(err);
-        setLoading(false);
+        setSettled(true);
       },
     );
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      setSettled(false);
+      setError(null);
+    };
   }, [familyId, babyId, startDate, endDate]);
 
-  return { events, loading, fromCache, error };
+  const loading = canSubscribe && !settled;
+
+  return { events, loading, fromCache, hasPendingWrites, error };
 }

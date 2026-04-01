@@ -85,7 +85,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
   const maxDays = Math.max(daysToLoad, chartDays);
   const rangeStart = useMemo(() => startOfDay(subDays(today, maxDays)), [today, maxDays]);
   const rangeEnd = useMemo(() => endOfDay(today), [today]);
-  const { events: allEvents, loading, fromCache } = useRangeEvents(familyId, babyId, rangeStart, rangeEnd);
+  const { events: allEvents, loading, fromCache, hasPendingWrites } = useRangeEvents(familyId, babyId, rangeStart, rangeEnd);
 
   // Chart data: filter events to chart range
   const chartStart = useMemo(() => startOfDay(subDays(today, chartDays)), [today, chartDays]);
@@ -153,7 +153,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
           {baby && (
             <span className={styles.babyAge}>{formatBabyAge(baby.birthDate.toDate())}</span>
           )}
-          <CacheIndicator fromCache={fromCache} hasPendingWrites={false} />
+          <CacheIndicator fromCache={fromCache} hasPendingWrites={hasPendingWrites} />
         </div>
       </div>
 

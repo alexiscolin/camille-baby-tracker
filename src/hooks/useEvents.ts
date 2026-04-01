@@ -9,7 +9,7 @@ export function useEvents(
 ) {
   const start = useMemo(() => startOfDay(date), [date]);
   const end = useMemo(() => endOfDay(date), [date]);
-  const { events, loading, fromCache, error } = useRangeEvents(familyId, babyId, start, end);
+  const { events, loading, fromCache, hasPendingWrites, error } = useRangeEvents(familyId, babyId, start, end);
 
-  return { events, loading, fromCache, hasPendingWrites: false, error };
+  return { events, loading, fromCache, hasPendingWrites, error };
 }

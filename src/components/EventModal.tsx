@@ -115,11 +115,13 @@ export function EventModal(props: EventModalProps) {
     const eventDate = buildEventDate();
     if (!eventDate) {
       setError('Invalid time');
+      saveInFlight.current = false;
       return;
     }
 
     if (eventDate.getTime() > Date.now() + 24 * 60 * 60 * 1000) {
       setError('Time cannot be more than 24 hours in the future');
+      saveInFlight.current = false;
       return;
     }
 
