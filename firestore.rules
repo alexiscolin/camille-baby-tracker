@@ -41,7 +41,9 @@ service cloud.firestore {
       return data.type == 'feeding'
         && data.feedingType in ['left', 'right', 'bottle']
         && (!('durationMinutes' in data)
-          || (data.durationMinutes is int && data.durationMinutes > 0 && data.durationMinutes <= 300));
+          || (data.durationMinutes is int && data.durationMinutes > 0 && data.durationMinutes <= 300))
+        && (!('infection' in data) || data.infection is bool)
+        && (!('engorgement' in data) || data.engorgement is bool);
     }
 
     // Helper: validate medication-specific fields
@@ -68,14 +70,28 @@ service cloud.firestore {
         );
     }
 
-    // Helper: validate event update — prevent changing immutable fields
+    // Helper: validate event update — prevent changing immutable fields AND re-validate mutable fields
     function isValidEventUpdate() {
       let data = request.resource.data;
       let prev = resource.data;
-      return data.babyId == prev.babyId
+      // Immutable fields must not change
+      let immutableOk = data.babyId == prev.babyId
         && data.type == prev.type
         && data.createdBy == prev.createdBy
         && data.createdAt == prev.createdAt;
+      // Timestamp must be valid
+      let timestampOk = data.timestamp is timestamp
+        && data.timestamp <= request.time + duration.value(48, 'h');
+      // Notes must still be valid if present
+      let notesOk = (!('notes' in data) || (data.notes is string && data.notes.size() <= 500));
+      // Type-specific mutable fields must be valid
+      let typeFieldsOk = (
+        (data.type == 'feeding' && hasValidFeedingFields())
+        || (data.type == 'pee')
+        || (data.type == 'poop')
+        || (data.type == 'medication' && hasValidMedicationFields())
+      );
+      return immutableOk && timestampOk && notesOk && typeFieldsOk;
     }
 
     // Families

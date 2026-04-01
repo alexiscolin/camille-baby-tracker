@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { ReactNode } from 'react';
 import styles from './SummaryCard.module.css';
 
@@ -9,7 +10,7 @@ interface SummaryCardProps {
   bgVar: string;
 }
 
-export function SummaryCard({ icon, label, count, colorVar, bgVar }: SummaryCardProps) {
+export const SummaryCard = memo(function SummaryCard({ icon, label, count, colorVar, bgVar }: SummaryCardProps) {
   return (
     <div className={styles.card} style={{ '--card-color': colorVar, '--card-bg': bgVar } as React.CSSProperties}>
       <div className={styles.iconWrap}>{icon}</div>
@@ -17,4 +18,4 @@ export function SummaryCard({ icon, label, count, colorVar, bgVar }: SummaryCard
       <span className={styles.label}>{label}</span>
     </div>
   );
-}
+});

@@ -1,68 +1,145 @@
+/* ─── Page ─── */
 .page {
   display: flex;
   flex-direction: column;
+  gap: var(--space-xl);
 }
 
-.titleRow {
+.loading {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
+  justify-content: center;
+  min-height: 200px;
+  color: var(--color-text-muted);
+}
+
+/* ─── Header ─── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
 .title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: 700;
+  color: var(--color-text);
 }
 
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-top: var(--space-2xs);
+}
+
+/* ─── Controls ─── */
 .controls {
   display: flex;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
+  gap: var(--space-sm);
   flex-wrap: wrap;
 }
 
-.segmented {
+/* ─── Metrics Row ─── */
+.metricsRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.metricCard {
   display: flex;
-  background: var(--color-border-light);
-  border-radius: var(--radius-lg);
-  padding: 3px;
-}
-
-.segmentBtn {
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-}
-
-.segmentActive {
+  align-items: center;
+  gap: var(--space-md);
   background: var(--color-surface);
-  color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast);
 }
 
-.chartContainer {
+.metricCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.metricIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+
+.metricContent {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.metricValue {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.metricLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Sections ─── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.sectionIcon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sectionHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ─── Chart Cards ─── */
+.chartCard {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   padding: var(--space-lg) var(--space-sm) var(--space-md);
   box-shadow: var(--shadow-sm);
-  margin-bottom: var(--space-xl);
+  height: 240px;
 }
 
-.averages {
-  margin-bottom: var(--space-xl);
-}
-
-.subtitle {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  margin-bottom: var(--space-md);
-}
-
+/* ─── Daily Averages ─── */
 .avgGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -75,27 +152,213 @@
   align-items: center;
   gap: var(--space-xs);
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  padding: var(--space-md);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg) var(--space-md);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast);
+}
+
+.avgCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.avgIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
 }
 
 .avgValue {
   font-size: var(--font-size-2xl);
   font-weight: 700;
   color: var(--color-primary);
+  line-height: 1;
 }
 
 .avgLabel {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   font-weight: 500;
 }
 
-.loading {
+/* ─── Charts Grid (2-col on desktop) ─── */
+.chartsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+/* ─── Day/Night Card ─── */
+.dayNightCard {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.dayNightBar {
+  display: flex;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 44px;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.dayBar {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
+  gap: var(--space-xs);
+  background: var(--color-feeding-bg);
+  color: var(--color-feeding);
+  padding: 0 var(--space-md);
+  white-space: nowrap;
+}
+
+.nightBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  background: var(--color-primary-bg);
+  color: var(--color-primary-dark);
+  padding: 0 var(--space-md);
+  white-space: nowrap;
+}
+
+.dayNightPercent {
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+  text-align: center;
+  font-weight: 500;
+}
+
+.noData {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .metricsRow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .avgGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1024px) {
+  .page {
+    gap: var(--space-2xl);
+  }
+
+  .title {
+    font-size: var(--font-size-3xl);
+  }
+
+  .subtitle {
+    font-size: var(--font-size-md);
+  }
+
+  .metricsRow {
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--space-md);
+  }
+
+  .metricCard {
+    padding: var(--space-lg);
+  }
+
+  .metricIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .metricValue {
+    font-size: var(--font-size-xl);
+  }
+
+  .metricLabel {
+    font-size: var(--font-size-sm);
+  }
+
+  .chartCard {
+    height: 300px;
+    padding: var(--space-xl) var(--space-md) var(--space-lg);
+  }
+
+  /* First chart (Daily Overview) is taller */
+  .section:first-of-type .chartCard {
+    height: 380px;
+  }
+
+  .sectionTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .sectionHint {
+    font-size: var(--font-size-sm);
+  }
+
+  .chartsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+  }
+
+  .avgGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+  }
+
+  .avgCard {
+    padding: var(--space-xl) var(--space-lg);
+  }
+
+  .avgIcon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .avgValue {
+    font-size: var(--font-size-3xl);
+  }
+
+  .avgLabel {
+    font-size: var(--font-size-md);
+  }
+
+  .dayNightBar {
+    height: 52px;
+    font-size: var(--font-size-lg);
+  }
+
+  .dayNightPercent {
+    font-size: var(--font-size-md);
+  }
+}
+
+/* ─── Wide Desktop ─── */
+@media (min-width: 1400px) {
+  .section:first-of-type .chartCard {
+    height: 440px;
+  }
+
+  .chartCard {
+    height: 340px;
+  }
 }

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { BabyEvent, FeedingEvent, MedicationEvent } from '../types/events';
 import { EVENT_CONFIG } from '../utils/event-config';
 import { formatTime, timeAgo } from '../utils/date';
@@ -25,11 +26,28 @@ function getEventDetail(event: BabyEvent): string {
   }
 }
 
-interface EventTimelineProps {
-  events: BabyEvent[];
+function getHourLabel(event: BabyEvent, prevEvent: BabyEvent | null): string | null {
+  const hour = event.timestamp.toDate().getHours();
+  const halfHour = event.timestamp.toDate().getMinutes() >= 30 ? ':30' : ':00';
+  const label = `${String(hour).padStart(2, '0')}${halfHour}`;
+
+  if (!prevEvent) return label;
+
+  const prevHour = prevEvent.timestamp.toDate().getHours();
+  const prevHalf = prevEvent.timestamp.toDate().getMinutes() >= 30 ? ':30' : ':00';
+  const prevLabel = `${String(prevHour).padStart(2, '0')}${prevHalf}`;
+
+  if (label === prevLabel) return null;
+  return label;
 }
 
-export function EventTimeline({ events }: EventTimelineProps) {
+interface EventTimelineProps {
+  events: BabyEvent[];
+  onEventClick?: (event: BabyEvent) => void;
+  showHourMarkers?: boolean;
+}
+
+export const EventTimeline = memo(function EventTimeline({ events, onEventClick, showHourMarkers = false }: EventTimelineProps) {
   if (events.length === 0) {
     return (
       <div className={styles.empty}>
@@ -40,31 +58,57 @@ export function EventTimeline({ events }: EventTimelineProps) {
 
   return (
     <div className={styles.timeline}>
-      {events.map((event) => {
+      {events.map((event, index) => {
         const config = EVENT_CONFIG[event.type];
         const Icon = config.icon;
         const detail = getEventDetail(event);
+        const clickable = !!onEventClick;
+        const hourLabel = showHourMarkers ? getHourLabel(event, index > 0 ? events[index - 1] : null) : null;
 
         return (
-          <div key={event.id} className={styles.item}>
-            <div
-              className={styles.iconWrap}
-              style={{ color: config.color, background: config.bg }}
-            >
-              <Icon size={18} />
-            </div>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <span className={styles.label}>{config.label}</span>
-                <span className={styles.time}>{formatTime(event.timestamp)}</span>
+          <div key={event.id} className={styles.row}>
+            {showHourMarkers && (
+              <div className={styles.hourCol}>
+                {hourLabel && <span className={styles.hourLabel}>{hourLabel}</span>}
+                <div className={styles.hourLine} />
               </div>
-              {detail && <span className={styles.detail}>{detail}</span>}
-              {event.notes && <span className={styles.notes}>{event.notes}</span>}
+            )}
+            <div
+              className={`${styles.item} ${clickable ? styles.clickable : ''}`}
+              onClick={clickable ? () => onEventClick(event) : undefined}
+              role={clickable ? 'button' : undefined}
+              tabIndex={clickable ? 0 : undefined}
+              onKeyDown={clickable ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onEventClick(event);
+                }
+              } : undefined}
+            >
+              <div
+                className={styles.iconWrap}
+                style={{ color: config.color, background: config.bg }}
+              >
+                <Icon size={18} />
+              </div>
+              <div className={styles.content}>
+                <div className={styles.header}>
+                  <span className={styles.label}>{config.label}</span>
+                  <span className={styles.time}>
+                    {formatTime(event.timestamp)}
+                    {showHourMarkers && (
+                      <span className={styles.timeAgo}> ({timeAgo(event.timestamp)})</span>
+                    )}
+                  </span>
+                </div>
+                {detail && <span className={styles.detail}>{detail}</span>}
+                {event.notes && <span className={styles.notes}>{event.notes}</span>}
+              </div>
+              {!showHourMarkers && <span className={styles.ago}>{timeAgo(event.timestamp)}</span>}
             </div>
-            <span className={styles.ago}>{timeAgo(event.timestamp)}</span>
           </div>
         );
       })}
     </div>
   );
-}
+});

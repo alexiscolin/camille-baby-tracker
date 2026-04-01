@@ -1,17 +1,21 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { useFamily } from './hooks/useFamily';
+import { useBaby } from './hooks/useBaby';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { SetupPage } from './pages/SetupPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { AddEventPage } from './pages/AddEventPage';
 import { StatsPage } from './pages/StatsPage';
 import type { Family } from './types/events';
 
 function AppContent() {
   const { user, loading: authLoading, allowed } = useAuth();
   const { family, loading: familyLoading, setFamily } = useFamily(user?.uid);
+
+  const babyId = family?.babies[0] ?? null;
+  const { baby } = useBaby(family?.id, babyId ?? undefined);
 
   if (authLoading || familyLoading) {
     return <LoadingScreen />;
@@ -21,7 +25,7 @@ function AppContent() {
     return <LoginPage allowed={allowed} />;
   }
 
-  if (!family || family.babies.length === 0) {
+  if (!family || family.babies.length === 0 || !babyId) {
     return (
       <SetupPage
         userId={user.uid}
@@ -30,28 +34,29 @@ function AppContent() {
     );
   }
 
-  const babyId = family.babies[0];
-
   return (
-    <Layout>
+    <Layout babyName={baby?.firstName}>
       <Routes>
         <Route
           path="/"
-          element={<DashboardPage familyId={family.id} babyId={babyId} />}
-        />
-        <Route
-          path="/add"
           element={
-            <AddEventPage
+            <DashboardPage
               familyId={family.id}
               babyId={babyId}
               userId={user.uid}
+              baby={baby}
             />
           }
         />
         <Route
           path="/stats"
-          element={<StatsPage familyId={family.id} babyId={babyId} />}
+          element={
+            <StatsPage
+              familyId={family.id}
+              babyId={babyId}
+              baby={baby}
+            />
+          }
         />
       </Routes>
     </Layout>
@@ -77,8 +82,10 @@ function LoadingScreen() {
 
 export function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

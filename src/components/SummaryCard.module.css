@@ -11,9 +11,6 @@
   transition: transform var(--transition-fast);
 }
 
-.card:hover {
-  transform: translateY(-2px);
-}
 
 .iconWrap {
   color: var(--card-color);

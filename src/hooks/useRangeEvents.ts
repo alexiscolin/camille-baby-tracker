@@ -11,6 +11,7 @@ export function useRangeEvents(
   const [events, setEvents] = useState<BabyEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [fromCache, setFromCache] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!familyId || !babyId) {
@@ -19,6 +20,7 @@ export function useRangeEvents(
     }
 
     setLoading(true);
+    setError(null);
     const unsubscribe = subscribeToEvents(
       familyId,
       babyId,
@@ -29,10 +31,14 @@ export function useRangeEvents(
         setFromCache(result.fromCache);
         setLoading(false);
       },
+      (err) => {
+        setError(err);
+        setLoading(false);
+      },
     );
 
     return unsubscribe;
   }, [familyId, babyId, startDate, endDate]);
 
-  return { events, loading, fromCache };
+  return { events, loading, fromCache, error };
 }

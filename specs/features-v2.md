@@ -21,9 +21,10 @@ Ideas for future versions, to be prioritized based on needs.
 - Formatted PDF export for pediatrician
 - Full history or by date range
 
-## Night Mode
-- Automatic dark theme (based on time or system preference)
-- Reduced brightness, adapted contrast
+## Night Mode (Enhancement)
+- Manual dark/light toggle (currently auto-only via prefers-color-scheme)
+- Time-based automatic switching (force dark at night hours)
+- Reduced brightness mode for 3am feedings
 
 ## Notifications and Reminders
 - "Last feeding X hours ago" (push notification)
@@ -40,8 +41,7 @@ Ideas for future versions, to be prioritized based on needs.
 
 ## Event Pagination & Virtualization
 - Cursor-based pagination for Firestore queries (avoid loading 100+ events at once)
-- Virtual scrolling in EventTimeline for long days (react-window or similar)
-- Lazy-load older events on scroll in dashboard
+- Virtual scrolling in timeline for long days (react-window or similar)
 - Paginated stats queries to reduce Firestore read costs at scale
 
 ## Runtime Data Validation
@@ -50,10 +50,10 @@ Ideas for future versions, to be prioritized based on needs.
 - Graceful handling of corrupted or schema-mismatched documents
 
 ## Advanced Testing
-- Component tests with Testing Library (LoginPage, AddEventPage, DashboardPage)
+- Component tests with Testing Library (DashboardPage, StatsPage)
 - Hook integration tests with mocked Firebase (useEvents, useFamily, useAuth)
 - Firestore security rules unit tests (via @firebase/rules-unit-testing)
-- E2E tests for critical flows: login, setup, event creation, offline sync
+- E2E tests for critical flows: login, setup, event creation, edit, delete, offline sync
 - Error scenario tests: network failures, invalid data, permission denied
 
 ## Monitoring & Error Tracking
@@ -65,3 +65,9 @@ Ideas for future versions, to be prioritized based on needs.
 - Cloud Functions (Blaze plan) to enforce write rate limits per user
 - Prevent Spark plan quota exhaustion from spam writes
 - Daily event count cap per family (configurable)
+
+## Advanced Stats (if volume justifies it)
+- Week-over-week comparison overlay on charts
+- Feeding efficiency trend (volume/duration if bottle-fed)
+- Custom date range picker for stats
+- Heatmap: 7-day × 24-hour grid showing feeding density

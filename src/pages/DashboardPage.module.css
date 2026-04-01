@@ -1,33 +1,8 @@
+/* ─── Page ─── */
 .page {
   display: flex;
   flex-direction: column;
-}
-
-.header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
-.summaryGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-sm);
-  margin-bottom: var(--space-xl);
-}
-
-@media (max-width: 380px) {
-  .summaryGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.sectionTitle {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: var(--space-md);
+  gap: var(--space-lg);
 }
 
 .loading {
@@ -36,4 +11,320 @@
   justify-content: center;
   min-height: 200px;
   color: var(--color-text-muted);
+}
+
+/* ─── Section title ─── */
+.sectionTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+/* ─── Page Header ─── */
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.greeting {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.babyName {
+  color: var(--color-primary);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.babyAge {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  background: var(--color-primary-bg);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+}
+
+/* ─── Dashboard layout ─── */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.mainPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* Today summary — hidden on mobile */
+.todaySummary {
+  display: none;
+}
+
+/* Radar column — hidden on mobile */
+.radarCol {
+  display: none;
+}
+
+/* Chart + Radar row */
+.chartRadarRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ─── Chart Section ─── */
+.chartSection {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.chartHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.chartTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.chartRange {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.chartSubtitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.chartControls {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.chartContainer {
+  height: 200px;
+}
+
+/* ─── Averages Row ─── */
+.averagesRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--space-md);
+}
+
+.avgItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+}
+
+.avgValue {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.avgLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* ─── Timeline Panel ─── */
+.timelinePanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timelineTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.loadMoreBtn {
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-border);
+  transition: all var(--transition-fast);
+}
+
+.loadMoreBtn:hover {
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary);
+}
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .chartContainer {
+    height: 260px;
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1024px) {
+  .page {
+    gap: var(--space-xl);
+  }
+
+  .greeting {
+    font-size: var(--font-size-2xl);
+  }
+
+  .babyAge {
+    font-size: var(--font-size-md);
+  }
+
+  /* Two-column dashboard */
+  .dashboard {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-xl);
+    align-items: flex-start;
+  }
+
+  .mainPanel {
+    flex: 3;
+    min-width: 0;
+    gap: var(--space-lg);
+  }
+
+  /* Timeline matches mainPanel height exactly via JS-set var, fallback to viewport */
+  .timelinePanel {
+    flex: 0 0 380px;
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-lg);
+    overflow-y: auto;
+    position: sticky;
+    top: var(--space-xl);
+    height: var(--timeline-height, calc(100dvh - 2 * var(--space-xl)));
+  }
+
+  /* Show today summary */
+  .todaySummary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+  }
+
+  /* Chart + Radar side by side: 2/3 + 1/3 */
+  .chartRadarRow {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--space-lg);
+  }
+
+  .chartSection {
+    flex: 2;
+    padding: var(--space-lg);
+  }
+
+  .radarCol {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .radarCol > * {
+    width: 100%;
+    height: 100%;
+  }
+
+  .chartRadarRow {
+    align-items: stretch;
+  }
+
+  .chartHeader {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .chartTitle {
+    font-size: var(--font-size-lg);
+  }
+
+  .chartContainer {
+    height: 280px;
+  }
+
+  .averagesRow {
+    gap: var(--space-md);
+  }
+
+  .avgValue {
+    font-size: var(--font-size-xl);
+  }
+
+  .avgLabel {
+    font-size: var(--font-size-sm);
+  }
+
+  .timelineTitle {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* ─── Wide Desktop ─── */
+@media (min-width: 1400px) {
+  .greeting {
+    font-size: var(--font-size-3xl);
+  }
+
+  .chartContainer {
+    height: 340px;
+  }
+
+  .timelinePanel {
+    flex: 0 0 440px;
+  }
 }

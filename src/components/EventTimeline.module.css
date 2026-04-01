@@ -1,30 +1,76 @@
 .timeline {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
 }
 
+.row {
+  display: flex;
+  gap: 0;
+}
+
+/* ─── Hour column ─── */
+.hourCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 44px;
+  flex-shrink: 0;
+  position: relative;
+  padding-top: var(--space-md);
+}
+
+.hourLabel {
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  line-height: 1;
+  position: absolute;
+  top: var(--space-md);
+}
+
+.hourLine {
+  width: 1px;
+  flex: 1;
+  background: var(--color-border-light);
+  margin-top: var(--space-lg);
+}
+
+/* ─── Event item ─── */
 .item {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-md);
+  align-items: center;
+  gap: var(--space-sm);
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  padding: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   box-shadow: var(--shadow-sm);
   transition: box-shadow var(--transition-fast);
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
 }
 
 .item:hover {
   box-shadow: var(--shadow-md);
 }
 
+.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.clickable:active {
+  transform: scale(0.98);
+}
+
 .iconWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
   border-radius: var(--radius-full);
   flex-shrink: 0;
 }
@@ -34,7 +80,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-micro);
 }
 
 .header {
@@ -46,12 +92,18 @@
 .label {
   font-weight: 600;
   font-size: var(--font-size-sm);
+  color: var(--color-text);
 }
 
 .time {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   font-weight: 500;
+}
+
+.timeAgo {
+  font-weight: 400;
+  opacity: 0.7;
 }
 
 .detail {
@@ -60,13 +112,16 @@
 }
 
 .notes {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
   font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ago {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   white-space: nowrap;
   flex-shrink: 0;
@@ -74,7 +129,7 @@
 
 .empty {
   text-align: center;
-  padding: var(--space-2xl) var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }

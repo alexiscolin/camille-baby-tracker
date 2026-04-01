@@ -2,7 +2,7 @@
   "firestore": {
     "database": "(default)",
     "location": "asia-northeast2",
-    "rules": "firebase/firestore.rules",
+    "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
   "hosting": {

@@ -16,16 +16,21 @@
   --color-medication: #ef4444;
   --color-medication-bg: #fee2e2;
 
-  --color-bg: #fafafe;
+  --color-bg: #f8f9fc;
   --color-surface: #ffffff;
   --color-text: #1e1b4b;
   --color-text-secondary: #6b7280;
   --color-text-muted: #9ca3af;
   --color-border: #e5e7eb;
-  --color-border-light: #f3f4f6;
+  --color-border-light: #f0f1f5;
 
   --color-success: #10b981;
   --color-danger: #ef4444;
+
+  /* Sidebar (desktop) */
+  --color-sidebar: #1e1b4b;
+  --color-sidebar-muted: #7c7fa0;
+  --color-sidebar-hover: rgba(255, 255, 255, 0.08);
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -57,9 +62,30 @@
   --font-size-2xl: 1.5rem;
   --font-size-3xl: 2rem;
 
+  /* Micro sizes (below spacing scale) */
+  --space-micro: 1px;
+  --space-2xs: 2px;
+
+  /* Extra-small font sizes */
+  --font-size-2xs: 0.625rem;
+
+  /* Icon sizes */
+  --size-icon-sm: 32px;
+  --size-icon-md: 36px;
+  --size-icon-lg: 40px;
+
+  /* Overlay */
+  --color-overlay: rgba(0, 0, 0, 0.4);
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
+
+  /* Z-index scale */
+  --z-header: 100;
+  --z-sidebar: 100;
+  --z-modal: 300;
+  --z-banner: 200;
 }
 
 * {
@@ -96,6 +122,20 @@ button {
   font-size: inherit;
 }
 
+/* Global focus-visible for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Body scroll lock when modal is open */
+body.modal-open {
+  overflow: hidden;
+}
+
 input, select, textarea {
   font-family: inherit;
   font-size: inherit;
@@ -128,6 +168,34 @@ a {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+/* ─── Dark Mode ─── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f0e1a;
+    --color-surface: #1a1930;
+    --color-text: #e8e6f0;
+    --color-text-secondary: #9b99b0;
+    --color-text-muted: #6b6982;
+    --color-border: #2d2b45;
+    --color-border-light: #23213a;
+
+    --color-primary-bg: rgba(99, 102, 241, 0.15);
+    --color-feeding-bg: rgba(245, 158, 11, 0.15);
+    --color-pee-bg: rgba(59, 130, 246, 0.15);
+    --color-poop-bg: rgba(139, 92, 246, 0.15);
+    --color-medication-bg: rgba(239, 68, 68, 0.15);
+
+    --color-sidebar: #0a0919;
+    --color-sidebar-muted: #5a587a;
+    --color-sidebar-hover: rgba(255, 255, 255, 0.06);
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.4);
+    --color-overlay: rgba(0, 0, 0, 0.6);
+  }
 }
 
 ::-webkit-scrollbar {

@@ -11,7 +11,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { BabyEvent, EventType, FeedingEvent, PeeEvent, PoopEvent, MedicationEvent } from '../types/events';
+import type { BabyEvent, FeedingEvent, PeeEvent, PoopEvent, MedicationEvent } from '../types/events';
 
 type NewEvent =
   | Omit<FeedingEvent, 'id' | 'createdAt'>
@@ -57,6 +57,7 @@ export function subscribeToEvents(
   startDate: Date,
   endDate: Date,
   callback: (result: SubscriptionResult) => void,
+  onError?: (error: Error) => void,
 ) {
   const q = query(
     eventsCollection(familyId),
@@ -66,39 +67,25 @@ export function subscribeToEvents(
     orderBy('timestamp', 'desc'),
   );
 
-  return onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
-    const events = snapshot.docs.map(
-      (d) => ({ id: d.id, ...d.data() }) as BabyEvent,
-    );
-    callback({
-      events,
-      fromCache: snapshot.metadata.fromCache,
-      hasPendingWrites: snapshot.metadata.hasPendingWrites,
-    });
-  });
-}
-
-export function subscribeToEventsByType(
-  familyId: string,
-  babyId: string,
-  type: EventType,
-  startDate: Date,
-  endDate: Date,
-  callback: (events: BabyEvent[]) => void,
-) {
-  const q = query(
-    eventsCollection(familyId),
-    where('babyId', '==', babyId),
-    where('type', '==', type),
-    where('timestamp', '>=', Timestamp.fromDate(startDate)),
-    where('timestamp', '<=', Timestamp.fromDate(endDate)),
-    orderBy('timestamp', 'desc'),
+  return onSnapshot(
+    q,
+    { includeMetadataChanges: true },
+    (snapshot) => {
+      const events = snapshot.docs.map(
+        (d) => ({ id: d.id, ...d.data() }) as BabyEvent,
+      );
+      callback({
+        events,
+        fromCache: snapshot.metadata.fromCache,
+        hasPendingWrites: snapshot.metadata.hasPendingWrites,
+      });
+    },
+    (error) => {
+      if (onError) {
+        onError(error);
+      } else if (import.meta.env.DEV) {
+        console.error('Firestore subscription error:', error);
+      }
+    },
   );
-
-  return onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
-    const events = snapshot.docs.map(
-      (d) => ({ id: d.id, ...d.data() }) as BabyEvent,
-    );
-    callback(events);
-  });
 }

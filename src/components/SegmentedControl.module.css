@@ -1,0 +1,29 @@
+.segmented {
+  display: flex;
+  background: var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 2px;
+}
+
+.segmentBtn {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.segmentActive {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 1024px) {
+  .segmentBtn {
+    font-size: var(--font-size-sm);
+    padding: var(--space-sm) var(--space-md);
+  }
+}
