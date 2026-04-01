@@ -3,7 +3,6 @@ import {
   STOOL_COLORS,
   getStoolColorWarning,
   type StoolColorId,
-  type StoolColorWarning,
 } from './stool-color';
 
 describe('STOOL_COLORS', () => {
