@@ -6,6 +6,7 @@ import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { getStoolColorWarning, type StoolColorId } from '../utils/stool-color';
 import { ColorSelector } from './ColorSelector';
 import type { EventType, FeedingType, BabyEvent, FeedingEvent, PoopEvent, MedicationEvent } from '../types/events';
+import { getTimeString, addMinutesToTime, computeDurationMinutes } from '../utils/time';
 import styles from './EventModal.module.css';
 
 const MAX_TEXT_LENGTH = 200;
@@ -27,17 +28,6 @@ function sanitizeText(text: string, maxLength: number): string {
   return text.trim().slice(0, maxLength);
 }
 
-function parseDuration(value: string): number | undefined {
-  if (!value) return undefined;
-  const num = parseInt(value, 10);
-  if (isNaN(num) || num < 1 || num > MAX_DURATION_MINUTES) return undefined;
-  return num;
-}
-
-function getTimeString(date: Date): string {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
-
 export function EventModal(props: EventModalProps) {
   const { familyId, babyId, userId, onClose, mode, babyBirthDate } = props;
 
@@ -57,11 +47,12 @@ export function EventModal(props: EventModalProps) {
   const [rightCount, setRightCount] = useState(
     editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).rightCount : 0,
   );
-  const [duration, setDuration] = useState(
-    editEvent?.type === 'feeding' && (editEvent as FeedingEvent).durationMinutes
-      ? String((editEvent as FeedingEvent).durationMinutes)
-      : '',
-  );
+  const [endTime, setEndTime] = useState(() => {
+    if (editEvent?.type === 'feeding' && (editEvent as FeedingEvent).durationMinutes) {
+      return addMinutesToTime(getTimeString(targetDate), (editEvent as FeedingEvent).durationMinutes!);
+    }
+    return '';
+  });
   const [infection, setInfection] = useState(
     editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).infection ?? false : false,
   );
@@ -158,7 +149,7 @@ export function EventModal(props: EventModalProps) {
           updates.rightCount = rightCount;
           updates.infection = infection;
           updates.engorgement = engorgement;
-          const dur = parseDuration(duration);
+          const dur = computeDurationMinutes(time, endTime, MAX_DURATION_MINUTES);
           if (dur !== undefined) updates.durationMinutes = dur;
         } else if (selectedType === 'poop') {
           updates.color = stoolColor ?? '';
@@ -199,7 +190,7 @@ export function EventModal(props: EventModalProps) {
             infection,
             engorgement,
           };
-          const dur = parseDuration(duration);
+          const dur = computeDurationMinutes(time, endTime, MAX_DURATION_MINUTES);
           if (dur !== undefined) feedingData.durationMinutes = dur;
           await addEvent(familyId, feedingData as Parameters<typeof addEvent>[1]);
         } else if (selectedType === 'medication') {
@@ -403,14 +394,12 @@ export function EventModal(props: EventModalProps) {
                   </div>
                 )}
                 <div className={styles.field}>
-                  <label className={styles.label}>Duration (min)</label>
+                  <label className={styles.label} htmlFor="event-end-time">End time (optional)</label>
                   <input
-                    type="number"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder="Optional"
-                    min="1"
-                    max={MAX_DURATION_MINUTES}
+                    id="event-end-time"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
                   />
                 </div>
                 <div className={styles.checkboxGroup}>

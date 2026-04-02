@@ -139,7 +139,8 @@ describe('EventModal', () => {
         <EventModal {...baseProps} mode="edit" event={event} />,
       );
 
-      expect(screen.getByDisplayValue('15')).toBeInTheDocument();
+      // End time = start (09:00) + duration (15min) = 09:15
+      expect(screen.getByDisplayValue('09:15')).toBeInTheDocument();
       expect(screen.getByLabelText(/infection/i)).toBeChecked();
       expect(screen.getByLabelText(/engorgement/i)).not.toBeChecked();
       // Right count should be 1 (from makeFeedingEvent)
@@ -194,6 +195,61 @@ describe('EventModal', () => {
       await user.click(screen.getByText('Yes, delete'));
 
       expect(mockDeleteEvent).toHaveBeenCalledWith('fam-1', 'evt-1');
+    });
+
+    it('should compute duration from start and end time when saving feeding', async () => {
+      const user = userEvent.setup();
+      const startDate = new Date(2026, 3, 1, 14, 0); // 14:00
+      render(
+        <EventModal {...baseProps} mode="add" date={startDate} />,
+      );
+
+      await user.click(screen.getByText('Feedings'));
+
+      // Set end time to 14:25 → 25 min duration
+      const endTimeInput = screen.getByLabelText(/end time/i);
+      await user.clear(endTimeInput);
+      await user.type(endTimeInput, '14:25');
+      await user.click(screen.getByText('Save'));
+
+      expect(mockAddEvent).toHaveBeenCalledOnce();
+      const savedData = mockAddEvent.mock.calls[0][1];
+      expect(savedData.durationMinutes).toBe(25);
+    });
+
+    it('should handle midnight crossing for end time', async () => {
+      const user = userEvent.setup();
+      const startDate = new Date(2026, 3, 1, 23, 50); // 23:50
+      render(
+        <EventModal {...baseProps} mode="add" date={startDate} />,
+      );
+
+      await user.click(screen.getByText('Feedings'));
+
+      // Set end time to 00:10 → 20 min duration (crosses midnight)
+      const endTimeInput = screen.getByLabelText(/end time/i);
+      await user.clear(endTimeInput);
+      await user.type(endTimeInput, '00:10');
+      await user.click(screen.getByText('Save'));
+
+      expect(mockAddEvent).toHaveBeenCalledOnce();
+      const savedData = mockAddEvent.mock.calls[0][1];
+      expect(savedData.durationMinutes).toBe(20);
+    });
+
+    it('should not save duration when end time is empty', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Feedings'));
+      // Don't set end time — leave it empty
+      await user.click(screen.getByText('Save'));
+
+      expect(mockAddEvent).toHaveBeenCalledOnce();
+      const savedData = mockAddEvent.mock.calls[0][1];
+      expect(savedData.durationMinutes).toBeUndefined();
     });
 
     it('should cancel delete when cancel is clicked', async () => {
