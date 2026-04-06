@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { Timestamp } from 'firebase/firestore';
 import { buildChartData } from './chart-data';
-import type { BabyEvent } from '../types/events';
+import type { BabyEvent, EventType } from '../types/events';
 
-function makeEvent(type: 'feeding' | 'pee' | 'poop' | 'medication', dateStr: string): BabyEvent {
+function makeEvent(type: EventType, dateStr: string): BabyEvent {
   const date = new Date(dateStr);
   return {
     id: `${type}-${dateStr}`,
@@ -65,6 +65,17 @@ describe('buildChartData', () => {
     const result = buildChartData(events, start, end);
     expect(result).toHaveLength(1);
     expect(result[0].feeding).toBe(1);
+  });
+
+  it('should count bath events', () => {
+    const start = new Date('2025-03-01');
+    const end = new Date('2025-03-01');
+    const events = [
+      makeEvent('bath', '2025-03-01T18:00:00'),
+      makeEvent('bath', '2025-03-01T19:00:00'),
+    ];
+    const result = buildChartData(events, start, end);
+    expect(result[0].bath).toBe(2);
   });
 
   it('should have correct label format', () => {

@@ -8,6 +8,8 @@ import { LoginPage } from './pages/LoginPage';
 import { SetupPage } from './pages/SetupPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { StatsPage } from './pages/StatsPage';
+import { GrowthPage } from './pages/GrowthPage';
+import { SettingsPage } from './pages/SettingsPage';
 import type { Family } from './types/events';
 
 function AppContent() {
@@ -52,6 +54,27 @@ function AppContent() {
           path="/stats"
           element={
             <StatsPage
+              familyId={family.id}
+              babyId={babyId}
+              baby={baby}
+            />
+          }
+        />
+        <Route
+          path="/growth"
+          element={
+            <GrowthPage
+              familyId={family.id}
+              babyId={babyId}
+              userId={user.uid}
+              baby={baby}
+            />
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <SettingsPage
               familyId={family.id}
               babyId={babyId}
               baby={baby}

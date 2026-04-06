@@ -1,6 +1,7 @@
 import type { DailySummary, EventType } from '../types/events';
 import type { ChartDataPoint } from './chart-data';
 import { EVENT_CONFIG, EVENT_TYPES } from './event-config';
+import { createEmptySummary } from './summary';
 
 export type RangeType = '7d' | '14d' | '30d';
 export type ChartType = 'bar' | 'line';
@@ -22,18 +23,20 @@ export const TOOLTIP_STYLE = {
 } as const;
 
 export function computeAverageSummary(chartData: ChartDataPoint[]): DailySummary {
-  if (chartData.length === 0) return { feeding: 0, pee: 0, poop: 0, medication: 0 };
+  if (chartData.length === 0) return createEmptySummary();
   const len = chartData.length;
-  return {
-    feeding: Number((chartData.reduce((s, d) => s + d.feeding, 0) / len).toFixed(1)),
-    pee: Number((chartData.reduce((s, d) => s + d.pee, 0) / len).toFixed(1)),
-    poop: Number((chartData.reduce((s, d) => s + d.poop, 0) / len).toFixed(1)),
-    medication: Number((chartData.reduce((s, d) => s + d.medication, 0) / len).toFixed(1)),
-  };
+  return Object.fromEntries(
+    EVENT_TYPES.map((type) => [
+      type,
+      Number((chartData.reduce((s, d) => s + d[type], 0) / len).toFixed(1)),
+    ]),
+  ) as DailySummary;
 }
 
 export function computeDailyAverages(chartData: ChartDataPoint[]): Record<string, string> {
-  if (chartData.length === 0) return { feeding: '0', pee: '0', poop: '0', medication: '0' };
+  if (chartData.length === 0) {
+    return Object.fromEntries(EVENT_TYPES.map((t) => [t, '0'])) as Record<string, string>;
+  }
   return Object.fromEntries(
     EVENT_TYPES.map((type) => {
       const total = chartData.reduce((sum, d) => sum + d[type], 0);

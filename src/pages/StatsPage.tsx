@@ -25,6 +25,7 @@ import {
   computeDailyAverages,
   getRangeDays,
 } from '../utils/chart-helpers';
+import { EVENT_TYPES } from '../utils/event-config';
 import type { RangeType, ChartType } from '../utils/chart-helpers';
 import { CacheIndicator } from '../components/CacheIndicator';
 import { SegmentedControl } from '../components/SegmentedControl';
@@ -102,7 +103,7 @@ export function StatsPage({ familyId, babyId, baby }: StatsPageProps) {
     let max = 0;
     let maxDay = chartData[0];
     for (const d of chartData) {
-      const total = d.feeding + d.pee + d.poop + d.medication;
+      const total = EVENT_TYPES.reduce<number>((sum, type) => sum + d[type], 0);
       if (total > max) { max = total; maxDay = d; }
     }
     return { label: maxDay.label, count: max };

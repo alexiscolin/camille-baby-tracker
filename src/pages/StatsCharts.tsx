@@ -89,10 +89,9 @@ export const StatsCharts = memo(function StatsCharts({
                 <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
-                <Bar dataKey="feeding" fill={CHART_COLORS.feeding} radius={[4, 4, 0, 0]} name="Feedings" />
-                <Bar dataKey="pee" fill={CHART_COLORS.pee} radius={[4, 4, 0, 0]} name="Pees" />
-                <Bar dataKey="poop" fill={CHART_COLORS.poop} radius={[4, 4, 0, 0]} name="Poops" />
-                <Bar dataKey="medication" fill={CHART_COLORS.medication} radius={[4, 4, 0, 0]} name="Meds" />
+                {EVENT_TYPES.map((type) => (
+                  <Bar key={type} dataKey={type} fill={CHART_COLORS[type]} radius={[4, 4, 0, 0]} name={EVENT_CONFIG[type].label} />
+                ))}
               </BarChart>
             ) : (
               <LineChart data={chartData} margin={MARGIN}>
@@ -101,10 +100,9 @@ export const StatsCharts = memo(function StatsCharts({
                 <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
-                <Line type="monotone" dataKey="feeding" stroke={CHART_COLORS.feeding} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name="Feedings" />
-                <Line type="monotone" dataKey="pee" stroke={CHART_COLORS.pee} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name="Pees" />
-                <Line type="monotone" dataKey="poop" stroke={CHART_COLORS.poop} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name="Poops" />
-                <Line type="monotone" dataKey="medication" stroke={CHART_COLORS.medication} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name="Meds" />
+                {EVENT_TYPES.map((type) => (
+                  <Line key={type} type="monotone" dataKey={type} stroke={CHART_COLORS[type]} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name={EVENT_CONFIG[type].label} />
+                ))}
               </LineChart>
             )}
           </ResponsiveContainer>
@@ -126,10 +124,9 @@ export const StatsCharts = memo(function StatsCharts({
               <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
-              <Area type="monotone" dataKey="feeding" stackId="1" stroke={CHART_COLORS.feeding} fill={CHART_COLORS.feeding} fillOpacity={0.6} name="Feedings" />
-              <Area type="monotone" dataKey="pee" stackId="1" stroke={CHART_COLORS.pee} fill={CHART_COLORS.pee} fillOpacity={0.5} name="Pees" />
-              <Area type="monotone" dataKey="poop" stackId="1" stroke={CHART_COLORS.poop} fill={CHART_COLORS.poop} fillOpacity={0.5} name="Poops" />
-              <Area type="monotone" dataKey="medication" stackId="1" stroke={CHART_COLORS.medication} fill={CHART_COLORS.medication} fillOpacity={0.5} name="Meds" />
+              {EVENT_TYPES.map((type, i) => (
+                <Area key={type} type="monotone" dataKey={type} stackId="1" stroke={CHART_COLORS[type]} fill={CHART_COLORS[type]} fillOpacity={i === 0 ? 0.6 : 0.5} name={EVENT_CONFIG[type].label} />
+              ))}
             </AreaChart>
           </ResponsiveContainer>
         </div>

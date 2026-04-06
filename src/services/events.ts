@@ -11,16 +11,18 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { BabyEvent, FeedingEvent, PeeEvent, PoopEvent, MedicationEvent } from '../types/events';
+import type { BabyEvent, FeedingEvent, PeeEvent, PoopEvent, MedicationEvent, BathEvent } from '../types/events';
 import { normalizeFeedingEvent } from '../utils/feeding-helpers';
+import { EVENT_TYPES } from '../utils/event-config';
 
 type NewEvent =
   | Omit<FeedingEvent, 'id' | 'createdAt'>
   | Omit<PeeEvent, 'id' | 'createdAt'>
   | Omit<PoopEvent, 'id' | 'createdAt'>
-  | Omit<MedicationEvent, 'id' | 'createdAt'>;
+  | Omit<MedicationEvent, 'id' | 'createdAt'>
+  | Omit<BathEvent, 'id' | 'createdAt'>;
 
-const VALID_EVENT_TYPES = new Set(['feeding', 'pee', 'poop', 'medication']);
+const VALID_EVENT_TYPES = new Set<string>(EVENT_TYPES);
 
 function isValidEventData(data: Record<string, unknown>): boolean {
   return (

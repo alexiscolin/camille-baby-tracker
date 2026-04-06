@@ -1,14 +1,8 @@
 import { format, eachDayOfInterval } from 'date-fns';
-import type { BabyEvent, EventType } from '../types/events';
+import type { BabyEvent, EventType, DailySummary } from '../types/events';
+import { createEmptySummary } from './summary';
 
-export interface ChartDataPoint {
-  date: string;
-  label: string;
-  feeding: number;
-  pee: number;
-  poop: number;
-  medication: number;
-}
+export type ChartDataPoint = { date: string; label: string } & DailySummary;
 
 export function buildChartData(
   events: BabyEvent[],
@@ -21,7 +15,7 @@ export function buildChartData(
 
   for (const day of days) {
     const key = format(day, 'yyyy-MM-dd');
-    grouped.set(key, { feeding: 0, pee: 0, poop: 0, medication: 0 });
+    grouped.set(key, createEmptySummary());
   }
 
   for (const event of events) {

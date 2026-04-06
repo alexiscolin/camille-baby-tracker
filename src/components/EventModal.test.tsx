@@ -94,6 +94,7 @@ describe('EventModal', () => {
       expect(screen.getByText('Pees')).toBeInTheDocument();
       expect(screen.getByText('Poops')).toBeInTheDocument();
       expect(screen.getByText('Meds')).toBeInTheDocument();
+      expect(screen.getByText('Baths')).toBeInTheDocument();
     });
 
     it('should show form after selecting a type', async () => {
@@ -105,6 +106,20 @@ describe('EventModal', () => {
       await user.click(screen.getByText('Pees'));
       expect(screen.getByText('Save')).toBeInTheDocument();
       expect(screen.getByLabelText(/time/i)).toBeInTheDocument();
+    });
+
+    it('should save a new bath event', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} />,
+      );
+
+      await user.click(screen.getByText('Baths'));
+      await user.click(screen.getByText('Save'));
+
+      expect(mockAddEvent).toHaveBeenCalledOnce();
+      const savedData = mockAddEvent.mock.calls[0][1];
+      expect(savedData.type).toBe('bath');
     });
 
     it('should save a new pee event', async () => {

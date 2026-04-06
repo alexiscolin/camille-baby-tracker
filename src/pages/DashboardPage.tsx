@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback, lazy, Suspense } fro
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 import { useToday } from '../hooks/useToday';
 import { useRangeEvents } from '../hooks/useRangeEvents';
+import { useMeasurements } from '../hooks/useMeasurements';
 import { groupEventsByDay } from '../utils/event-groups';
 import { buildChartData } from '../utils/chart-data';
 import { getDayKey, parseDayKey, formatBabyAge } from '../utils/date';
@@ -86,6 +87,17 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
   const rangeStart = useMemo(() => startOfDay(subDays(today, maxDays)), [today, maxDays]);
   const rangeEnd = useMemo(() => endOfDay(today), [today]);
   const { events: allEvents, loading, fromCache, hasPendingWrites } = useRangeEvents(familyId, babyId, rangeStart, rangeEnd);
+  const { measurements } = useMeasurements(familyId, babyId);
+
+  const lastWeight = useMemo(() => {
+    const weights = measurements.filter((m) => m.type === 'weight');
+    return weights.length > 0 ? weights[weights.length - 1] : null;
+  }, [measurements]);
+
+  const lastHeight = useMemo(() => {
+    const heights = measurements.filter((m) => m.type === 'height');
+    return heights.length > 0 ? heights[heights.length - 1] : null;
+  }, [measurements]);
 
   // Chart data: filter events to chart range
   const chartStart = useMemo(() => startOfDay(subDays(today, chartDays)), [today, chartDays]);
@@ -151,7 +163,11 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
         </h1>
         <div className={styles.headerRight}>
           {baby && (
-            <span className={styles.babyAge}>{formatBabyAge(baby.birthDate.toDate())}</span>
+            <span className={styles.babyAge}>
+              {formatBabyAge(baby.birthDate.toDate())}
+              {lastWeight && ` · ${lastWeight.value} kg`}
+              {lastHeight && ` · ${lastHeight.value} cm`}
+            </span>
           )}
           <CacheIndicator fromCache={fromCache} hasPendingWrites={hasPendingWrites} />
         </div>
@@ -192,7 +208,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
                     </span>
                   </h2>
                   <span className={styles.chartSubtitle}>
-                    Grand total: {chartData.reduce((s, d) => s + d.feeding + d.pee + d.poop + d.medication, 0)} events
+                    Grand total: {chartData.reduce((s, d) => s + EVENT_TYPES.reduce<number>((sum, type) => sum + d[type], 0), 0)} events
                   </span>
                 </div>
                 <div className={styles.chartControls}>

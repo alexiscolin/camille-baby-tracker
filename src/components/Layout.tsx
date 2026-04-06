@@ -3,6 +3,8 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   BarChart3,
+  TrendingUp,
+  Settings,
   LogOut,
 } from 'lucide-react';
 import { signOut } from '../services/auth';
@@ -44,6 +46,26 @@ export function Layout({ children, babyName }: LayoutProps) {
             aria-label="Statistics"
           >
             <BarChart3 size={22} />
+
+          </NavLink>
+          <NavLink
+            to="/growth"
+            className={({ isActive }) =>
+              `${styles.sidebarItem} ${isActive ? styles.sidebarActive : ''}`
+            }
+            aria-label="Growth"
+          >
+            <TrendingUp size={22} />
+
+          </NavLink>
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `${styles.sidebarItem} ${isActive ? styles.sidebarActive : ''}`
+            }
+            aria-label="Settings"
+          >
+            <Settings size={22} />
 
           </NavLink>
         </nav>
@@ -92,6 +114,24 @@ export function Layout({ children, babyName }: LayoutProps) {
         >
           <BarChart3 size={22} />
           <span>Stats</span>
+        </NavLink>
+        <NavLink
+          to="/growth"
+          className={({ isActive }) =>
+            `${styles.navItem} ${isActive ? styles.active : ''}`
+          }
+        >
+          <TrendingUp size={22} />
+          <span>Growth</span>
+        </NavLink>
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `${styles.navItem} ${isActive ? styles.active : ''}`
+          }
+        >
+          <Settings size={22} />
+          <span>Settings</span>
         </NavLink>
       </nav>
     </div>

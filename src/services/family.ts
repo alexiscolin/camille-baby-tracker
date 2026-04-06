@@ -11,7 +11,7 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Family, Baby } from '../types/events';
+import type { Family, Baby, BabySex } from '../types/events';
 
 export async function getFamilyForUser(userId: string): Promise<Family | null> {
   const q = query(
@@ -46,18 +46,29 @@ export async function getBaby(
   return { id: d.id, ...d.data() } as Baby;
 }
 
+export async function updateBaby(
+  familyId: string,
+  babyId: string,
+  data: Partial<Pick<Baby, 'firstName' | 'sex'>>,
+) {
+  return updateDoc(doc(db, 'families', familyId, 'babies', babyId), data);
+}
+
 export async function addBaby(
   familyId: string,
   firstName: string,
   birthDate: Date,
+  sex?: BabySex,
 ): Promise<string> {
+  const data: Record<string, unknown> = {
+    firstName,
+    birthDate: Timestamp.fromDate(birthDate),
+    createdAt: Timestamp.now(),
+  };
+  if (sex) data.sex = sex;
   const docRef = await addDoc(
     collection(db, 'families', familyId, 'babies'),
-    {
-      firstName,
-      birthDate: Timestamp.fromDate(birthDate),
-      createdAt: Timestamp.now(),
-    },
+    data,
   );
   await updateDoc(doc(db, 'families', familyId), {
     babies: arrayUnion(docRef.id),

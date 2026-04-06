@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from 'recharts';
 import type { DailySummary } from '../types/events';
+import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 
 import styles from './ActivityRadar.module.css';
 
@@ -18,12 +19,12 @@ interface ActivityRadarProps {
 }
 
 export function ActivityRadar({ today, average, title = 'Today vs Average' }: ActivityRadarProps) {
-  const data = [
-    { subject: 'Feedings', today: today.feeding, average: Number(average.feeding), fullMark: Math.max(today.feeding, Number(average.feeding), 5) + 2 },
-    { subject: 'Pees', today: today.pee, average: Number(average.pee), fullMark: Math.max(today.pee, Number(average.pee), 5) + 2 },
-    { subject: 'Poops', today: today.poop, average: Number(average.poop), fullMark: Math.max(today.poop, Number(average.poop), 3) + 2 },
-    { subject: 'Meds', today: today.medication, average: Number(average.medication), fullMark: Math.max(today.medication, Number(average.medication), 2) + 2 },
-  ];
+  const data = EVENT_TYPES.map((type) => ({
+    subject: EVENT_CONFIG[type].label,
+    today: today[type],
+    average: Number(average[type]),
+    fullMark: Math.max(today[type], Number(average[type]), 3) + 2,
+  }));
 
   return (
     <div className={styles.container}>

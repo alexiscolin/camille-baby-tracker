@@ -5,6 +5,8 @@ import {
   computeDailyAverages,
   CHART_COLORS,
 } from './chart-helpers';
+import { createEmptySummary } from './summary';
+import { EVENT_TYPES } from './event-config';
 import type { ChartDataPoint } from './chart-data';
 
 describe('getRangeDays', () => {
@@ -23,10 +25,9 @@ describe('getRangeDays', () => {
 
 describe('CHART_COLORS', () => {
   it('should have all event types', () => {
-    expect(CHART_COLORS).toHaveProperty('feeding');
-    expect(CHART_COLORS).toHaveProperty('pee');
-    expect(CHART_COLORS).toHaveProperty('poop');
-    expect(CHART_COLORS).toHaveProperty('medication');
+    for (const type of EVENT_TYPES) {
+      expect(CHART_COLORS).toHaveProperty(type);
+    }
   });
 });
 
@@ -34,10 +35,7 @@ function makeChartPoint(overrides: Partial<ChartDataPoint> = {}): ChartDataPoint
   return {
     date: '2025-03-01',
     label: 'Mar 1',
-    feeding: 0,
-    pee: 0,
-    poop: 0,
-    medication: 0,
+    ...createEmptySummary(),
     ...overrides,
   };
 }
@@ -45,7 +43,7 @@ function makeChartPoint(overrides: Partial<ChartDataPoint> = {}): ChartDataPoint
 describe('computeAverageSummary', () => {
   it('should return zeros for empty data', () => {
     const result = computeAverageSummary([]);
-    expect(result).toEqual({ feeding: 0, pee: 0, poop: 0, medication: 0 });
+    expect(result).toEqual(createEmptySummary());
   });
 
   it('should compute correct averages', () => {

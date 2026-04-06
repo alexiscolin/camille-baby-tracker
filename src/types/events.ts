@@ -1,6 +1,6 @@
 import type { Timestamp } from 'firebase/firestore';
 
-export type EventType = 'feeding' | 'pee' | 'poop' | 'medication';
+export type EventType = 'feeding' | 'pee' | 'poop' | 'medication' | 'bath';
 
 export type FeedingType = 'breast' | 'bottle';
 
@@ -43,12 +43,19 @@ export interface MedicationEvent extends BaseEvent {
   dose: string;
 }
 
-export type BabyEvent = FeedingEvent | PeeEvent | PoopEvent | MedicationEvent;
+export interface BathEvent extends BaseEvent {
+  type: 'bath';
+}
+
+export type BabyEvent = FeedingEvent | PeeEvent | PoopEvent | MedicationEvent | BathEvent;
+
+export type BabySex = 'male' | 'female';
 
 export interface Baby {
   id: string;
   firstName: string;
   birthDate: Timestamp;
+  sex?: BabySex;
   createdAt: Timestamp;
 }
 
@@ -60,9 +67,4 @@ export interface Family {
   createdAt: Timestamp;
 }
 
-export interface DailySummary {
-  feeding: number;
-  pee: number;
-  poop: number;
-  medication: number;
-}
+export type DailySummary = Record<EventType, number>;

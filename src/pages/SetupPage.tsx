@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Baby, AlertCircle } from 'lucide-react';
 import { createFamily, addBaby } from '../services/family';
-import type { Family } from '../types/events';
+import type { Family, BabySex } from '../types/events';
 import styles from './SetupPage.module.css';
 
 interface SetupPageProps {
@@ -13,6 +13,7 @@ export function SetupPage({ userId, onComplete }: SetupPageProps) {
   const [step, setStep] = useState<'family' | 'baby'>('family');
   const [familyName, setFamilyName] = useState('');
   const [babyName, setBabyName] = useState('');
+  const [babySex, setBabySex] = useState<BabySex | ''>('');
   const [birthDate, setBirthDate] = useState('');
   const [familyId, setFamilyId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ export function SetupPage({ userId, onComplete }: SetupPageProps) {
     setError('');
     setLoading(true);
     try {
-      const babyId = await addBaby(familyId, babyName.trim(), new Date(birthDate));
+      const babyId = await addBaby(familyId, babyName.trim(), new Date(birthDate), babySex || undefined);
       onComplete({
         id: familyId,
         name: familyName,
@@ -103,6 +104,17 @@ export function SetupPage({ userId, onComplete }: SetupPageProps) {
                 required
                 maxLength={100}
               />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Sex (optional, for growth curves)</label>
+              <select
+                value={babySex}
+                onChange={(e) => setBabySex(e.target.value as BabySex | '')}
+              >
+                <option value="">— Select —</option>
+                <option value="male">Boy</option>
+                <option value="female">Girl</option>
+              </select>
             </div>
             <div className={styles.field}>
               <label className={styles.label}>Birth date</label>
