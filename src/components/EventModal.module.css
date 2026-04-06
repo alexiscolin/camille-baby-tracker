@@ -118,6 +118,13 @@
   gap: var(--space-xs);
 }
 
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  max-width: 100%;
+}
+
 .label {
   font-size: var(--font-size-sm);
   font-weight: 500;

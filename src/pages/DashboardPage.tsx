@@ -286,7 +286,12 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
                     date={date}
                     events={dayEvents}
                     onEventClick={(event) => setEditEvent(event)}
-                    onAddClick={() => setAddDate(new Date())}
+                    onAddClick={() => {
+                      const now = new Date();
+                      const eventDate = new Date(date);
+                      eventDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
+                      setAddDate(eventDate);
+                    }}
                     showHourMarkers
                   />
                 </div>
