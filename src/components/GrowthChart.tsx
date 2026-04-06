@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -122,9 +121,9 @@ export function GrowthChart({ metric, sex, birthDate, measurements }: GrowthChar
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(value: number, name: string) => {
+          formatter={(value, name) => {
             if (name === 'baby') return [`${value} ${unit}`, `${label}`];
-            return [`${value} ${unit}`, name];
+            return [`${value} ${unit}`, String(name)];
           }}
           labelFormatter={(month) => `${Number(month).toFixed(1)} months`}
         />
