@@ -1,10 +1,22 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { Baby as BabyIcon, AlertCircle, Check, Settings } from 'lucide-react';
+import { Baby as BabyIcon, AlertCircle, Check, Settings, Download } from 'lucide-react';
 import { updateBaby } from '../services/family';
 import { formatBabyAge } from '../utils/date';
+import { useRangeEvents } from '../hooks/useRangeEvents';
+import { useFoods } from '../hooks/useFoods';
+import { buildReactionCsv } from '../utils/reaction-export';
 import type { Baby, BabySex } from '../types/events';
 import styles from './SettingsPage.module.css';
+
+function downloadCsv(csv: string, filename: string) {
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 interface SettingsPageProps {
   familyId: string;
@@ -18,6 +30,23 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+
+  // Whole history, not a rolling window: this export answers "what happened
+  // since day one", so the range runs from birth to the moment the page
+  // opened rather than the last-N-days window the dashboard uses.
+  const rangeStart = useMemo(
+    () => baby?.birthDate.toDate() ?? new Date(0),
+    [baby?.birthDate],
+  );
+  const rangeEnd = useMemo(() => new Date(), []);
+  const { events } = useRangeEvents(familyId, babyId, rangeStart, rangeEnd);
+  const { foods } = useFoods(familyId);
+  const foodsById = useMemo(() => new Map(foods.map((f) => [f.id, f])), [foods]);
+  const reactionCsv = useMemo(
+    () => buildReactionCsv(events, foodsById),
+    [events, foodsById],
+  );
+  const hasReactions = reactionCsv.trim().split('\n').length > 1;
 
   const hasChanges = firstName.trim() !== (baby?.firstName ?? '')
     || (sex || undefined) !== baby?.sex;
@@ -118,6 +147,27 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
             </div>
           )}
         </form>
+      </div>
+
+      {/* Reaction History */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <Download size={20} className={styles.sectionIcon} />
+          Reaction History
+        </h2>
+        <p className={styles.hint}>
+          Export every logged reaction as a CSV for a doctor's visit.
+        </p>
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.saveBtn}
+            disabled={!hasReactions}
+            onClick={() => downloadCsv(reactionCsv, `reaction-history-${format(new Date(), 'yyyy-MM-dd')}.csv`)}
+          >
+            {hasReactions ? 'Download CSV' : 'No reactions logged'}
+          </button>
+        </div>
       </div>
 
       {/* App Info */}
