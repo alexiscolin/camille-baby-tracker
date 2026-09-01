@@ -64,6 +64,32 @@ describe('rankNextFoods', () => {
     expect(result.map((c) => c.seed.id)).toEqual(['daikon']);
   });
 
+  it('should alternate groups among tied candidates instead of clustering them', () => {
+    const result = rankNextFoods({ ...base, seed: [
+      seed({ id: 'udon', group: 'grain', allergens: ['wheat'] }),
+      seed({ id: 'somen', group: 'grain', allergens: ['wheat'] }),
+      seed({ id: 'shokupan', group: 'grain', allergens: ['wheat'] }),
+      seed({ id: 'egg-yolk', group: 'protein', allergens: ['egg'] }),
+      seed({ id: 'whole-egg', group: 'protein', allergens: ['egg'] }),
+      seed({ id: 'omelette', group: 'protein', allergens: ['egg'] }),
+    ] });
+    expect(result.map((c) => c.seed.group)).toEqual(
+      ['grain', 'protein', 'grain', 'protein', 'grain', 'protein'],
+    );
+    // Order within a group is untouched: only the interleaving moved.
+    expect(result.filter((c) => c.seed.group === 'grain').map((c) => c.seed.id))
+      .toEqual(['udon', 'somen', 'shokupan']);
+  });
+
+  it('should keep a higher-scoring candidate ahead of a more diverse one', () => {
+    const result = rankNextFoods({ ...base, seed: [
+      seed({ id: 'udon', group: 'grain', allergens: ['wheat'] }),
+      seed({ id: 'somen', group: 'grain', allergens: ['wheat'] }),
+      seed({ id: 'daikon', group: 'vegetable' }),
+    ] });
+    expect(result.map((c) => c.seed.id)).toEqual(['udon', 'somen', 'daikon']);
+  });
+
   it('should rank an un-introduced mandatory allergen first', () => {
     const result = rankNextFoods({ ...base,
       seed: [seed({ id: 'daikon' }), seed({ id: 'egg-yolk', allergens: ['egg'] })] });

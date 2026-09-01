@@ -217,10 +217,41 @@ export function rankNextFoods(input: NextFoodsInput): NextFoodCandidate[] {
       return heldBy ? { seed: s, score, reasons, heldBy } : { seed: s, score, reasons };
     });
 
-  return candidates.sort((a, b) => {
+  candidates.sort((a, b) => {
     if (Boolean(a.heldBy) !== Boolean(b.heldBy)) return a.heldBy ? 1 : -1;
     return b.score - a.score;
   });
+
+  return spreadGroups(candidates);
+}
+
+/** Two candidates the sort could not separate, so we are free to reorder them. */
+function isTied(a: NextFoodCandidate, b: NextFoodCandidate): boolean {
+  return a.score === b.score && Boolean(a.heldBy) === Boolean(b.heldBy);
+}
+
+/**
+ * Every un-introduced mandatory allergen scores the same, so the raw sort hands
+ * back five wheat products in a row — five ways of saying one thing. Within a
+ * block of tied candidates, take the first whose group differs from the one just
+ * placed; order is otherwise untouched, so no candidate ever overtakes a
+ * higher-scoring one.
+ */
+function spreadGroups(sorted: NextFoodCandidate[]): NextFoodCandidate[] {
+  const remaining = [...sorted];
+  const out: NextFoodCandidate[] = [];
+  let lastGroup: FoodGroup | null = null;
+
+  while (remaining.length > 0) {
+    const index = remaining.findIndex(
+      (c) => isTied(c, remaining[0]) && c.seed.group !== lastGroup,
+    );
+    const [picked] = remaining.splice(index === -1 ? 0 : index, 1);
+    out.push(picked);
+    lastGroup = picked.seed.group;
+  }
+
+  return out;
 }
 
 /**

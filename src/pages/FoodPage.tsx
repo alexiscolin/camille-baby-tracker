@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { subDays, startOfDay, endOfDay, format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 import { ShieldAlert, History, ChevronDown } from 'lucide-react';
 import { useToday } from '../hooks/useToday';
+import { FOOD_SEED } from '../data/food-seed';
 import { useFoods } from '../hooks/useFoods';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { CacheIndicator } from '../components/CacheIndicator';
@@ -36,19 +37,9 @@ const RECENT_CHIP_LIMIT = 12;
 
 export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
   const today = useToday();
-  const [seed, setSeed] = useState<readonly SeedFood[] | null>(null);
   const [showOptions, setShowOptions] = useState(false);
   const [logTarget, setLogTarget] = useState<SeedFood | null>(null);
   const [openAllergen, setOpenAllergen] = useState<AllergenStatus | null>(null);
-
-  // The seed table is ~290 rows; keep it out of the initial bundle.
-  useEffect(() => {
-    let cancelled = false;
-    void import('../data/food-seed').then((m) => {
-      if (!cancelled) setSeed(m.FOOD_SEED);
-    });
-    return () => { cancelled = true; };
-  }, []);
 
   const { foods, loading, fromCache, hasPendingWrites } = useFoods(familyId);
 
@@ -75,8 +66,8 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
   const introWindow = useMemo(() => getIntroductionWindow(foods, today), [foods, today]);
 
   const candidates = useMemo(
-    () => (seed && stage ? rankNextFoods({ seed, foods, stage, now: today, recentNutrients }) : []),
-    [seed, foods, stage, today, recentNutrients],
+    () => (stage ? rankNextFoods({ seed: FOOD_SEED, foods, stage, now: today, recentNutrients }) : []),
+    [foods, stage, today, recentNutrients],
   );
 
   const hero = candidates.find((c) => !c.heldBy) ?? null;
@@ -148,8 +139,6 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
             <p className={styles.heroName}>Weaning normally starts around 5 months</p>
             <p className={styles.heroNote}>Suggestions appear once the first stage begins.</p>
           </>
-        ) : !seed ? (
-          <p className={styles.heroNote}>Loading the food table...</p>
         ) : hero ? (
           <>
             <span className={styles.kicker}>Try next</span>
