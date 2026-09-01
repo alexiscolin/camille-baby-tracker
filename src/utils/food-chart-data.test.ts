@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Timestamp } from 'firebase/firestore';
 import {
   buildGroupIntake, buildVarietyCurve, buildFirstExposure, buildNutrientCoverage,
+  buildFirstExposureFromCatalog,
 } from './food-chart-data';
 import type { BabyEvent } from '../types/events';
 import type { Food, Nutrients } from '../types/food';
@@ -109,5 +110,53 @@ describe('buildNutrientCoverage', () => {
   it('should ignore non-meal events', () => {
     const rows = buildNutrientCoverage([pee(D1)], byId, 2);
     expect(rows.every((r) => r.perDay === 0)).toBe(true);
+  });
+});
+
+describe('buildFirstExposureFromCatalog', () => {
+  /** A catalog food: nutrients as given, and the day it entered the diet. */
+  const tried = (id: string, name: string, on: Date, nutrients: Partial<Nutrients>): Food =>
+    ({ id, name, group: 'other', gramsPerTsp: 5,
+       firstTriedAt: Timestamp.fromDate(on),
+       nutrients: { ...zero(), ...nutrients } } as Food);
+
+  it('should date a nutrient from the food that carries it', () => {
+    const rows = buildFirstExposureFromCatalog([tried('k', 'Kabocha', D1, { vitaminAUgRae: 330 })]);
+    const vitA = rows.find((r) => r.nutrient === 'vitaminAUgRae');
+    expect(vitA?.date?.toISOString()).toBe(D1.toISOString());
+    expect(vitA?.foodName).toBe('Kabocha');
+  });
+
+  it('should keep the earliest food when several carry the nutrient', () => {
+    const rows = buildFirstExposureFromCatalog([
+      tried('late', 'Carrot', D2, { vitaminAUgRae: 700 }),
+      tried('early', 'Kabocha', D1, { vitaminAUgRae: 330 }),
+    ]);
+    const vitA = rows.find((r) => r.nutrient === 'vitaminAUgRae');
+    expect(vitA?.date?.toISOString()).toBe(D1.toISOString());
+    expect(vitA?.foodName).toBe('Kabocha');
+  });
+
+  it('should skip a food that was never tried', () => {
+    const untried = { id: 'u', name: 'Natto', group: 'protein', gramsPerTsp: 5,
+      nutrients: { ...zero(), vitaminB12Ug: 1 } } as Food;
+    const rows = buildFirstExposureFromCatalog([untried]);
+    expect(rows.find((r) => r.nutrient === 'vitaminB12Ug')?.date).toBeNull();
+  });
+
+  it('should skip a food with no nutrient data', () => {
+    const bare = { id: 'b', name: 'Mystery', group: 'other', gramsPerTsp: 5,
+      firstTriedAt: Timestamp.fromDate(D1) } as Food;
+    expect(buildFirstExposureFromCatalog([bare]).every((r) => r.date === null)).toBe(true);
+  });
+
+  it('should leave a nutrient no food supplies as null', () => {
+    const rows = buildFirstExposureFromCatalog([tried('k', 'Kabocha', D1, { vitaminAUgRae: 330 })]);
+    expect(rows.find((r) => r.nutrient === 'vitaminDUg')?.date).toBeNull();
+  });
+
+  it('should count a trace amount that scaling by quantity would round away', () => {
+    const rows = buildFirstExposureFromCatalog([tried('k', 'Kabocha', D1, { vitaminDUg: 0.0001 })]);
+    expect(rows.find((r) => r.nutrient === 'vitaminDUg')?.foodName).toBe('Kabocha');
   });
 });

@@ -18,7 +18,7 @@ import {
 import { SegmentedControl } from '../components/SegmentedControl';
 import { TOOLTIP_STYLE } from '../utils/chart-helpers';
 import {
-  buildFirstExposure,
+  buildFirstExposureFromCatalog,
   buildGroupIntake,
   buildNutrientCoverage,
   buildVarietyCurve,
@@ -99,7 +99,7 @@ const VIEW_LABELS: Record<ChartView, string> = {
 const VIEW_NOTES: Record<ChartView, string> = {
   groups: 'Grams eaten per food group, per day.',
   variety: 'Distinct foods tried so far, counted once each.',
-  first: 'The first day each nutrient appeared in a meal, and the food that brought it.',
+  first: 'All time, not the selected range: the day each nutrient first entered the diet, and the food that brought it.',
   coverage: 'Average per day over the range. One scale per unit — the panels are not comparable.',
 };
 
@@ -111,6 +111,7 @@ const MARGIN = { top: 10, right: 10, left: -12, bottom: 0 };
 const EXPOSURE_MARGIN = { top: 4, right: 78, left: 0, bottom: 8 };
 const PANEL_MARGIN = { top: 0, right: 52, left: 0, bottom: 0 };
 const ROW_HEIGHT = 26;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Two significant-ish digits, so a 0.06 mg trace is still a readable number. */
 function formatAmount(value: number): string {
@@ -142,28 +143,41 @@ export const FoodCharts = memo(function FoodCharts({
 
   const groupRows = useMemo(() => buildGroupIntake(events, byId, days), [events, byId, days]);
   const varietyRows = useMemo(() => buildVarietyCurve(events, days), [events, days]);
-  const exposure = useMemo(() => buildFirstExposure(events, byId), [events, byId]);
+  /** Lifetime, from the catalog — deliberately independent of the range. */
+  const exposure = useMemo(() => buildFirstExposureFromCatalog([...byId.values()]), [byId]);
   const coverage = useMemo(
     () => buildNutrientCoverage(events, byId, rangeDays),
     [events, byId, rangeDays],
   );
 
   /**
-   * Introduced nutrients placed on the day axis by index. Sorted newest first
-   * because a category axis lays index 0 at the bottom — which puts the
-   * earliest nutrient at the top, so the plot reads as a staircase downwards.
+   * Sorted newest first because a category axis lays index 0 at the bottom —
+   * which puts the earliest nutrient at the top, so the plot reads as a
+   * staircase downwards.
    */
-  const exposureRows = useMemo(() => {
-    const dayIndex = new Map(days.map((day, i) => [format(day.date, 'yyyy-MM-dd'), i]));
-    return exposure
-      .filter((row): row is typeof row & { date: Date } => row.date !== null)
-      .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .map((row) => ({
-        label: NUTRIENT_LABEL[row.nutrient],
-        dayIndex: dayIndex.get(format(row.date, 'yyyy-MM-dd')) ?? 0,
-        foodName: truncate(row.foodName ?? ''),
-      }));
-  }, [exposure, days]);
+  const exposureRows = useMemo(() => exposure
+    .filter((row): row is typeof row & { date: Date } => row.date !== null)
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .map((row) => ({
+      label: NUTRIENT_LABEL[row.nutrient],
+      at: row.date.getTime(),
+      foodName: truncate(row.foodName ?? ''),
+    })), [exposure]);
+
+  /** A single-day span has no width; pad it so the dots are not all on the axis. */
+  const exposureDomain = useMemo((): [number, number] => {
+    if (exposureRows.length === 0) return [0, 1];
+    const stamps = exposureRows.map((row) => row.at);
+    const min = Math.min(...stamps);
+    const max = Math.max(...stamps);
+    return min === max ? [min - DAY_MS, max + DAY_MS] : [min, max];
+  }, [exposureRows]);
+
+  /** Explicit, or a time scale draws one overlapping tick per data point. */
+  const exposureTicks = useMemo(() => {
+    const [min, max] = exposureDomain;
+    return [0, 1, 2].map((i) => min + ((max - min) * i) / 2);
+  }, [exposureDomain]);
 
   const notYet = useMemo(
     () => exposure.filter((row) => row.date === null).map((row) => NUTRIENT_LABEL[row.nutrient]),
@@ -174,12 +188,6 @@ export const FoodCharts = memo(function FoodCharts({
     () => Object.fromEntries(coverage.map((row) => [row.nutrient, row.perDay])) as Record<NutrientKey, number>,
     [coverage],
   );
-
-  /** Every fifth day or so, so a 30-day axis does not collide with itself. */
-  const dayTicks = useMemo(() => {
-    const step = Math.max(1, Math.ceil(days.length / 5));
-    return days.map((_, i) => i).filter((i) => i % step === 0);
-  }, [days]);
 
   const hasMeals = events.some((event) => event.type === 'meal');
   if (!hasMeals) {
@@ -262,11 +270,12 @@ export const FoodCharts = memo(function FoodCharts({
                   <CartesianGrid horizontal={false} stroke="var(--color-border-light)" />
                   <XAxis
                     type="number"
-                    dataKey="dayIndex"
+                    dataKey="at"
+                    scale="time"
                     orientation="top"
-                    domain={[-0.5, days.length - 0.5]}
-                    ticks={dayTicks}
-                    tickFormatter={(index: number) => days[index]?.label ?? ''}
+                    domain={exposureDomain}
+                    ticks={exposureTicks}
+                    tickFormatter={(at: number) => format(at, 'd MMM')}
                     tick={AXIS_TICK}
                     tickLine={false}
                     axisLine={AXIS_LINE}

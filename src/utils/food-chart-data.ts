@@ -112,3 +112,34 @@ export function buildNutrientCoverage(
 
   return NUTRIENT_KEYS.map((nutrient) => ({ nutrient, perDay: totals[nutrient] / days }));
 }
+
+/**
+ * Lifetime first exposure, read from the catalog instead of a range of events.
+ * `firstTriedAt` is the day a food entered the diet, so the earliest such day
+ * among the foods carrying a nutrient is the day that nutrient started — which
+ * is the question the view exists to answer, and it does not shrink to the
+ * selected range the way an events-based answer does.
+ *
+ * It asks only whether the food contains the nutrient at all, so a trace amount
+ * that would round toward zero once scaled by an eaten quantity still counts.
+ */
+export function buildFirstExposureFromCatalog(
+  foods: Food[],
+): { nutrient: NutrientKey; date: Date | null; foodName: string | null }[] {
+  const first = new Map<NutrientKey, { date: Date; foodName: string }>();
+
+  for (const food of foods) {
+    if (!food.firstTriedAt || !food.nutrients) continue;
+    const date = food.firstTriedAt.toDate();
+    for (const key of NUTRIENT_KEYS) {
+      if (food.nutrients[key] <= 0) continue;
+      const hit = first.get(key);
+      if (!hit || date < hit.date) first.set(key, { date, foodName: food.name });
+    }
+  }
+
+  return NUTRIENT_KEYS.map((nutrient) => {
+    const hit = first.get(nutrient);
+    return { nutrient, date: hit?.date ?? null, foodName: hit?.foodName ?? null };
+  });
+}
