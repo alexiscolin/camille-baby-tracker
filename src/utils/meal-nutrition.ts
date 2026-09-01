@@ -18,6 +18,19 @@ export function toGrams(item: MealItem, food?: Pick<Food, 'gramsPerTsp'>): numbe
   }
 }
 
+/**
+ * Flags every item whose food has never been eaten. Must be computed from the
+ * catalog as it stands *before* the meal is saved — reading it back after
+ * `firstTriedAt` has been written would mark nothing as a first try, and the
+ * whole allergy attribution chain hangs off this flag.
+ */
+export function markFirstTry(items: MealItem[], byId: Map<string, Food>): MealItem[] {
+  return items.map((item) => ({
+    ...item,
+    firstTry: !byId.get(item.foodId)?.firstTriedAt,
+  }));
+}
+
 function emptyNutrients(): Nutrients {
   return Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, 0])) as unknown as Nutrients;
 }

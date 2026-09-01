@@ -5,13 +5,14 @@ import { addEvent, updateEvent, deleteEvent } from '../services/events';
 import { upsertFood, updateFood, foodFromSeed } from '../services/food-catalog';
 import { useFoods } from '../hooks/useFoods';
 import { FOOD_SEED } from '../data/food-seed';
-import { applyReaction, novelFoodIds } from '../utils/food-status';
+import { applyReaction, novelFoodIds, withdrawReaction } from '../utils/food-status';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { getStoolColorWarning, type StoolColorId } from '../utils/stool-color';
 import { FeedingFields } from './EventModal/FeedingFields';
 import { PoopFields } from './EventModal/PoopFields';
 import { MedicationFields } from './EventModal/MedicationFields';
 import { MealFields } from './EventModal/MealFields';
+import { markFirstTry } from '../utils/meal-nutrition';
 import { MAX_MEAL_ITEMS } from '../types/food';
 import type { Food, MealEvent, MealItem, MealSlot, Reaction } from '../types/food';
 import type { EventType, FeedingType, BabyEvent, FeedingEvent, PoopEvent, MedicationEvent } from '../types/events';
@@ -151,10 +152,7 @@ export function EventModal(props: EventModalProps) {
   // arrives asynchronously, and losing a `firstTry` only ever widens the
   // suspected set (novelFoodIds falls back to every item), never narrows it.
   const itemsWithFirstTry = useMemo<MealItem[]>(
-    () => mealItems.map((item) => ({
-      ...item,
-      firstTry: !foodById.get(item.foodId)?.firstTriedAt,
-    })),
+    () => markFirstTry(mealItems, foodById),
     [mealItems, foodById],
   );
 
@@ -245,6 +243,26 @@ export function EventModal(props: EventModalProps) {
     };
   }
 
+  /**
+   * Writes back only the foods whose status actually moved. Both applyReaction
+   * and withdrawReaction return the same object for an untouched food, so
+   * identity is the change check.
+   */
+  async function persistFoodChanges(
+    foodList: Food[],
+    stamp: Timestamp,
+    catalog: Map<string, Food> = foodById,
+  ) {
+    for (const food of foodList) {
+      if (food === catalog.get(food.id)) continue;
+      await updateFood(familyId, food.id, {
+        status: food.status,
+        reactionEventIds: food.reactionEventIds,
+        statusUpdatedAt: stamp,
+      });
+    }
+  }
+
   /** Step 5: every suspected food carries the reaction and becomes suspected. */
   async function persistReactionAttribution(
     prepared: NonNullable<Awaited<ReturnType<typeof prepareMeal>>>,
@@ -265,15 +283,7 @@ export function EventModal(props: EventModalProps) {
       reaction: reactionPayload,
     };
     const before = uniqueIds.map((id) => catalog.get(id)!);
-    for (const food of applyReaction(before, meal, mealId)) {
-      // applyReaction returns the same object when a food is untouched.
-      if (food === catalog.get(food.id)) continue;
-      await updateFood(familyId, food.id, {
-        status: food.status,
-        reactionEventIds: food.reactionEventIds,
-        statusUpdatedAt: stamp,
-      });
-    }
+    await persistFoodChanges(applyReaction(before, meal, mealId), stamp, catalog);
   }
 
   async function handleSave() {
@@ -349,7 +359,15 @@ export function EventModal(props: EventModalProps) {
           await updateEvent(familyId, editEvent.id, updates);
           // Counters are not touched on edit: the exposure was already counted
           // when the meal was first logged.
-          await persistReactionAttribution(prepared, editEvent.id);
+          if (prepared.reactionPayload) {
+            await persistReactionAttribution(prepared, editEvent.id);
+          } else {
+            // The reaction was removed. Undo this meal's attribution, otherwise
+            // a mis-tap leaves those foods suspected for good — and Task 12
+            // then hides their whole allergen family from the suggestions.
+            // Scans the catalog, not the items: the item list may have changed.
+            await persistFoodChanges(withdrawReaction(foods, editEvent.id), prepared.stamp);
+          }
           setSaved(true);
           setTimeout(onClose, 1000);
           return;

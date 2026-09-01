@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { toGrams, mealNutrients } from './meal-nutrition';
+import { Timestamp } from 'firebase/firestore';
+import { toGrams, mealNutrients, markFirstTry } from './meal-nutrition';
 import type { Food, MealItem, Nutrients } from '../types/food';
 
 const zero = (): Nutrients => ({
@@ -64,5 +65,30 @@ describe('mealNutrients', () => {
 
   it('should return an all-zero object for an empty meal', () => {
     expect(mealNutrients([], byId)).toEqual(zero());
+  });
+});
+
+describe('markFirstTry', () => {
+  const tried = { id: 'kabocha', firstTriedAt: Timestamp.now() } as Food;
+  const untried = { id: 'natto' } as Food;
+
+  it('should not flag a food that has been tried before', () => {
+    const byId = new Map([['kabocha', tried]]);
+    expect(markFirstTry([item({ foodId: 'kabocha' })], byId)[0].firstTry).toBe(false);
+  });
+
+  it('should flag a food in the catalog that has never been tried', () => {
+    const byId = new Map([['natto', untried]]);
+    expect(markFirstTry([item({ foodId: 'natto' })], byId)[0].firstTry).toBe(true);
+  });
+
+  it('should flag a food that is not in the catalog at all', () => {
+    expect(markFirstTry([item({ foodId: 'shirasu' })], new Map())[0].firstTry).toBe(true);
+  });
+
+  it('should keep every other field of the item', () => {
+    const byId = new Map([['kabocha', tried]]);
+    const [result] = markFirstTry([item({ quantity: 3, unit: 'g', acceptance: 'half' })], byId);
+    expect(result).toMatchObject({ foodId: 'kabocha', quantity: 3, unit: 'g', acceptance: 'half' });
   });
 });

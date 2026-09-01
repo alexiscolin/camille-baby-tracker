@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Timestamp } from 'firebase/firestore';
-import { deriveStatus, novelFoodIds, applyReaction, statusLabel, isManualStatus } from './food-status';
+import { deriveStatus, novelFoodIds, applyReaction, withdrawReaction, statusLabel, isManualStatus } from './food-status';
 import type { Food, FoodStatus, MealEvent, MealItem } from '../types/food';
 
 const food = (
@@ -176,5 +176,44 @@ describe('isManualStatus', () => {
     expect(isManualStatus('confirmed_allergy')).toBe(true);
     expect(isManualStatus('avoid')).toBe(true);
     expect(isManualStatus('safe')).toBe(false);
+  });
+});
+
+describe('withdrawReaction', () => {
+  it('should clear a food suspected only by this meal', () => {
+    const foods = [makeFood('natto', { status: 'suspected', reactionEventIds: ['meal-1'] })];
+    const [natto] = withdrawReaction(foods, 'meal-1');
+    expect(natto.reactionEventIds).toEqual([]);
+    expect(natto.status).toBe('untried');
+  });
+
+  it('should keep a food suspected by another meal', () => {
+    const foods = [
+      makeFood('natto', { status: 'suspected', reactionEventIds: ['meal-1', 'meal-2'] }),
+    ];
+    const [natto] = withdrawReaction(foods, 'meal-1');
+    expect(natto.reactionEventIds).toEqual(['meal-2']);
+    expect(natto.status).toBe('suspected');
+  });
+
+  it('should restore safe when the food has enough clean exposures', () => {
+    const foods = [
+      makeFood('rice', { status: 'suspected', exposureCount: 4, reactionEventIds: ['meal-1'] }),
+    ];
+    expect(withdrawReaction(foods, 'meal-1')[0].status).toBe('safe');
+  });
+
+  it('should never undo a human-set allergy', () => {
+    const foods = [
+      makeFood('egg', { status: 'confirmed_allergy', reactionEventIds: ['meal-1'] }),
+    ];
+    const [egg] = withdrawReaction(foods, 'meal-1');
+    expect(egg).toBe(foods[0]);
+    expect(egg.status).toBe('confirmed_allergy');
+  });
+
+  it('should leave foods this meal never touched identical', () => {
+    const foods = [makeFood('kabocha', { reactionEventIds: ['meal-9'] })];
+    expect(withdrawReaction(foods, 'meal-1')[0]).toBe(foods[0]);
   });
 });

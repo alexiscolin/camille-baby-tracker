@@ -45,6 +45,25 @@ export function applyReaction(foods: Food[], meal: MealEvent, mealId: string): F
   });
 }
 
+/**
+ * The inverse of applyReaction, for when a reaction is removed from a meal.
+ * Only this meal's id is dropped: a food suspected because of a *different*
+ * meal stays suspected. Untouched foods keep their identity, so a caller can
+ * persist just the ones that changed.
+ */
+export function withdrawReaction(foods: Food[], mealId: string): Food[] {
+  return foods.map((food) => {
+    if (!food.reactionEventIds.includes(mealId) || isManualStatus(food.status)) return food;
+    const reactionEventIds = food.reactionEventIds.filter((id) => id !== mealId);
+    return {
+      ...food,
+      reactionEventIds,
+      // 0 clean exposures: a food still carrying another reaction stays suspected.
+      status: deriveStatus({ ...food, reactionEventIds }, 0),
+    };
+  });
+}
+
 const LABELS: Record<Exclude<FoodStatus, 'safe'>, string> = {
   untried: 'Not introduced',
   watch: 'Watch',
