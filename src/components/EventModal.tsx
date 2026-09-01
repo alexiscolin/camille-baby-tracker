@@ -12,7 +12,7 @@ import { FeedingFields } from './EventModal/FeedingFields';
 import { PoopFields } from './EventModal/PoopFields';
 import { MedicationFields } from './EventModal/MedicationFields';
 import { MealFields } from './EventModal/MealFields';
-import { buildReactionPayload, markFirstTry } from '../utils/meal-nutrition';
+import { buildReactionPayload, markFirstTry, DEFAULT_GRAMS_PER_TSP } from '../utils/meal-nutrition';
 import { MAX_MEAL_ITEMS } from '../types/food';
 import type { Food, MealEvent, MealItem, MealSlot, Reaction } from '../types/food';
 import type { EventType, FeedingType, BabyEvent, FeedingEvent, PoopEvent, MedicationEvent } from '../types/events';
@@ -24,8 +24,6 @@ const MAX_NOTES_LENGTH = 500;
 const MAX_DURATION_MINUTES = 300;
 /** firestore.rules caps a food name at 100 characters. */
 const MAX_FOOD_NAME_LENGTH = 100;
-/** 小さじ = 5 ml. The rules reject gramsPerTsp <= 0, so never default it to 0. */
-const DEFAULT_GRAMS_PER_TSP = 5;
 
 type EventModalProps = {
   familyId: string;
@@ -130,6 +128,22 @@ export function EventModal(props: EventModalProps) {
   );
   const foodById = useMemo(() => new Map(foods.map((f) => [f.id, f])), [foods]);
 
+  /**
+   * On edit the stored flag is a historical fact — "her first taste of natto"
+   * — and step 4 has since written firstTriedAt, so re-deriving would erase it.
+   * Read from the saved event, never from `mealItems`: the form hands the
+   * *derived* items back on every edit, so a value round-tripped through state
+   * is no longer evidence of what was saved.
+   */
+  const storedFirstTry = useMemo(
+    () => new Map(
+      editEvent?.type === 'meal'
+        ? (editEvent as MealEvent).items.map((i) => [i.foodId, i.firstTry])
+        : [],
+    ),
+    [editEvent],
+  );
+
   // `firstTry` is derived from the catalog as items are added, so the "new
   // food" hint is live and the saved value needs no second computation.
   // Always recomputed rather than trusted from a stored item: the catalog
@@ -138,16 +152,14 @@ export function EventModal(props: EventModalProps) {
   const itemsWithFirstTry = useMemo<MealItem[]>(() => {
     const derived = markFirstTry(mealItems, foodById);
     if (!editEvent) return derived;
-    // On edit the stored flag is a historical fact — "her first taste of natto"
-    // — and step 4 has since written firstTriedAt, so re-deriving would erase
-    // it. Only items added during this edit carry no flag and are derived.
-    // Depends on the payload omitting a falsy firstTry: a stored `false` is an
-    // absent key and must fall through to the derivation, not be preserved.
-    return derived.map((item, i) => ({
+    // A falsy firstTry is omitted from the payload, so an absent key means
+    // "not recorded" and falls through to the derivation. Items added during
+    // this edit are absent from the map for the same reason.
+    return derived.map((item) => ({
       ...item,
-      firstTry: mealItems[i].firstTry ?? item.firstTry,
+      firstTry: storedFirstTry.get(item.foodId) ?? item.firstTry,
     }));
-  }, [editEvent, mealItems, foodById]);
+  }, [editEvent, mealItems, foodById, storedFirstTry]);
 
   const babyAgeDays = babyBirthDate
     ? Math.floor((Date.now() - babyBirthDate.getTime()) / (1000 * 60 * 60 * 24))
@@ -214,14 +226,17 @@ export function EventModal(props: EventModalProps) {
 
     const catalog = new Map(foodById);
     const uniqueIds = [...new Set(items.map((i) => i.foodId))];
+    /** Foods this save had to create — the only ones an edit may count. */
+    const createdIds: string[] = [];
 
     for (const id of uniqueIds) {
       if (catalog.has(id)) continue;
       const seed = FOOD_SEED.find((s) => s.id === id);
       const name = items.find((i) => i.foodId === id)!.name;
-      const food: Food = seed ? { ...foodFromSeed(seed) } : minimalFood(id, name);
+      const food: Food = seed ? foodFromSeed(seed) : minimalFood(id, name);
       await upsertFood(familyId, food);
       catalog.set(id, food);
+      createdIds.push(id);
     }
 
     const payloadItems: MealItem[] = items.map((i) => ({
@@ -236,10 +251,31 @@ export function EventModal(props: EventModalProps) {
     return {
       catalog,
       uniqueIds,
+      createdIds,
       items: payloadItems,
       reactionPayload: reaction ? buildReactionPayload(reaction, payloadItems) : undefined,
       stamp: Timestamp.fromDate(eventDate),
     };
+  }
+
+  /**
+   * Step 3: count this meal against each given food, stamping `firstTriedAt`
+   * the first time. The stored counters are read from `prepared.catalog`, the
+   * snapshot taken before any of this ran.
+   */
+  async function countExposures(
+    prepared: NonNullable<Awaited<ReturnType<typeof prepareMeal>>>,
+    ids: string[],
+  ) {
+    for (const id of ids) {
+      const food = prepared.catalog.get(id)!;
+      await updateFood(familyId, id, {
+        usageCount: food.usageCount + 1,
+        exposureCount: food.exposureCount + 1,
+        lastTriedAt: prepared.stamp,
+        ...(food.firstTriedAt ? {} : { firstTriedAt: prepared.stamp }),
+      });
+    }
   }
 
   /**
@@ -362,8 +398,11 @@ export function EventModal(props: EventModalProps) {
           // Absent, never null: firestore.rules only accepts a map or nothing.
           updates.reaction = prepared.reactionPayload ?? deleteField();
           await updateEvent(familyId, editEvent.id, updates);
-          // Counters are not touched on edit: the exposure was already counted
-          // when the meal was first logged.
+          // Only foods this edit had to create are counted. A food already in
+          // the catalog was counted when the meal was first logged; a food
+          // added during the edit was never counted at all, and without this
+          // it would sit at exposureCount 0 with no firstTriedAt for good.
+          await countExposures(prepared, prepared.createdIds);
           await persistAttribution(prepared, editEvent.id);
           setSaved(true);
           setTimeout(onClose, 1000);

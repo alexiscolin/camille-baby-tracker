@@ -2,7 +2,8 @@ import { NUTRIENT_KEYS } from '../types/food';
 import { novelFoodIds } from './food-status';
 import type { Food, MealItem, Nutrients, Reaction } from '../types/food';
 
-const DEFAULT_GRAMS_PER_TSP = 5;
+/** 小さじ = 5 ml. firestore.rules rejects gramsPerTsp <= 0, so never default it to 0. */
+export const DEFAULT_GRAMS_PER_TSP = 5;
 const DEFAULT_GRAMS_PER_PIECE = 30;
 
 /** Converts an eaten amount to grams. Millilitres are treated as grams. */

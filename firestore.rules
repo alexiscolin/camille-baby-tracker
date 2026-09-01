@@ -235,8 +235,16 @@ service cloud.firestore {
       match /foods/{foodId} {
         allow read: if isFamilyMember(familyId);
         allow create: if isFamilyMember(familyId) && isValidFood();
-        // exposureCount must not decrease: the delete guard below only holds
-        // if a food can't be zeroed out via update just to unlock a delete.
+        // exposureCount must not decrease. This clause is load-bearing twice:
+        //  1. the delete guard below only holds if a food can't be zeroed out
+        //     via update just to unlock a delete;
+        //  2. it is the only thing stopping upsertFood's setDoc(merge: true)
+        //     from wiping an established food's status and reactionEventIds.
+        //     minimalFood() and foodFromSeed() always write exposureCount: 0,
+        //     so any such merge onto an eaten food is rejected here.
+        // If anyone ever makes upsertFood preserve the existing counters, that
+        // second protection silently disappears with it — a re-upsert would
+        // then quietly reset a confirmed_allergy back to untried.
         // (The app only ever increments this counter — no decrement exists.)
         allow update: if isFamilyMember(familyId) && isValidFood()
           && request.resource.data.exposureCount >= resource.data.exposureCount;

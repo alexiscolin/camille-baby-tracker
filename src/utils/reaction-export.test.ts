@@ -64,6 +64,13 @@ describe('buildReactionCsv', () => {
     expect(csv).toContain('""ow""');
   });
 
+  it('should neutralise a note Excel would read as a formula', () => {
+    expect(buildReactionCsv([withNote('-2 hours later')], byId)).toContain("'-2 hours later");
+    expect(buildReactionCsv([withNote('=1+1')], byId)).toContain("'=1+1");
+    expect(buildReactionCsv([withNote('@here')], byId)).toContain("'@here");
+    expect(buildReactionCsv([withNote('+swelling')], byId)).toContain("'+swelling");
+  });
+
   it('should ignore non-meal events', () => {
     const pee = {
       id: 'p1', babyId: 'b1', type: 'pee', timestamp: Timestamp.fromDate(D),

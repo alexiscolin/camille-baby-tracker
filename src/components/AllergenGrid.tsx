@@ -165,6 +165,12 @@ export function AllergenSheet({ status, foodCount, onClose, onSetStatus }: Aller
             ? 'No food in your catalog carries this allergen yet.'
             : `Applies to the ${foodCount} food${foodCount > 1 ? 's' : ''} in your catalog carrying it.`}
         </p>
+        {foodCount > 0 && (
+          <p className={styles.sheetNote}>
+            Tapping the active button again clears the flag and forgets which meals
+            flagged it. The meals themselves are kept.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -69,34 +69,6 @@ export function buildVarietyCurve(
   });
 }
 
-/** For each nutrient, the earliest meal date it appeared in, and the food responsible. */
-export function buildFirstExposure(
-  events: BabyEvent[],
-  byId: Map<string, Food>,
-): { nutrient: NutrientKey; date: Date | null; foodName: string | null }[] {
-  const chronological = [...mealEvents(events)]
-    .sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
-
-  const first = new Map<NutrientKey, { date: Date; foodName: string }>();
-
-  for (const meal of chronological) {
-    for (const item of meal.items) {
-      const nutrients = mealNutrients([item], byId);
-      for (const key of NUTRIENT_KEYS) {
-        if (nutrients[key] > 0 && !first.has(key)) {
-          const food = byId.get(item.foodId);
-          first.set(key, { date: meal.timestamp.toDate(), foodName: food?.name ?? item.name });
-        }
-      }
-    }
-  }
-
-  return NUTRIENT_KEYS.map((nutrient) => {
-    const hit = first.get(nutrient);
-    return { nutrient, date: hit?.date ?? null, foodName: hit?.foodName ?? null };
-  });
-}
-
 /** Average daily intake of each nutrient over the given number of days. */
 export function buildNutrientCoverage(
   events: BabyEvent[],

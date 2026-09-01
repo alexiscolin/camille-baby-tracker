@@ -9,8 +9,12 @@ const HEADER = [
 ];
 
 function escapeCsv(value: string): string {
-  if (!/["\n,]/.test(value)) return value;
-  return '"' + value.replace(/"/g, '""') + '"';
+  // A leading = + - @ makes Excel treat the cell as a formula, and this file is
+  // built to be opened at a doctor's visit. A note starting with "-" is a
+  // plausible accident, so prefix it out of formula position.
+  const safe = /^[=+\-@]/.test(value) ? "'" + value : value;
+  if (!/["\n,]/.test(safe)) return safe;
+  return '"' + safe.replace(/"/g, '""') + '"';
 }
 
 export function buildReactionCsv(events: BabyEvent[], byId: Map<string, Food>): string {

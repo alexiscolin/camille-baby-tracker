@@ -180,7 +180,7 @@ yam, apple, gelatin.
 
 ## 4. Seed database — 300 entries
 
-A committed TypeScript module, lazily imported. Covers what a baby in Japan
+A committed TypeScript module, statically imported. Covers what a baby in Japan
 actually eats during weaning: grains and starches (粥 at every dilution, udon,
 somen, bread), vegetables, fruits, fish (shirasu, cod, salmon), meats, egg, soy
 in all its forms (tofu, natto, kinako, koya-dofu), dairy, seaweed, seasonings.
@@ -211,9 +211,18 @@ Plus a manual spot check of roughly 30 well-known entries.
 
 ### Bundle cost
 
-~300 entries × 16 nutrients ≈ 150–250 KB of JSON. Lazily imported, loaded only
-when the meal form or `/food` opens, cached by the service worker. Measure
-before compressing.
+289 entries × 16 nutrients ≈ **166 KB of source**, and it ships in the initial
+chunk. The design originally called for a dynamic import, and one was written —
+but it saved nothing, because `EventModal` (reached from the dashboard) and
+`FoodTagInput` both import the table statically. It was removed rather than left
+in place looking like an optimisation it was not.
+
+Making it real would mean loading the seed only once the `meal` type is picked,
+worth roughly 15–20 KB gzip against a 279 KB gzip main chunk — about 7% — at the
+cost of an async boundary in the middle of a form a parent fills one-handed at
+the table. Judged not worth it. The main chunk is 980 KB raw / 279 KB gzip; most
+of that is recharts and firebase and predates this feature, but the seed is a
+real addition to it.
 
 ## 5. No runtime LLM
 
@@ -255,9 +264,19 @@ Pure function in `utils/food-status.ts`, fully testable without Firebase:
 
 - `untried` → `safe` after 3 exposures with no reaction
 - any logged reaction → **every novel food in that meal** becomes `suspected`
-- `suspected` → `watch` after one solo re-exposure with no reaction, then `safe`
-  after 2 more
+- `suspected` stays `suspected` until a human clears it
 - `confirmed_allergy` and `avoid` are **manual only, never derived**
+
+**Not implemented: clean-exposure recovery.** `deriveStatus` takes a
+`cleanExposuresSinceReaction` argument and `watch` exists in the type, the
+rules and the labels, but nothing counts clean re-exposures — every production
+call site passes `0`, so `watch` is unreachable and the automatic
+`suspected` → `safe` path is dead code. For a parent this means a suspected
+food stays suspected however many times it is re-fed without incident, and
+`rankNextFoods` keeps holding back every food sharing that allergen. The only
+exit is the allergen sheet: tapping the active status button again clears the
+flag and drops the food's `reactionEventIds`. The reaction *events* are kept in
+the `events` collection — only the derived index is cleared.
 
 UI wording: never "safe". The label is `No reaction ×5`. Three uneventful meals
 mean "no reaction observed", not "harmless", and the distinction matters most

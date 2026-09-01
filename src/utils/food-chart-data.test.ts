@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Timestamp } from 'firebase/firestore';
 import {
-  buildGroupIntake, buildVarietyCurve, buildFirstExposure, buildNutrientCoverage,
+  buildGroupIntake, buildVarietyCurve, buildNutrientCoverage,
   buildFirstExposureFromCatalog,
 } from './food-chart-data';
 import type { BabyEvent } from '../types/events';
@@ -76,26 +76,6 @@ describe('buildVarietyCurve', () => {
 
   it('should ignore non-meal events', () => {
     expect(buildVarietyCurve([pee(D1)], days).map((c) => c.total)).toEqual([0, 0]);
-  });
-});
-
-describe('buildFirstExposure', () => {
-  it('should report the earliest date a nutrient appeared, and the food', () => {
-    const rows = buildFirstExposure(
-      [meal(D2, ['kabocha']), meal(D1, ['kabocha'])], byId);
-    const vitA = rows.find((r) => r.nutrient === 'vitaminAUgRae');
-    expect(vitA?.date?.toISOString()).toBe(D1.toISOString());
-    expect(vitA?.foodName).toBe('Kabocha');
-  });
-
-  it('should return null for a nutrient never seen', () => {
-    const rows = buildFirstExposure([meal(D1, ['cod'])], byId);
-    expect(rows.find((r) => r.nutrient === 'vitaminDUg')?.date).toBeNull();
-  });
-
-  it('should ignore non-meal events', () => {
-    const rows = buildFirstExposure([pee(D1)], byId);
-    expect(rows.every((r) => r.date === null)).toBe(true);
   });
 });
 

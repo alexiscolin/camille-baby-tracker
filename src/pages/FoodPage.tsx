@@ -115,12 +115,24 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
   /**
    * A manual status set on an allergen applies to every catalog food carrying
    * it. `null` clears it back to whatever the log alone supports.
+   *
+   * Clearing also drops `reactionEventIds`. Nothing counts clean re-exposures,
+   * so a food carrying a past reaction re-derives straight back to `suspected`
+   * and the clear would be a no-op — a one-way door with no exit. The reaction
+   * *events* are untouched in the `events` collection; `reactionEventIds` is a
+   * derived index, and a parent clearing it is saying "I have re-tested this".
    */
   function setAllergenStatus(allergen: Allergen, next: FoodStatus | null) {
     const stamp = Timestamp.now();
     for (const food of foods.filter((f) => f.allergens.includes(allergen))) {
-      const status = next ?? deriveStatus({ ...food, status: 'untried' }, 0);
-      updateFood(familyId, food.id, { status, statusUpdatedAt: stamp })
+      const update: Partial<Food> = next
+        ? { status: next, statusUpdatedAt: stamp }
+        : {
+            status: deriveStatus({ ...food, status: 'untried', reactionEventIds: [] }, 0),
+            reactionEventIds: [],
+            statusUpdatedAt: stamp,
+          };
+      updateFood(familyId, food.id, update)
         .catch(() => { /* The snapshot listener stays the source of truth */ });
     }
     setOpenAllergen(null);
