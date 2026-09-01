@@ -1,0 +1,353 @@
+/* ─── Page (same structural vocabulary as StatsPage) ─── */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) 0;
+  color: var(--color-text-muted);
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-top: var(--space-2xs);
+}
+
+/* ─── Sections ─── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.sectionIcon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sectionHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ─── Hero ─── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.kicker {
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-meal);
+}
+
+.heroRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.heroName {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+.heroNote {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.logBtn {
+  flex-shrink: 0;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  background: var(--color-meal);
+  color: var(--color-surface);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.reasons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding-left: var(--space-md);
+  list-style: disc;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Disclosure ─── */
+.disclosure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  border-top: var(--space-micro) solid var(--color-border-light);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  width: 100%;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  text-align: left;
+  background: var(--color-bg);
+}
+
+.optionName {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.optionReason {
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+}
+
+/* Held back: greyed, still tappable, reason always visible. */
+.held .optionName {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.held .optionReason {
+  color: var(--color-feeding);
+}
+
+.moreHeld {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+}
+
+/* ─── Charts (same card metrics as StatsPage) ─── */
+.controls {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.chartCard {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg) var(--space-sm) var(--space-md);
+  box-shadow: var(--shadow-sm);
+  height: 240px;
+  overflow: hidden;
+}
+
+.chartCard :global(.recharts-legend-wrapper) {
+  font-size: 11px !important;
+}
+
+/* Recharts inlines the series colour on the legend label. The swatch carries
+   the identity; the text stays a text token. !important beats the inline style. */
+.chartCard :global(.recharts-legend-item-text) {
+  color: var(--color-text-secondary) !important;
+}
+
+.chartCard :global(.recharts-xAxis .recharts-cartesian-axis-tick-value) {
+  font-size: 10px;
+}
+
+/* Sixteen nutrient rows do not fit a fixed card: these two views scroll. */
+.scrollCard {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: var(--space-md);
+}
+
+.chartFill {
+  height: 100%;
+}
+
+.chartNote {
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-secondary);
+  padding: 0 var(--space-xs);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding-bottom: var(--space-sm);
+}
+
+/* Never uppercase: CSS maps µ (U+00B5) to Greek Μ, so "µg" would render as
+   "ΜG" and read as milligrams. Micrograms vs milligrams is a 1000x error. */
+.panelLabel {
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  padding-left: var(--space-xs);
+}
+
+.noData {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ─── Recently introduced strip ─── */
+.strip {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-x: auto;
+  padding-bottom: var(--space-xs);
+  scrollbar-width: none;
+}
+
+.strip::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  flex-shrink: 0;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+  background: var(--color-meal-bg);
+}
+
+.chipName {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text);
+  max-width: 12ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipMeta {
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1024px) {
+  .page {
+    gap: var(--space-xl);
+  }
+
+  .title {
+    font-size: var(--font-size-3xl);
+  }
+
+  .subtitle {
+    font-size: var(--font-size-md);
+  }
+
+  .hero {
+    padding: var(--space-lg);
+  }
+
+  .heroName {
+    font-size: var(--font-size-xl);
+  }
+
+  .sectionTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .sectionHint,
+  .hint {
+    font-size: var(--font-size-sm);
+  }
+
+  .chartCard {
+    height: 300px;
+    padding: var(--space-xl) var(--space-md) var(--space-lg);
+  }
+
+  .chartCard :global(.recharts-legend-wrapper) {
+    font-size: 13px !important;
+  }
+
+  .chartCard :global(.recharts-xAxis .recharts-cartesian-axis-tick-value) {
+    font-size: 12px;
+  }
+
+  .chartNote {
+    font-size: var(--font-size-xs);
+  }
+}

@@ -1,9 +1,13 @@
 import { memo } from 'react';
 import type { BabyEvent, FeedingEvent, MedicationEvent } from '../types/events';
+import type { MealEvent } from '../types/food';
 import { EVENT_CONFIG } from '../utils/event-config';
 import { formatTime, timeAgo } from '../utils/date';
 import { formatSides } from '../utils/feeding-helpers';
 import styles from './EventTimeline.module.css';
+
+/** Keeps a row of many foods readable without wrapping the timeline layout. */
+const MAX_MEAL_DETAIL_LENGTH = 40;
 
 function getEventDetail(event: BabyEvent): string {
   switch (event.type) {
@@ -21,6 +25,12 @@ function getEventDetail(event: BabyEvent): string {
     case 'medication': {
       const m = event as MedicationEvent;
       return `${m.medicationName} (${m.dose})`;
+    }
+    case 'meal': {
+      const names = (event as MealEvent).items.map((i) => i.name).join(', ');
+      return names.length > MAX_MEAL_DETAIL_LENGTH
+        ? `${names.slice(0, MAX_MEAL_DETAIL_LENGTH)}...`
+        : names;
     }
     default:
       return '';

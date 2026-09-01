@@ -1,6 +1,7 @@
 import type { Timestamp } from 'firebase/firestore';
+import type { MealEvent } from './food';
 
-export type EventType = 'feeding' | 'pee' | 'poop' | 'medication' | 'bath';
+export type EventType = 'feeding' | 'pee' | 'poop' | 'medication' | 'bath' | 'meal';
 
 export type FeedingType = 'breast' | 'bottle';
 
@@ -47,7 +48,8 @@ export interface BathEvent extends BaseEvent {
   type: 'bath';
 }
 
-export type BabyEvent = FeedingEvent | PeeEvent | PoopEvent | MedicationEvent | BathEvent;
+export type BabyEvent =
+  | FeedingEvent | PeeEvent | PoopEvent | MedicationEvent | BathEvent | MealEvent;
 
 export type BabySex = 'male' | 'female';
 

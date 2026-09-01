@@ -20,10 +20,24 @@
   width: 100%;
   max-width: 480px;
   max-height: 85vh;
-  overflow-y: auto;
+  /* A flex column, not a single scrollport: .scrollArea below is the only
+     part that scrolls, and .stickyActions is a normal sibling after it —
+     never `position: sticky` inside the scrolling content. Sticky only
+     reserves its own natural-flow space once, so its stuck copy can render
+     over whatever the user has scrolled underneath it; a separate box can't. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: var(--space-lg);
-  padding-bottom: max(var(--space-lg), env(safe-area-inset-bottom));
+  padding-bottom: 0;
   animation: slideUp 200ms ease;
+}
+
+.scrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: var(--space-md);
 }
 
 @keyframes slideUp {
@@ -361,6 +375,126 @@
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text);
+}
+
+/* Meal fields */
+.newFoodHint {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--color-meal-bg);
+  color: var(--color-meal);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.itemToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--color-border-light);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-align: left;
+}
+
+.itemAmount {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.itemPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md) var(--space-md);
+}
+
+.disclosureBtn {
+  align-self: flex-start;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  background: var(--color-border-light);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.disclosureBtn:hover {
+  color: var(--color-text);
+}
+
+.reactionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-border-light);
+}
+
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.chipBtn {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.chipBtnActive {
+  background: var(--color-meal-bg);
+  color: var(--color-meal);
+}
+
+.emergencyNote {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--color-medication-bg);
+  /* An emergency warning is the worst place to inherit the app's contrast
+     debt: --color-danger here is 3.1:1, --color-danger-strong is 5.3:1. */
+  color: var(--color-danger-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.suspectNote {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.stickyActions {
+  /* A normal flex sibling of .scrollArea, not a scrolled child — see the
+     comment on .modal. This box's own height is real reserved layout space,
+     so nothing can ever render underneath it. */
+  flex-shrink: 0;
+  background: var(--color-surface);
+  padding-top: var(--space-md);
+  margin-top: var(--space-sm);
+  padding-bottom: max(var(--space-lg), env(safe-area-inset-bottom));
 }
 
 /* Desktop: centered modal instead of bottom sheet */

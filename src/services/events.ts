@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { BabyEvent, FeedingEvent, PeeEvent, PoopEvent, MedicationEvent, BathEvent } from '../types/events';
+import type { MealEvent } from '../types/food';
 import { normalizeFeedingEvent } from '../utils/feeding-helpers';
 import { EVENT_TYPES } from '../utils/event-config';
 
@@ -20,7 +21,8 @@ type NewEvent =
   | Omit<PeeEvent, 'id' | 'createdAt'>
   | Omit<PoopEvent, 'id' | 'createdAt'>
   | Omit<MedicationEvent, 'id' | 'createdAt'>
-  | Omit<BathEvent, 'id' | 'createdAt'>;
+  | Omit<BathEvent, 'id' | 'createdAt'>
+  | Omit<MealEvent, 'id' | 'createdAt'>;
 
 const VALID_EVENT_TYPES = new Set<string>(EVENT_TYPES);
 

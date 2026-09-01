@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
+  Salad,
   BarChart3,
   TrendingUp,
   Settings,
@@ -36,6 +37,16 @@ export function Layout({ children, babyName }: LayoutProps) {
             aria-label="Dashboard"
           >
             <LayoutDashboard size={22} />
+
+          </NavLink>
+          <NavLink
+            to="/food"
+            className={({ isActive }) =>
+              `${styles.sidebarItem} ${isActive ? styles.sidebarActive : ''}`
+            }
+            aria-label="Food"
+          >
+            <Salad size={22} />
 
           </NavLink>
           <NavLink
@@ -105,6 +116,15 @@ export function Layout({ children, babyName }: LayoutProps) {
         >
           <LayoutDashboard size={22} />
           <span>Timeline</span>
+        </NavLink>
+        <NavLink
+          to="/food"
+          className={({ isActive }) =>
+            `${styles.navItem} ${isActive ? styles.active : ''}`
+          }
+        >
+          <Salad size={22} />
+          <span>Food</span>
         </NavLink>
         <NavLink
           to="/stats"

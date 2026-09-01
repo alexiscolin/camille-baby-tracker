@@ -25,7 +25,7 @@ service cloud.firestore {
     function hasValidBaseFields() {
       let data = request.resource.data;
       return data.babyId is string
-        && data.type in ['feeding', 'pee', 'poop', 'medication', 'bath']
+        && data.type in ['feeding', 'pee', 'poop', 'medication', 'bath', 'meal']
         && data.timestamp is timestamp
         && data.createdBy == request.auth.uid
         && data.createdAt is timestamp
@@ -58,6 +58,21 @@ service cloud.firestore {
         && data.dose is string
         && data.dose.size() > 0
         && data.dose.size() <= 200;
+    }
+
+    // Helper: validate meal-specific fields
+    // NOTE: the rules language cannot iterate lists, so per-item validation of
+    // `items` (foodId, quantity, unit, etc.) is client-side only. This is not
+    // fixable without Cloud Functions (Blaze plan, out of scope). We only
+    // validate that `items` is a list of a sane size here.
+    function hasValidMealFields() {
+      let data = request.resource.data;
+      return data.type == 'meal'
+        && data.mealSlot in ['breakfast', 'lunch', 'dinner', 'snack']
+        && data.items is list
+        && data.items.size() >= 1
+        && data.items.size() <= 12
+        && (!('reaction' in data) || data.reaction is map);
     }
 
     // Helper: validate measurement value bounds by type
@@ -95,6 +110,33 @@ service cloud.firestore {
         && (!('notes' in data) || (data.notes is string && data.notes.size() <= 500));
     }
 
+    // Helper: validate food fields (foods subcollection)
+    function isValidFood() {
+      let data = request.resource.data;
+      return !('id' in data)
+        && data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 100
+        && data.group in ['grain', 'vegetable', 'fruit', 'protein', 'dairy', 'fat', 'other']
+        && data.allergens is list
+        && data.gramsPerTsp is number
+        && data.gramsPerTsp > 0
+        && data.gramsPerTsp <= 15
+        && data.minStage in [1, 2, 3, 4]
+        && data.status in ['untried', 'safe', 'watch', 'suspected', 'confirmed_allergy', 'avoid']
+        && data.usageCount is int
+        && data.usageCount >= 0
+        && data.exposureCount is int
+        && data.exposureCount >= 0
+        && data.reactionEventIds is list
+        && data.nutrientSource in ['seed', 'manual']
+        && (!('statusUpdatedAt' in data) || data.statusUpdatedAt is timestamp)
+        && (!('firstTriedAt' in data) || data.firstTriedAt is timestamp)
+        && (!('lastTriedAt' in data) || data.lastTriedAt is timestamp)
+        && (!('nutrients' in data) || data.nutrients is map)
+        && (!('sourceRef' in data) || (data.sourceRef is string && data.sourceRef.size() <= 200));
+    }
+
     // Helper: validate event by type
     function isValidEvent() {
       let data = request.resource.data;
@@ -105,6 +147,7 @@ service cloud.firestore {
           || (data.type == 'poop')
           || (data.type == 'medication' && hasValidMedicationFields())
           || (data.type == 'bath')
+          || (data.type == 'meal' && hasValidMealFields())
         );
     }
 
@@ -129,6 +172,7 @@ service cloud.firestore {
         || (data.type == 'poop')
         || (data.type == 'medication' && hasValidMedicationFields())
         || (data.type == 'bath')
+        || (data.type == 'meal' && hasValidMealFields())
       );
       return immutableOk && timestampOk && notesOk && typeFieldsOk;
     }
@@ -185,6 +229,44 @@ service cloud.firestore {
         allow create: if isFamilyMember(familyId) && isValidMeasurement();
         allow update: if isFamilyMember(familyId) && isValidMeasurementUpdate();
         allow delete: if isFamilyMember(familyId);
+      }
+
+      // Foods (per-family food catalog: usage/exposure/status tracking)
+      match /foods/{foodId} {
+        allow read: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId) && isValidFood();
+        // exposureCount must not decrease. This clause is load-bearing twice:
+        //  1. the delete guard below only holds if a food can't be zeroed out
+        //     via update just to unlock a delete;
+        //  2. it is the only thing stopping upsertFood's setDoc(merge: true)
+        //     from wiping an established food's status and reactionEventIds.
+        //     minimalFood() and foodFromSeed() always write exposureCount: 0,
+        //     so any such merge onto an eaten food is rejected here.
+        // If anyone ever makes upsertFood preserve the existing counters, that
+        // second protection silently disappears with it — a re-upsert would
+        // then quietly reset a confirmed_allergy back to untried.
+        // (The app only ever increments this counter — no decrement exists.)
+        //
+        // A confirmed_allergy/avoid status is a human's manual call, but every
+        // client works from a snapshot: a derived write (applyReaction,
+        // withdrawReaction) computed on a stale snapshot can't tell the food
+        // is manually locked, and would blindly overwrite the server's real
+        // status. Since a derived write always carries the mealId it's acting
+        // on in reactionEventIds, requiring an empty reactionEventIds to
+        // change a locked status blocks that clobber while still allowing the
+        // one write that legitimately changes it: a human's manual
+        // reassignment from FoodPage, which always clears reactionEventIds
+        // (see setAllergenStatus).
+        allow update: if isFamilyMember(familyId) && isValidFood()
+          && request.resource.data.exposureCount >= resource.data.exposureCount
+          && (
+            !(resource.data.status in ['confirmed_allergy', 'avoid'])
+            || request.resource.data.status == resource.data.status
+            || request.resource.data.reactionEventIds.size() == 0
+          );
+        // A food the baby has actually eaten is history and must not vanish.
+        allow delete: if isFamilyMember(familyId)
+          && resource.data.exposureCount == 0;
       }
     }
   }

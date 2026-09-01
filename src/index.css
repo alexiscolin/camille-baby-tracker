@@ -17,17 +17,48 @@
   --color-medication-bg: #fee2e2;
   --color-bath: #06b6d4;
   --color-bath-bg: #cffafe;
+  --color-meal: #22c55e;
+  --color-meal-bg: #dcfce7;
+
+  /**
+   * Food groups — a categorical palette, one fixed hue per group in FOOD_GROUPS
+   * order. Colour follows the group, never its rank: filtering or reordering a
+   * chart must never repaint a group. Both modes are selected sets, not a flip.
+   * Validated (OKLCH lightness band, chroma floor, protan/deutan separation,
+   * normal-vision floor, contrast) against #ffffff and #1a1930 — re-run
+   * validate_palette.js before touching any value or the order.
+   */
+  --color-group-grain: #2a78d6;
+  --color-group-vegetable: #eb6834;
+  --color-group-fruit: #1baf7a;
+  --color-group-protein: #eda100;
+  --color-group-dairy: #e87ba4;
+  --color-group-fat: #008300;
+  --color-group-other: #4a3aa7;
 
   --color-bg: #f8f9fc;
   --color-surface: #ffffff;
   --color-text: #1e1b4b;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
+  /*
+   * text/secondary/muted form a 3-step legibility ladder, all against
+   * --color-surface. secondary and muted were both stepped one notch
+   * darker (WCAG audit): the old muted (#9ca3af, 2.54:1) failed AA outright,
+   * and raising it to the floor alone would have landed almost on top of
+   * the old secondary (#6b7280, 4.83:1), collapsing the ladder to two
+   * visible levels. Fix: old secondary's value becomes the new muted
+   * floor (already-vetted, comfortably >=4.5:1), and secondary moves one
+   * Tailwind gray step darker for a clearly visible gap above it.
+   * text 15.99:1, secondary 7.56:1, muted 4.83:1 against #ffffff.
+   */
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
   --color-border: #e5e7eb;
   --color-border-light: #f0f1f5;
 
   --color-success: #10b981;
   --color-danger: #ef4444;
+  /* Passes WCAG AA on --color-medication-bg; --color-danger is only 3.1:1. */
+  --color-danger-strong: #b91c1c;
 
   /* Sidebar (desktop) */
   --color-sidebar: #1e1b4b;
@@ -178,8 +209,12 @@ a {
     --color-bg: #0f0e1a;
     --color-surface: #1a1930;
     --color-text: #e8e6f0;
-    --color-text-secondary: #9b99b0;
-    --color-text-muted: #6b6982;
+    /* Same ladder fix as light mode above. Old muted (#6b6982, 3.24:1)
+     * failed AA; old secondary's value becomes the new muted floor
+     * (6.18:1), secondary steps lighter for a clear gap.
+     * text 13.88:1, secondary 8.44:1, muted 6.18:1 against #1a1930. */
+    --color-text-secondary: #b6b4c7;
+    --color-text-muted: #9b99b0;
     --color-border: #2d2b45;
     --color-border-light: #23213a;
 
@@ -188,7 +223,21 @@ a {
     --color-pee-bg: rgba(59, 130, 246, 0.15);
     --color-poop-bg: rgba(139, 92, 246, 0.15);
     --color-medication-bg: rgba(239, 68, 68, 0.15);
+    --color-danger-strong: #fca5a5;
     --color-bath-bg: rgba(6, 182, 212, 0.15);
+    --color-meal-bg: rgba(34, 197, 94, 0.15);
+
+    /* Same seven hues, stepped for the dark surface — a selected set. Fat
+       was left at the light-mode value by mistake (3.46:1, the rest sit
+       4.71–5.58:1); #169c16 was re-validated with validate_palette.js
+       against #1a1930 before landing. */
+    --color-group-grain: #3987e5;
+    --color-group-vegetable: #d95926;
+    --color-group-fruit: #199e70;
+    --color-group-protein: #c98500;
+    --color-group-dairy: #d55181;
+    --color-group-fat: #169c16;
+    --color-group-other: #9085e9;
 
     --color-sidebar: #0a0919;
     --color-sidebar-muted: #5a587a;
