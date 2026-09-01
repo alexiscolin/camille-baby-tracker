@@ -113,7 +113,8 @@ service cloud.firestore {
     // Helper: validate food fields (foods subcollection)
     function isValidFood() {
       let data = request.resource.data;
-      return data.name is string
+      return !('id' in data)
+        && data.name is string
         && data.name.size() >= 1
         && data.name.size() <= 100
         && data.group in ['grain', 'vegetable', 'fruit', 'protein', 'dairy', 'fat', 'other']
@@ -128,7 +129,12 @@ service cloud.firestore {
         && data.exposureCount is int
         && data.exposureCount >= 0
         && data.reactionEventIds is list
-        && data.nutrientSource in ['seed', 'manual'];
+        && data.nutrientSource in ['seed', 'manual']
+        && (!('statusUpdatedAt' in data) || data.statusUpdatedAt is timestamp)
+        && (!('firstTriedAt' in data) || data.firstTriedAt is timestamp)
+        && (!('lastTriedAt' in data) || data.lastTriedAt is timestamp)
+        && (!('nutrients' in data) || data.nutrients is map)
+        && (!('sourceRef' in data) || (data.sourceRef is string && data.sourceRef.size() <= 200));
     }
 
     // Helper: validate event by type
@@ -228,7 +234,12 @@ service cloud.firestore {
       // Foods (per-family food catalog: usage/exposure/status tracking)
       match /foods/{foodId} {
         allow read: if isFamilyMember(familyId);
-        allow create, update: if isFamilyMember(familyId) && isValidFood();
+        allow create: if isFamilyMember(familyId) && isValidFood();
+        // exposureCount must not decrease: the delete guard below only holds
+        // if a food can't be zeroed out via update just to unlock a delete.
+        // (The app only ever increments this counter — no decrement exists.)
+        allow update: if isFamilyMember(familyId) && isValidFood()
+          && request.resource.data.exposureCount >= resource.data.exposureCount;
         // A food the baby has actually eaten is history and must not vanish.
         allow delete: if isFamilyMember(familyId)
           && resource.data.exposureCount == 0;
