@@ -1,5 +1,6 @@
 import type { Timestamp } from 'firebase/firestore';
 import type { Allergen } from '../utils/allergens';
+import type { BaseEvent } from './events';
 
 /** Nutrient values are always per 100 g of the food. */
 export interface Nutrients {
@@ -107,3 +108,12 @@ export interface SeedFood {
   nutrients: Nutrients;
   sourceRef: string;
 }
+
+export interface MealEvent extends BaseEvent {
+  type: 'meal';
+  mealSlot: MealSlot;
+  items: MealItem[];
+  reaction?: Reaction;
+}
+
+export const MAX_MEAL_ITEMS = 12;

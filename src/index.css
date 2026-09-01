@@ -17,6 +17,8 @@
   --color-medication-bg: #fee2e2;
   --color-bath: #06b6d4;
   --color-bath-bg: #cffafe;
+  --color-meal: #22c55e;
+  --color-meal-bg: #dcfce7;
 
   --color-bg: #f8f9fc;
   --color-surface: #ffffff;
@@ -189,6 +191,7 @@ a {
     --color-poop-bg: rgba(139, 92, 246, 0.15);
     --color-medication-bg: rgba(239, 68, 68, 0.15);
     --color-bath-bg: rgba(6, 182, 212, 0.15);
+    --color-meal-bg: rgba(34, 197, 94, 0.15);
 
     --color-sidebar: #0a0919;
     --color-sidebar-muted: #5a587a;

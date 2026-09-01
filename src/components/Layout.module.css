@@ -81,7 +81,7 @@
   gap: 2px;
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
-  padding: var(--space-xs) var(--space-lg);
+  padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-md);
   transition: color var(--transition-fast);
   text-decoration: none;
