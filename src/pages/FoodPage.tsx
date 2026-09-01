@@ -1,12 +1,15 @@
-import { useState, useMemo } from 'react';
-import { subDays, startOfDay, endOfDay, format } from 'date-fns';
+import { useState, useMemo, lazy, Suspense } from 'react';
+import { subDays, startOfDay, endOfDay, eachDayOfInterval, format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
-import { ShieldAlert, History, ChevronDown } from 'lucide-react';
+import { ShieldAlert, History, ChevronDown, Salad } from 'lucide-react';
 import { useToday } from '../hooks/useToday';
 import { FOOD_SEED } from '../data/food-seed';
 import { useFoods } from '../hooks/useFoods';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { CacheIndicator } from '../components/CacheIndicator';
+import { SegmentedControl } from '../components/SegmentedControl';
+import { getRangeDays } from '../utils/chart-helpers';
+import type { RangeType } from '../utils/chart-helpers';
 import { AllergenGrid, AllergenSheet } from '../components/AllergenGrid';
 import { EventModal } from '../components/EventModal';
 import { formatBabyAge } from '../utils/date';
@@ -22,6 +25,10 @@ import type { Baby } from '../types/events';
 import type { Food, FoodStatus, MealEvent, SeedFood } from '../types/food';
 import styles from './FoodPage.module.css';
 
+const FoodCharts = lazy(() =>
+  import('./FoodCharts').then((m) => ({ default: m.FoodCharts })),
+);
+
 interface FoodPageProps {
   familyId: string;
   babyId: string;
@@ -35,17 +42,35 @@ const RECENT_DAYS = 7;
 const OPTION_LIMIT = 8;
 const RECENT_CHIP_LIMIT = 12;
 
+const RANGE_OPTIONS = ['7d', '14d', '30d'] as const;
+const RANGE_LABELS: Record<RangeType, string> = { '7d': '7 days', '14d': '14 days', '30d': '30 days' };
+
 export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
   const today = useToday();
+  const [range, setRange] = useState<RangeType>('7d');
   const [showOptions, setShowOptions] = useState(false);
   const [logTarget, setLogTarget] = useState<SeedFood | null>(null);
   const [openAllergen, setOpenAllergen] = useState<AllergenStatus | null>(null);
 
   const { foods, loading, fromCache, hasPendingWrites } = useFoods(familyId);
 
-  const startDate = useMemo(() => startOfDay(subDays(today, RECENT_DAYS - 1)), [today]);
+  /**
+   * One listener, sized to the chart range. The range is never below
+   * RECENT_DAYS, so the 7-day nutrient gap can be filtered out of the same
+   * events rather than opening a second query.
+   */
+  const rangeDays = getRangeDays(range);
+  const startDate = useMemo(() => startOfDay(subDays(today, rangeDays - 1)), [today, rangeDays]);
   const endDate = useMemo(() => endOfDay(today), [today]);
   const { events } = useRangeEvents(familyId, babyId, startDate, endDate);
+
+  const recentStart = useMemo(() => startOfDay(subDays(today, RECENT_DAYS - 1)), [today]);
+
+  const days = useMemo(
+    () => eachDayOfInterval({ start: startDate, end: endDate })
+      .map((date) => ({ date, label: format(date, 'MMM d') })),
+    [startDate, endDate],
+  );
 
   const foodById = useMemo(() => new Map(foods.map((f) => [f.id, f])), [foods]);
 
@@ -57,10 +82,10 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
    */
   const recentNutrients = useMemo(() => {
     const items = events
-      .filter((e): e is MealEvent => e.type === 'meal')
+      .filter((e): e is MealEvent => e.type === 'meal' && e.timestamp.toDate() >= recentStart)
       .flatMap((e) => e.items);
     return items.length > 0 ? mealNutrients(items, foodById) : null;
-  }, [events, foodById]);
+  }, [events, foodById, recentStart]);
 
   const stage = baby ? getWeaningStage(baby.birthDate.toDate(), today) : null;
   const introWindow = useMemo(() => getIntroductionWindow(foods, today), [foods, today]);
@@ -201,8 +226,20 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
         <AllergenGrid statuses={allergenStatuses} onSelect={setOpenAllergen} />
       </section>
 
-      {/* ─── Chart slot — filled by the nutrition chart ─── */}
-      <section className={styles.section} />
+      {/* ─── Nutrition charts ─── */}
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <Salad size={20} className={styles.sectionIcon} />
+          <h2 className={styles.sectionTitle}>What went in</h2>
+          <span className={styles.sectionHint}>Last {rangeDays} days</span>
+        </div>
+        <div className={styles.controls}>
+          <SegmentedControl options={RANGE_OPTIONS} value={range} onChange={setRange} labels={RANGE_LABELS} />
+        </div>
+        <Suspense fallback={<p className={styles.hint}>Loading charts...</p>}>
+          <FoodCharts events={events} byId={foodById} days={days} rangeDays={rangeDays} />
+        </Suspense>
+      </section>
 
       {/* ─── Recently introduced ─── */}
       <section className={styles.section}>

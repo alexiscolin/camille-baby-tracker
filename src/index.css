@@ -20,6 +20,22 @@
   --color-meal: #22c55e;
   --color-meal-bg: #dcfce7;
 
+  /**
+   * Food groups — a categorical palette, one fixed hue per group in FOOD_GROUPS
+   * order. Colour follows the group, never its rank: filtering or reordering a
+   * chart must never repaint a group. Both modes are selected sets, not a flip.
+   * Validated (OKLCH lightness band, chroma floor, protan/deutan separation,
+   * normal-vision floor, contrast) against #ffffff and #1a1930 — re-run
+   * validate_palette.js before touching any value or the order.
+   */
+  --color-group-grain: #2a78d6;
+  --color-group-vegetable: #eb6834;
+  --color-group-fruit: #1baf7a;
+  --color-group-protein: #eda100;
+  --color-group-dairy: #e87ba4;
+  --color-group-fat: #008300;
+  --color-group-other: #4a3aa7;
+
   --color-bg: #f8f9fc;
   --color-surface: #ffffff;
   --color-text: #1e1b4b;
@@ -195,6 +211,15 @@ a {
     --color-danger-strong: #fca5a5;
     --color-bath-bg: rgba(6, 182, 212, 0.15);
     --color-meal-bg: rgba(34, 197, 94, 0.15);
+
+    /* Same seven hues, stepped for the dark surface — a selected set. */
+    --color-group-grain: #3987e5;
+    --color-group-vegetable: #d95926;
+    --color-group-fruit: #199e70;
+    --color-group-protein: #c98500;
+    --color-group-dairy: #d55181;
+    --color-group-fat: #008300;
+    --color-group-other: #9085e9;
 
     --color-sidebar: #0a0919;
     --color-sidebar-muted: #5a587a;
