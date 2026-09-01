@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Check, AlertCircle, Trash2, X } from 'lucide-react';
-import { Timestamp, deleteField } from 'firebase/firestore';
+import { Timestamp, deleteField, increment } from 'firebase/firestore';
 import { addEvent, updateEvent, deleteEvent } from '../services/events';
 import { upsertFood, updateFood, foodFromSeed } from '../services/food-catalog';
 import { useFoods } from '../hooks/useFoods';
@@ -266,8 +266,8 @@ export function EventModal(props: EventModalProps) {
     for (const id of ids) {
       const food = prepared.catalog.get(id)!;
       await updateFood(familyId, id, {
-        usageCount: food.usageCount + 1,
-        exposureCount: food.exposureCount + 1,
+        usageCount: increment(1),
+        exposureCount: increment(1),
         lastTriedAt: prepared.stamp,
         ...(food.firstTriedAt ? {} : { firstTriedAt: prepared.stamp }),
       });
@@ -477,8 +477,8 @@ export function EventModal(props: EventModalProps) {
           for (const id of prepared.uniqueIds) {
             const food = prepared.catalog.get(id)!;
             await updateFood(familyId, id, {
-              usageCount: food.usageCount + 1,
-              exposureCount: food.exposureCount + 1,
+              usageCount: increment(1),
+              exposureCount: increment(1),
               lastTriedAt: prepared.stamp,
               ...(food.firstTriedAt ? {} : { firstTriedAt: prepared.stamp }),
             });

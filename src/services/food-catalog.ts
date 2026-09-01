@@ -5,6 +5,7 @@ import {
   doc,
   onSnapshot,
 } from 'firebase/firestore';
+import type { FieldValue } from 'firebase/firestore';
 import { db } from './firebase';
 import { FOOD_GROUPS, FOOD_STATUSES } from '../types/food';
 import type { Food, SeedFood, FoodGroup, FoodStatus } from '../types/food';
@@ -105,10 +106,22 @@ export function upsertFood(familyId: string, food: Food) {
   return setDoc(doc(foodsCollection(familyId), id), data, { merge: true });
 }
 
+/**
+ * usageCount/exposureCount also accept a Firestore `increment()` FieldValue
+ * (see firebase/firestore) so callers can bump them atomically on the
+ * server instead of read-then-write from a client snapshot, which is what
+ * let two concurrent devices both compute the same "next" value and lose
+ * one real exposure.
+ */
+type FoodUpdateData = Partial<Omit<Food, 'usageCount' | 'exposureCount'>> & {
+  usageCount?: number | FieldValue;
+  exposureCount?: number | FieldValue;
+};
+
 export function updateFood(
   familyId: string,
   foodId: string,
-  data: Partial<Food>,
+  data: FoodUpdateData,
 ) {
   return updateDoc(doc(foodsCollection(familyId), foodId), data);
 }
