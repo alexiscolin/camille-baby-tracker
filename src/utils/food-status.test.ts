@@ -1,9 +1,53 @@
 import { describe, it, expect } from 'vitest';
-import { deriveStatus, novelFoodIds, statusLabel, isManualStatus } from './food-status';
-import type { MealItem } from '../types/food';
+import { Timestamp } from 'firebase/firestore';
+import { deriveStatus, novelFoodIds, applyReaction, statusLabel, isManualStatus } from './food-status';
+import type { Food, FoodStatus, MealEvent, MealItem } from '../types/food';
 
-const food = (status: string, exposures: number, reactions: string[] = []) =>
-  ({ status, exposureCount: exposures, reactionEventIds: reactions }) as never;
+const food = (
+  status: FoodStatus,
+  exposures: number,
+  reactions: string[] = [],
+): Pick<Food, 'status' | 'exposureCount' | 'reactionEventIds'> => ({
+  status,
+  exposureCount: exposures,
+  reactionEventIds: reactions,
+});
+
+/** A full Food record for applyReaction tests, with sensible defaults. */
+const makeFood = (id: string, overrides: Partial<Food> = {}): Food => ({
+  id,
+  name: id,
+  group: 'other',
+  allergens: [],
+  gramsPerTsp: 5,
+  minStage: 1,
+  status: 'untried',
+  usageCount: 1,
+  exposureCount: 1,
+  reactionEventIds: [],
+  nutrientSource: 'seed',
+  ...overrides,
+});
+
+const mealItem = (foodId: string, firstTry = false): MealItem => ({
+  foodId,
+  name: foodId,
+  quantity: 1,
+  unit: 'tsp',
+  firstTry,
+});
+
+const makeMeal = (overrides: Partial<MealEvent> = {}): MealEvent => ({
+  id: 'meal-1',
+  babyId: 'baby-1',
+  type: 'meal',
+  timestamp: Timestamp.fromDate(new Date('2026-01-01')),
+  createdBy: 'user-1',
+  createdAt: Timestamp.fromDate(new Date('2026-01-01')),
+  mealSlot: 'lunch',
+  items: [],
+  ...overrides,
+});
 
 describe('deriveStatus', () => {
   it('should keep a food untried below three clean exposures', () => {
@@ -49,6 +93,67 @@ describe('novelFoodIds', () => {
       { foodId: 'b', name: 'B', quantity: 1, unit: 'tsp' },
     ] as MealItem[];
     expect(novelFoodIds(items)).toEqual(['a', 'b']);
+  });
+});
+
+describe('applyReaction', () => {
+  it('should mark every novel food in the meal suspected, not just one', () => {
+    const foods = [makeFood('a'), makeFood('b'), makeFood('c'), makeFood('d')];
+    const meal = makeMeal({
+      items: [mealItem('a', true), mealItem('b', true), mealItem('c', true), mealItem('d', false)],
+    });
+
+    const result = applyReaction(foods, meal, 'meal-1');
+
+    expect(result.find((f) => f.id === 'a')?.status).toBe('suspected');
+    expect(result.find((f) => f.id === 'b')?.status).toBe('suspected');
+    expect(result.find((f) => f.id === 'c')?.status).toBe('suspected');
+    expect(result.find((f) => f.id === 'a')?.reactionEventIds).toEqual(['meal-1']);
+    expect(result.find((f) => f.id === 'b')?.reactionEventIds).toEqual(['meal-1']);
+    expect(result.find((f) => f.id === 'c')?.reactionEventIds).toEqual(['meal-1']);
+    // 'd' was not flagged as a first try, so it is not a suspect here.
+    expect(result.find((f) => f.id === 'd')?.status).toBe('untried');
+    expect(result.find((f) => f.id === 'd')?.reactionEventIds).toEqual([]);
+  });
+
+  it('should leave a manual status untouched even when the food is in the suspected set', () => {
+    const foods = [
+      makeFood('a', { status: 'confirmed_allergy' }),
+      makeFood('b', { status: 'avoid' }),
+    ];
+    const meal = makeMeal({ items: [mealItem('a', true), mealItem('b', true)] });
+
+    const result = applyReaction(foods, meal, 'meal-1');
+
+    expect(result.find((f) => f.id === 'a')?.status).toBe('confirmed_allergy');
+    expect(result.find((f) => f.id === 'a')?.reactionEventIds).toEqual([]);
+    expect(result.find((f) => f.id === 'b')?.status).toBe('avoid');
+    expect(result.find((f) => f.id === 'b')?.reactionEventIds).toEqual([]);
+  });
+
+  it('should not append the same mealId twice when applied twice', () => {
+    const foods = [makeFood('a')];
+    const meal = makeMeal({ items: [mealItem('a', true)] });
+
+    const once = applyReaction(foods, meal, 'meal-1');
+    const twice = applyReaction(once, meal, 'meal-1');
+
+    expect(twice.find((f) => f.id === 'a')?.reactionEventIds).toEqual(['meal-1']);
+  });
+
+  it('should honour an explicit suspectedFoodIds list over the novelFoodIds fallback', () => {
+    const foods = [makeFood('a'), makeFood('b')];
+    const meal = makeMeal({
+      items: [mealItem('a', true), mealItem('b', true)],
+      reaction: { symptoms: ['rash_local'], severity: 'mild', suspectedFoodIds: ['b'] },
+    });
+
+    const result = applyReaction(foods, meal, 'meal-1');
+
+    expect(result.find((f) => f.id === 'a')?.status).toBe('untried');
+    expect(result.find((f) => f.id === 'a')?.reactionEventIds).toEqual([]);
+    expect(result.find((f) => f.id === 'b')?.status).toBe('suspected');
+    expect(result.find((f) => f.id === 'b')?.reactionEventIds).toEqual(['meal-1']);
   });
 });
 
