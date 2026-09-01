@@ -40,9 +40,15 @@ describe('FoodTagInput', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<FoodTagInput items={[]} onChange={onChange} foods={foods} />);
-    await user.type(screen.getByRole('combobox'), 'shi');
+    // 'a' substring-matches both catalog foods (neither is a prefix match), so
+    // they tie-break on usageCount desc: Kabocha (5) first, Shirasu (3) second.
+    // ArrowDown moves off the default top highlight (Kabocha) onto Shirasu, so
+    // this assertion fails if Enter ignored the highlight and used the default.
+    await user.type(screen.getByRole('combobox'), 'a');
     await user.keyboard('{ArrowDown}{Enter}');
-    expect(onChange).toHaveBeenCalled();
+    expect(onChange).toHaveBeenCalledWith([
+      expect.objectContaining({ foodId: 'shirasu' }),
+    ]);
   });
 
   it('should close the suggestion list on Escape', async () => {

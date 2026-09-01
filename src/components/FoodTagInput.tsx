@@ -5,6 +5,7 @@ import { FOOD_SEED } from '../data/food-seed';
 import { slugify } from '../services/food-catalog';
 import { rankSuggestions } from '../utils/food-search';
 import type { FoodSuggestion } from '../utils/food-search';
+import { MAX_MEAL_ITEMS } from '../types/food';
 import type { Food, MealItem } from '../types/food';
 import styles from './FoodTagInput.module.css';
 
@@ -15,9 +16,7 @@ interface FoodTagInputProps {
   maxItems?: number;
 }
 
-const DEFAULT_MAX_ITEMS = 12;
-
-export function FoodTagInput({ items, onChange, foods, maxItems = DEFAULT_MAX_ITEMS }: FoodTagInputProps) {
+export function FoodTagInput({ items, onChange, foods, maxItems = MAX_MEAL_ITEMS }: FoodTagInputProps) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(0);
@@ -89,7 +88,7 @@ export function FoodTagInput({ items, onChange, foods, maxItems = DEFAULT_MAX_IT
           aria-label="Add food"
           aria-autocomplete="list"
           aria-expanded={showList}
-          aria-controls={listboxId}
+          aria-controls={showList ? listboxId : undefined}
           aria-activedescendant={showList ? `${baseId}-option-${highlightIndex}` : undefined}
           value={query}
           onChange={(event) => {
