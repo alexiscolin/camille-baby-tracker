@@ -6,13 +6,12 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { FOOD_GROUPS } from '../types/food';
+import { FOOD_GROUPS, FOOD_STATUSES } from '../types/food';
 import type { Food, SeedFood, FoodGroup, FoodStatus } from '../types/food';
 
 const VALID_GROUPS = new Set<FoodGroup>(FOOD_GROUPS);
-const VALID_STATUSES = new Set<FoodStatus>([
-  'untried', 'safe', 'watch', 'suspected', 'confirmed_allergy', 'avoid',
-]);
+const VALID_STATUSES = new Set<FoodStatus>(FOOD_STATUSES);
+const VALID_NUTRIENT_SOURCES = new Set<Food['nutrientSource']>(['seed', 'manual']);
 
 function foodsCollection(familyId: string) {
   return collection(db, 'families', familyId, 'foods');
@@ -69,8 +68,10 @@ export function isValidFoodData(data: Record<string, unknown>): boolean {
     VALID_STATUSES.has(data.status as FoodStatus) &&
     typeof data.usageCount === 'number' &&
     typeof data.exposureCount === 'number' &&
+    Array.isArray(data.allergens) &&
     Array.isArray(data.reactionEventIds) &&
-    typeof data.nutrientSource === 'string'
+    typeof data.nutrientSource === 'string' &&
+    VALID_NUTRIENT_SOURCES.has(data.nutrientSource as Food['nutrientSource'])
   );
 }
 

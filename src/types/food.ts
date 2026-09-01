@@ -74,8 +74,10 @@ export interface MealItem {
   firstTry?: boolean;
 }
 
-export type FoodStatus =
-  | 'untried' | 'safe' | 'watch' | 'suspected' | 'confirmed_allergy' | 'avoid';
+export const FOOD_STATUSES = [
+  'untried', 'safe', 'watch', 'suspected', 'confirmed_allergy', 'avoid',
+] as const;
+export type FoodStatus = (typeof FOOD_STATUSES)[number];
 
 /** A food the family has actually used. Reference data lives in food-seed.ts. */
 export interface Food {

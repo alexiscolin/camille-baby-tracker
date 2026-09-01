@@ -4,7 +4,12 @@ import { subscribeToFoods } from '../services/food-catalog';
 
 export function useFoods(familyId: string | undefined) {
   const [foods, setFoods] = useState<Food[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Tracks which family the data in state actually belongs to, so `loading`
+  // can be derived from a mismatch instead of reset with a synchronous
+  // setState in the effect body (which trips react-hooks/set-state-in-effect).
+  // This also means `loading` stays true across a familyId change until the
+  // new family's first snapshot (or error) arrives, instead of going stale.
+  const [loadedFamilyId, setLoadedFamilyId] = useState<string | null>(null);
   const [fromCache, setFromCache] = useState(false);
   const [hasPendingWrites, setHasPendingWrites] = useState(false);
 
@@ -17,15 +22,17 @@ export function useFoods(familyId: string | undefined) {
         setFoods(result.foods);
         setFromCache(result.fromCache);
         setHasPendingWrites(result.hasPendingWrites);
-        setLoading(false);
+        setLoadedFamilyId(familyId);
       },
       () => {
-        setLoading(false);
+        setLoadedFamilyId(familyId);
       },
     );
 
     return unsubscribe;
   }, [familyId]);
 
-  return { foods, loading: familyId ? loading : false, fromCache, hasPendingWrites };
+  const loading = familyId ? loadedFamilyId !== familyId : false;
+
+  return { foods, loading, fromCache, hasPendingWrites };
 }

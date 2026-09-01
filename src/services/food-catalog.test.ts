@@ -89,4 +89,12 @@ describe('isValidFoodData', () => {
   it('should reject an out-of-range stage', () => {
     expect(isValidFoodData({ ...valid, minStage: 9 })).toBe(false);
   });
+
+  it('should reject an unknown nutrient source', () => {
+    expect(isValidFoodData({ ...valid, nutrientSource: 'ai' })).toBe(false);
+  });
+
+  it('should reject non-array allergens', () => {
+    expect(isValidFoodData({ ...valid, allergens: 'soy' })).toBe(false);
+  });
 });
