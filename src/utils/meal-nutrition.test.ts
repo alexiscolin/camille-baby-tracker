@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Timestamp } from 'firebase/firestore';
-import { toGrams, mealNutrients, markFirstTry } from './meal-nutrition';
-import type { Food, MealItem, Nutrients } from '../types/food';
+import { toGrams, mealNutrients, markFirstTry, buildReactionPayload } from './meal-nutrition';
+import type { Food, MealItem, Nutrients, Reaction } from '../types/food';
 
 const zero = (): Nutrients => ({
   energyKcal: 0, proteinG: 0, fatG: 0, carbsG: 0, fiberG: 0, sugarsG: 0,
@@ -90,5 +90,53 @@ describe('markFirstTry', () => {
     const byId = new Map([['kabocha', tried]]);
     const [result] = markFirstTry([item({ quantity: 3, unit: 'g', acceptance: 'half' })], byId);
     expect(result).toMatchObject({ foodId: 'kabocha', quantity: 3, unit: 'g', acceptance: 'half' });
+  });
+});
+
+describe('buildReactionPayload', () => {
+  const reaction = (suspected: string[]): Reaction => ({
+    symptoms: ['hives'],
+    severity: 'mild',
+    suspectedFoodIds: suspected,
+  });
+  const meal: MealItem[] = [
+    item({ foodId: 'natto', firstTry: true }),
+    item({ foodId: 'egg', firstTry: true }),
+    item({ foodId: 'rice' }),
+  ];
+
+  it('should fall back to every novel food when the UI sent nothing', () => {
+    expect(buildReactionPayload(reaction([]), meal).suspectedFoodIds)
+      .toEqual(['natto', 'egg']);
+  });
+
+  it('should keep a novel food the UI left out', () => {
+    // The one way attribution can be defeated from outside: a caller naming a
+    // single culprit. The floor must survive it.
+    expect(buildReactionPayload(reaction(['natto']), meal).suspectedFoodIds)
+      .toEqual(expect.arrayContaining(['natto', 'egg']));
+  });
+
+  it('should keep a food the user widened onto', () => {
+    expect(buildReactionPayload(reaction(['rice']), meal).suspectedFoodIds.sort())
+      .toEqual(['egg', 'natto', 'rice']);
+  });
+
+  it('should drop a food that is no longer in the meal but keep the floor', () => {
+    const result = buildReactionPayload(reaction(['kabocha', 'rice']), meal);
+    expect(result.suspectedFoodIds).not.toContain('kabocha');
+    expect(result.suspectedFoodIds.sort()).toEqual(['egg', 'natto', 'rice']);
+  });
+
+  it('should suspect every item when no food in the meal is novel', () => {
+    const familiar = [item({ foodId: 'rice' }), item({ foodId: 'carrot' })];
+    expect(buildReactionPayload(reaction([]), familiar).suspectedFoodIds.sort())
+      .toEqual(['carrot', 'rice']);
+  });
+
+  it('should omit optional keys that are unset', () => {
+    const result = buildReactionPayload(reaction([]), meal);
+    expect(Object.keys(result).sort())
+      .toEqual(['severity', 'suspectedFoodIds', 'symptoms']);
   });
 });

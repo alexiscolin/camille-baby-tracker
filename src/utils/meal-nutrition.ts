@@ -1,5 +1,6 @@
 import { NUTRIENT_KEYS } from '../types/food';
-import type { Food, MealItem, Nutrients } from '../types/food';
+import { novelFoodIds } from './food-status';
+import type { Food, MealItem, Nutrients, Reaction } from '../types/food';
 
 const DEFAULT_GRAMS_PER_TSP = 5;
 const DEFAULT_GRAMS_PER_PIECE = 30;
@@ -29,6 +30,31 @@ export function markFirstTry(items: MealItem[], byId: Map<string, Food>): MealIt
     ...item,
     firstTry: !byId.get(item.foodId)?.firstTriedAt,
   }));
+}
+
+/**
+ * The single guarantee that a reaction is attributed conservatively. A reaction
+ * after a multi-food meal cannot identify the culprit, so novelFoodIds(items)
+ * is the floor and is always kept whole, whatever the UI sent up; the UI's set
+ * only ever adds to it. The one thing removed is an id no longer in the meal —
+ * a food that was not served cannot have caused this reaction, and that can
+ * never cut into the floor, which is a subset of the items by construction.
+ *
+ * Also drops optional keys that are unset: Firestore rejects `undefined`
+ * client-side and firestore.rules rejects `null`, so they must be absent.
+ */
+export function buildReactionPayload(reaction: Reaction, items: MealItem[]): Reaction {
+  return {
+    symptoms: reaction.symptoms,
+    severity: reaction.severity,
+    suspectedFoodIds: [...new Set([
+      ...novelFoodIds(items),
+      ...reaction.suspectedFoodIds.filter((id) => items.some((i) => i.foodId === id)),
+    ])],
+    ...(reaction.onsetMinutes !== undefined ? { onsetMinutes: reaction.onsetMinutes } : {}),
+    ...(reaction.resolvedMinutes !== undefined ? { resolvedMinutes: reaction.resolvedMinutes } : {}),
+    ...(reaction.note ? { note: reaction.note } : {}),
+  };
 }
 
 function emptyNutrients(): Nutrients {

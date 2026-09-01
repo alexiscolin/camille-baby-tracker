@@ -5,14 +5,14 @@ import { addEvent, updateEvent, deleteEvent } from '../services/events';
 import { upsertFood, updateFood, foodFromSeed } from '../services/food-catalog';
 import { useFoods } from '../hooks/useFoods';
 import { FOOD_SEED } from '../data/food-seed';
-import { applyReaction, novelFoodIds, withdrawReaction } from '../utils/food-status';
+import { applyReaction, withdrawReaction } from '../utils/food-status';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { getStoolColorWarning, type StoolColorId } from '../utils/stool-color';
 import { FeedingFields } from './EventModal/FeedingFields';
 import { PoopFields } from './EventModal/PoopFields';
 import { MedicationFields } from './EventModal/MedicationFields';
 import { MealFields } from './EventModal/MealFields';
-import { markFirstTry } from '../utils/meal-nutrition';
+import { buildReactionPayload, markFirstTry } from '../utils/meal-nutrition';
 import { MAX_MEAL_ITEMS } from '../types/food';
 import type { Food, MealEvent, MealItem, MealSlot, Reaction } from '../types/food';
 import type { EventType, FeedingType, BabyEvent, FeedingEvent, PoopEvent, MedicationEvent } from '../types/events';
@@ -45,29 +45,6 @@ type EventModalProps = {
 
 function sanitizeText(text: string, maxLength: number): string {
   return text.trim().slice(0, maxLength);
-}
-
-/**
- * Firestore rejects `undefined` client-side and the rules reject `null` for an
- * optional field, so optional keys have to be absent rather than empty.
- */
-function buildReactionPayload(reaction: Reaction, items: MealItem[]): Reaction {
-  return {
-    symptoms: reaction.symptoms,
-    severity: reaction.severity,
-    // Conservative by construction: a reaction after a multi-food meal cannot
-    // identify the culprit, so novelFoodIds(items) is the floor and is always
-    // kept whole, whatever the UI sent up. The UI's set only ever adds to it,
-    // minus ids no longer in the meal — a food that was not served cannot have
-    // caused this reaction.
-    suspectedFoodIds: [...new Set([
-      ...novelFoodIds(items),
-      ...reaction.suspectedFoodIds.filter((id) => items.some((i) => i.foodId === id)),
-    ])],
-    ...(reaction.onsetMinutes !== undefined ? { onsetMinutes: reaction.onsetMinutes } : {}),
-    ...(reaction.resolvedMinutes !== undefined ? { resolvedMinutes: reaction.resolvedMinutes } : {}),
-    ...(reaction.note ? { note: reaction.note } : {}),
-  };
 }
 
 /** A free-text food, with every field set to a value firestore.rules accepts. */
@@ -158,10 +135,17 @@ export function EventModal(props: EventModalProps) {
   // Always recomputed rather than trusted from a stored item: the catalog
   // arrives asynchronously, and losing a `firstTry` only ever widens the
   // suspected set (novelFoodIds falls back to every item), never narrows it.
-  const itemsWithFirstTry = useMemo<MealItem[]>(
-    () => markFirstTry(mealItems, foodById),
-    [mealItems, foodById],
-  );
+  const itemsWithFirstTry = useMemo<MealItem[]>(() => {
+    const derived = markFirstTry(mealItems, foodById);
+    if (!editEvent) return derived;
+    // On edit the stored flag is a historical fact — "her first taste of natto"
+    // — and step 4 has since written firstTriedAt, so re-deriving would erase
+    // it. Only items added during this edit carry no flag and are derived.
+    return derived.map((item, i) => ({
+      ...item,
+      firstTry: mealItems[i].firstTry ?? item.firstTry,
+    }));
+  }, [editEvent, mealItems, foodById]);
 
   const babyAgeDays = babyBirthDate
     ? Math.floor((Date.now() - babyBirthDate.getTime()) / (1000 * 60 * 60 * 24))
@@ -213,6 +197,12 @@ export function EventModal(props: EventModalProps) {
       setError('Add at least one food');
       return null;
     }
+    // One stray tap on "Log a reaction" would otherwise persist a symptomless
+    // reaction and suspect every novel food in the meal.
+    if (reaction && reaction.symptoms.length === 0) {
+      setError('Select at least one symptom, or remove the reaction');
+      return null;
+    }
     // Without the catalog, every food looks new and the merge below would reset
     // a known food's status and reaction history to a blank one.
     if (foodsLoading) {
@@ -258,7 +248,7 @@ export function EventModal(props: EventModalProps) {
   async function persistFoodChanges(
     foodList: Food[],
     stamp: Timestamp,
-    catalog: Map<string, Food> = foodById,
+    catalog: Map<string, Food>,
   ) {
     for (const food of foodList) {
       if (food === catalog.get(food.id)) continue;
@@ -270,14 +260,25 @@ export function EventModal(props: EventModalProps) {
     }
   }
 
-  /** Step 5: every suspected food carries the reaction and becomes suspected. */
-  async function persistReactionAttribution(
+  /**
+   * Step 5: re-attribute this meal from scratch over the whole catalog.
+   *
+   * Withdraw first, always. `applyReaction` only ever adds, so without this a
+   * food dropped from a narrowed suspected set — a widened food deselected, or
+   * a food removed from the meal — would keep this mealId and stay `suspected`
+   * for good. Foods that are still suspected are withdrawn and re-added in the
+   * same pass: a redundant write with identical values.
+   */
+  async function persistAttribution(
     prepared: NonNullable<Awaited<ReturnType<typeof prepareMeal>>>,
     mealId: string,
   ) {
-    const { catalog, uniqueIds, items, reactionPayload, stamp } = prepared;
-    if (!reactionPayload) return;
-
+    const { catalog, items, reactionPayload, stamp } = prepared;
+    const cleared = withdrawReaction([...catalog.values()], mealId);
+    if (!reactionPayload) {
+      await persistFoodChanges(cleared, stamp, catalog);
+      return;
+    }
     const meal: MealEvent = {
       id: mealId,
       babyId,
@@ -289,8 +290,7 @@ export function EventModal(props: EventModalProps) {
       items,
       reaction: reactionPayload,
     };
-    const before = uniqueIds.map((id) => catalog.get(id)!);
-    await persistFoodChanges(applyReaction(before, meal, mealId), stamp, catalog);
+    await persistFoodChanges(applyReaction(cleared, meal, mealId), stamp, catalog);
   }
 
   async function handleSave() {
@@ -354,11 +354,7 @@ export function EventModal(props: EventModalProps) {
           updates.dose = d;
         } else if (selectedType === 'meal') {
           const prepared = await prepareMeal(eventDate);
-          if (!prepared) {
-            setSaving(false);
-            saveInFlight.current = false;
-            return;
-          }
+          if (!prepared) return;
           updates.mealSlot = mealSlot;
           updates.items = prepared.items;
           // Absent, never null: firestore.rules only accepts a map or nothing.
@@ -366,15 +362,7 @@ export function EventModal(props: EventModalProps) {
           await updateEvent(familyId, editEvent.id, updates);
           // Counters are not touched on edit: the exposure was already counted
           // when the meal was first logged.
-          if (prepared.reactionPayload) {
-            await persistReactionAttribution(prepared, editEvent.id);
-          } else {
-            // The reaction was removed. Undo this meal's attribution, otherwise
-            // a mis-tap leaves those foods suspected for good — and Task 12
-            // then hides their whole allergen family from the suggestions.
-            // Scans the catalog, not the items: the item list may have changed.
-            await persistFoodChanges(withdrawReaction(foods, editEvent.id), prepared.stamp);
-          }
+          await persistAttribution(prepared, editEvent.id);
           setSaved(true);
           setTimeout(onClose, 1000);
           return;
@@ -423,11 +411,7 @@ export function EventModal(props: EventModalProps) {
           } as Parameters<typeof addEvent>[1]);
         } else if (selectedType === 'meal') {
           const prepared = await prepareMeal(eventDate);
-          if (!prepared) {
-            setSaving(false);
-            saveInFlight.current = false;
-            return;
-          }
+          if (!prepared) return;
           const ref = await addEvent(familyId, {
             ...base,
             mealSlot,
@@ -447,7 +431,7 @@ export function EventModal(props: EventModalProps) {
             });
           }
 
-          await persistReactionAttribution(prepared, ref.id);
+          await persistAttribution(prepared, ref.id);
         } else if (selectedType === 'poop' && stoolColor) {
           await addEvent(familyId, {
             ...base,

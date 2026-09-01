@@ -152,7 +152,16 @@ export function MealFields({
 
       <div className={styles.field}>
         <label className={styles.label}>Foods</label>
-        <FoodTagInput items={items} onChange={onItemsChange} foods={foods} />
+        <FoodTagInput
+          items={items}
+          onChange={(next) => {
+            // The open panel is keyed by array index. Removing a chip reindexes
+            // the list, so leaving it open would silently edit a different food.
+            setExpandedItem(null);
+            onItemsChange(next);
+          }}
+          foods={foods}
+        />
       </div>
 
       {hasNewFood && <p className={styles.newFoodHint}>{NEW_FOOD_HINT}</p>}
