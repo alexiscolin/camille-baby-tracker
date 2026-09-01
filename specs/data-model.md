@@ -19,10 +19,13 @@ interface Family {
 ### `families/{familyId}/babies/{babyId}`
 
 ```typescript
+type BabySex = 'male' | 'female';
+
 interface Baby {
   id: string;
   firstName: string;
   birthDate: Timestamp;
+  sex?: BabySex;
   createdAt: Timestamp;
 }
 ```
@@ -32,7 +35,7 @@ interface Baby {
 Single collection for all event types, discriminated by `type`.
 
 ```typescript
-type EventType = 'feeding' | 'pee' | 'poop' | 'medication';
+type EventType = 'feeding' | 'pee' | 'poop' | 'medication' | 'bath' | 'meal';
 
 interface BaseEvent {
   id: string;
@@ -44,10 +47,16 @@ interface BaseEvent {
   notes?: string;
 }
 
+type FeedingType = 'breast' | 'bottle';
+
 interface FeedingEvent extends BaseEvent {
   type: 'feeding';
-  feedingType: 'left' | 'right' | 'bottle';
+  feedingType: FeedingType;
+  leftCount: number;
+  rightCount: number;
   durationMinutes?: number;
+  infection?: boolean;
+  engorgement?: boolean;
 }
 
 interface PeeEvent extends BaseEvent {
@@ -66,8 +75,83 @@ interface MedicationEvent extends BaseEvent {
   dose: string;
 }
 
-type BabyEvent = FeedingEvent | PeeEvent | PoopEvent | MedicationEvent;
+interface BathEvent extends BaseEvent {
+  type: 'bath';
+}
+
+type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+type FoodUnit = 'tsp' | 'g' | 'ml' | 'piece';
+type Acceptance = 'all' | 'most' | 'half' | 'taste' | 'refused';
+type ReactionSymptom =
+  | 'rash_local' | 'hives' | 'swelling' | 'vomiting'
+  | 'diarrhea' | 'cough' | 'wheezing' | 'lethargy' | 'other';
+type ReactionSeverity = 'mild' | 'moderate' | 'severe';
+
+interface MealItem {
+  foodId: string;
+  name: string;               // Denormalised label at logging time, so history survives a rename
+  quantity: number;
+  unit: FoodUnit;
+  acceptance?: Acceptance;
+  firstTry?: boolean;
+}
+
+interface Reaction {
+  symptoms: ReactionSymptom[];
+  severity: ReactionSeverity;
+  onsetMinutes?: number;
+  resolvedMinutes?: number;
+  suspectedFoodIds: string[];
+  note?: string;
+}
+
+interface MealEvent extends BaseEvent {
+  type: 'meal';
+  mealSlot: MealSlot;
+  items: MealItem[];           // 1..12 items; per-item fields validated client-side only
+  reaction?: Reaction;
+}
+
+type BabyEvent =
+  | FeedingEvent | PeeEvent | PoopEvent | MedicationEvent | BathEvent | MealEvent;
 ```
+
+### `families/{familyId}/foods/{foodId}`
+
+Per-family food catalog entry, tracking usage and reaction history for a food
+the family has actually introduced. Reference/nutrient seed data lives
+client-side in `src/data/food-seed.ts`, not in Firestore.
+
+```typescript
+type FoodGroup = 'grain' | 'vegetable' | 'fruit' | 'protein' | 'dairy' | 'fat' | 'other';
+
+/** 1: 初期 5-6mo, 2: 中期 7-8mo, 3: 後期 9-11mo, 4: 完了期 12-18mo. */
+type WeaningStage = 1 | 2 | 3 | 4;
+
+type FoodStatus = 'untried' | 'safe' | 'watch' | 'suspected' | 'confirmed_allergy' | 'avoid';
+
+interface Food {
+  id: string;
+  name: string;
+  group: FoodGroup;
+  allergens: Allergen[];
+  gramsPerTsp: number;         // (0, 15]
+  minStage: WeaningStage;
+  status: FoodStatus;
+  statusUpdatedAt?: Timestamp;
+  usageCount: number;
+  exposureCount: number;
+  firstTriedAt?: Timestamp;
+  lastTriedAt?: Timestamp;
+  reactionEventIds: string[];
+  nutrients?: Nutrients;       // per 100 g
+  nutrientSource: 'seed' | 'manual';
+  sourceRef?: string;
+}
+```
+
+Deletion is only allowed when `exposureCount == 0`: a food the baby has
+actually eaten is history and must not vanish.
 
 ## Firestore Indexes
 
