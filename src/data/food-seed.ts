@@ -678,7 +678,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 1,
-    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), kabu (turnip), root, peeled, boiled',
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), kabu (turnip), root, peeled, boiled. UNCONFIRMED: the 21 kcal energy figure has not been checked against the 8th edition and gives a coherence ratio of 0.85. Look up 8th ed かぶ 根 皮なし ゆで, エネルギー to close this.',
     nutrients: {
       energyKcal: 21, proteinG: 0.6, fatG: 0.1, carbsG: 3.0, fiberG: 1.7,
       sugarsG: 2.9, ironMg: 0.2, calciumMg: 28, zincMg: 0.1, sodiumMg: 6,
@@ -738,7 +738,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 1,
-    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), cauliflower, flower head, boiled',
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), cauliflower, flower head, boiled. Energy coherence is 0.91; 26 kcal is identical in the 7th and 8th editions, so an edition mix-up cannot explain the gap even in principle. It is the usual by-difference carbohydrate slack on a high-fibre, low-energy vegetable.',
     nutrients: {
       energyKcal: 26, proteinG: 2.1, fatG: 0.1, carbsG: 2.0, fiberG: 3.2,
       sugarsG: 1.7, ironMg: 0.4, calciumMg: 23, zincMg: 0.3, sodiumMg: 8,
@@ -798,7 +798,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 4,
     minStage: 2,
-    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), mizuna, leaves, boiled',
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), mizuna, leaves, boiled. UNCONFIRMED: the 21 kcal energy figure has not been checked against the 8th edition and gives a coherence ratio of 0.86. Look up 8th ed みずな 葉 ゆで, エネルギー to close this.',
     nutrients: {
       energyKcal: 21, proteinG: 2.0, fatG: 0.1, carbsG: 0.5, fiberG: 3.6,
       sugarsG: 0.5, ironMg: 2.0, calciumMg: 200, zincMg: 0.2, sodiumMg: 18,
@@ -1267,7 +1267,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 4,
     minStage: 4,
-    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), eringi, boiled',
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), eringi, boiled. Energy coherence is 0.87 by design, not by error: 32 kcal is the 8th edition figure, which dropped the 0.5 provisional coefficient the 7th edition applied to mushrooms (the 7th-ed figure was 24), roughly doubling mushroom energies. The gap comes from the flat 2 kcal/g fibre term under-counting what the 8th edition actually credits.',
     nutrients: {
       energyKcal: 32, proteinG: 2.6, fatG: 0.3, carbsG: 1.3, fiberG: 4.8,
       sugarsG: 0.9, ironMg: 0.3, calciumMg: 1, zincMg: 0.7, sodiumMg: 2,
@@ -3655,7 +3655,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['soy', 'wheat'],
     gramsPerTsp: 6,
     minStage: 2,
-    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), usukuchi shoyu; paler but saltier than koikuchi',
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), usukuchi shoyu; paler but saltier than koikuchi. Energy coherence is 0.77, just above the 0.75 floor, for the same reason as koikuchi: shoyu carries organic acids and trace ethanol that the 4/9/4/2 formula does not model, so the computed figure under-counts the published energy.',
     nutrients: {
       energyKcal: 60, proteinG: 5.7, fatG: 0, carbsG: 5.8, fiberG: 0,
       sugarsG: 2.6, ironMg: 1.1, calciumMg: 24, zincMg: 0.6, sodiumMg: 6300,
