@@ -18,6 +18,12 @@ export type NextFoodsInput = {
   foods: Food[];
   stage: WeaningStage;
   now: Date;
+  /**
+   * The trailing 7-day *intake total* — not the per-100 g reference values
+   * `Nutrients` carries everywhere else. Build it by summing `mealNutrients`
+   * over the logged meals; it is compared against a 7-day reference intake
+   * below, so per-100 g values would be read as a nonsense deficit.
+   */
   recentNutrients: Nutrients | null;
 };
 

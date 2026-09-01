@@ -35,7 +35,12 @@ type EventModalProps = {
   babyBirthDate?: Date;
 } & (
   | { mode: 'edit'; event: BabyEvent }
-  | { mode: 'add'; date: Date }
+  /**
+   * `initialType` and `initialItems` let a caller open straight into a
+   * pre-filled form — the food page logs a suggestion without making the
+   * parent re-pick the type and re-type the food.
+   */
+  | { mode: 'add'; date: Date; initialType?: EventType; initialItems?: MealItem[] }
 );
 
 function sanitizeText(text: string, maxLength: number): string {
@@ -89,7 +94,7 @@ export function EventModal(props: EventModalProps) {
   const targetDate = mode === 'add' ? props.date : editEvent!.timestamp.toDate();
 
   const [selectedType, setSelectedType] = useState<EventType | null>(
-    editEvent?.type ?? null,
+    editEvent?.type ?? (mode === 'add' ? props.initialType ?? null : null),
   );
   const [time, setTime] = useState(getTimeString(targetDate));
   const [feedingType, setFeedingType] = useState<FeedingType>(
@@ -126,7 +131,9 @@ export function EventModal(props: EventModalProps) {
     editEvent?.type === 'meal' ? (editEvent as MealEvent).mealSlot : 'lunch',
   );
   const [mealItems, setMealItems] = useState<MealItem[]>(
-    editEvent?.type === 'meal' ? (editEvent as MealEvent).items : [],
+    editEvent?.type === 'meal'
+      ? (editEvent as MealEvent).items
+      : mode === 'add' ? props.initialItems ?? [] : [],
   );
   const [reaction, setReaction] = useState<Reaction | undefined>(
     editEvent?.type === 'meal' ? (editEvent as MealEvent).reaction : undefined,

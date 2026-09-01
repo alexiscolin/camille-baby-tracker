@@ -9,6 +9,7 @@ import { SetupPage } from './pages/SetupPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { StatsPage } from './pages/StatsPage';
 import { GrowthPage } from './pages/GrowthPage';
+import { FoodPage } from './pages/FoodPage';
 import { SettingsPage } from './pages/SettingsPage';
 import type { Family } from './types/events';
 
@@ -43,6 +44,17 @@ function AppContent() {
           path="/"
           element={
             <DashboardPage
+              familyId={family.id}
+              babyId={babyId}
+              userId={user.uid}
+              baby={baby}
+            />
+          }
+        />
+        <Route
+          path="/food"
+          element={
+            <FoodPage
               familyId={family.id}
               babyId={babyId}
               userId={user.uid}
