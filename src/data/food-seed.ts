@@ -5,6 +5,15 @@ import type { Allergen } from '../utils/allergens';
  * Per-100g plausibility ceilings. Deliberately generous — they exist to catch
  * order-of-magnitude hallucinations, not to second-guess real outliers such
  * as liver (vitamin A, B12), oysters (zinc) or soy sauce (sodium).
+ *
+ * The calcium, potassium, iron and folate ceilings look absurd for a food until
+ * you remember that dried seaweed and dried fish have had the water taken out:
+ * per 100 g of the dry product, dried shrimp really is ~7100 mg calcium, kizami
+ * kombu ~8200 mg potassium, aonori 77 mg iron and yaki-nori 1900 µg folate.
+ * These are published Japanese Standard Tables values, not typos, and they are
+ * eaten a pinch at a time — see each row's gramsPerTsp. The ceilings were first
+ * calibrated on fresh foods only and were raised once the dried staples were
+ * added (Controller Ruling 22).
  */
 export const NUTRIENT_CEILINGS: Record<NutrientKey, number> = {
   energyKcal: 900,
@@ -13,16 +22,16 @@ export const NUTRIENT_CEILINGS: Record<NutrientKey, number> = {
   carbsG: 100,
   fiberG: 80,
   sugarsG: 100,
-  ironMg: 60,
-  calciumMg: 1500,
+  ironMg: 90,
+  calciumMg: 8000,
   zincMg: 80,
   sodiumMg: 40000,
-  potassiumMg: 4000,
+  potassiumMg: 9000,
   vitaminAUgRae: 15000,
   vitaminCMg: 2000,
   vitaminDUg: 60,
   vitaminB12Ug: 100,
-  folateUg: 1500,
+  folateUg: 2000,
 };
 
 /** Slug segment → allergen it necessarily implies. Guards the data. */
@@ -4318,6 +4327,101 @@ export const FOOD_SEED: readonly SeedFood[] = [
       sugarsG: 0, ironMg: 0.7, calciumMg: 16, zincMg: 0.1, sodiumMg: 260,
       potassiumMg: 8, vitaminAUgRae: 0, vitaminCMg: 0, vitaminDUg: 0,
       vitaminB12Ug: 0.2, folateUg: 2,
+    },
+  },
+
+  // --- other: dried seaweed and dried fish ---
+  // Extreme per-100 g values, eaten a pinch at a time. gramsPerTsp is set from
+  // the real density of each dry product, not the 5 g default: get it wrong and
+  // these rows dominate every nutrient roll-up.
+  {
+    id: 'yaki-nori',
+    name: 'Yaki-nori (roasted laver), crumbled',
+    group: 'other',
+    allergens: [],
+    gramsPerTsp: 1,
+    minStage: 2,
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), yaki-nori. One standard sheet is about 3 g; a level 5 mL spoon of crumbled nori is well under 1 g, so gramsPerTsp is the practical floor of 1. Nori must be moistened or it sticks to the palate.',
+    nutrients: {
+      energyKcal: 297, proteinG: 41.4, fatG: 3.7, carbsG: 8.3, fiberG: 36.0,
+      sugarsG: 0, ironMg: 11.4, calciumMg: 280, zincMg: 3.6, sodiumMg: 530,
+      potassiumMg: 2400, vitaminAUgRae: 2300, vitaminCMg: 210, vitaminDUg: 0,
+      vitaminB12Ug: 58.0, folateUg: 1900,
+    },
+  },
+  {
+    id: 'aonori-dried',
+    name: 'Aonori (green laver), dried flakes',
+    group: 'other',
+    allergens: [],
+    gramsPerTsp: 1,
+    minStage: 2,
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), aonori, sun-dried. The flakes are very light: a level 5 mL spoon holds roughly 0.6 g, rounded to 1 g here, and a realistic serving is a pinch of a fraction of that.',
+    nutrients: {
+      energyKcal: 249, proteinG: 29.4, fatG: 5.2, carbsG: 5.8, fiberG: 35.2,
+      sugarsG: 0, ironMg: 77.0, calciumMg: 750, zincMg: 1.6, sodiumMg: 3200,
+      potassiumMg: 2500, vitaminAUgRae: 1700, vitaminCMg: 62, vitaminDUg: 0,
+      vitaminB12Ug: 32.0, folateUg: 270,
+    },
+  },
+  {
+    id: 'niboshi-powder',
+    name: 'Niboshi (dried sardine), ground',
+    group: 'protein',
+    allergens: [],
+    gramsPerTsp: 2,
+    minStage: 2,
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), niboshi (dried sardine). Ground to a powder it packs to about 2 g per 5 mL spoon. Salty: used as dashi (see niboshi-dashi) or a half-spoon sprinkled into a dish, never a full spoon.',
+    nutrients: {
+      energyKcal: 332, proteinG: 64.5, fatG: 6.2, carbsG: 0.3, fiberG: 0,
+      sugarsG: 0, ironMg: 18.0, calciumMg: 2200, zincMg: 7.2, sodiumMg: 1700,
+      potassiumMg: 1200, vitaminAUgRae: 0, vitaminCMg: 0, vitaminDUg: 18.0,
+      vitaminB12Ug: 41.0, folateUg: 74,
+    },
+  },
+  {
+    id: 'dried-shrimp',
+    name: 'Hoshi-ebi (dried shrimp)',
+    group: 'protein',
+    allergens: ['shrimp'],
+    gramsPerTsp: 1,
+    minStage: 4,
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), dried shrimp (hoshi-ebi). Hollow and very light: about 1 g per 5 mL spoon whole, a little more once ground. Eaten whole it is both a mandatory allergen and a choking risk, so grind it.',
+    nutrients: {
+      energyKcal: 207, proteinG: 48.6, fatG: 2.8, carbsG: 0.3, fiberG: 0,
+      sugarsG: 0, ironMg: 15.1, calciumMg: 7100, zincMg: 3.9, sodiumMg: 1500,
+      potassiumMg: 740, vitaminAUgRae: 14, vitaminCMg: 0, vitaminDUg: 0,
+      vitaminB12Ug: 11.0, folateUg: 46,
+    },
+  },
+  {
+    id: 'hijiki-dried',
+    name: 'Hijiki, dried',
+    group: 'other',
+    allergens: [],
+    gramsPerTsp: 1,
+    minStage: 3,
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), hijiki, stainless-steel processed, dried. About 1 g per 5 mL spoon dry, swelling roughly eightfold on soaking. Japanese guidance limits hijiki for infants because of inorganic arsenic: soak and discard the water, and serve occasionally.',
+    nutrients: {
+      energyKcal: 180, proteinG: 9.2, fatG: 3.2, carbsG: 6.6, fiberG: 51.8,
+      sugarsG: 0, ironMg: 6.2, calciumMg: 1000, zincMg: 1.0, sodiumMg: 1800,
+      potassiumMg: 6400, vitaminAUgRae: 360, vitaminCMg: 0, vitaminDUg: 0,
+      vitaminB12Ug: 0, folateUg: 93,
+    },
+  },
+  {
+    id: 'kizami-kombu',
+    name: 'Kizami kombu (shredded kelp), dried',
+    group: 'other',
+    allergens: [],
+    gramsPerTsp: 2,
+    minStage: 3,
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), kizami kombu. Denser than hijiki, about 2 g per 5 mL spoon dry. Available carbohydrate is stated on the monosaccharide-equivalent basis the 8th edition uses for energy, not carbohydrate-by-difference minus fibre, which overstates it badly in kelp. Kombu is extremely high in iodine, so keep infant servings small and occasional.',
+    nutrients: {
+      energyKcal: 119, proteinG: 5.4, fatG: 0.5, carbsG: 4.0, fiberG: 39.1,
+      sugarsG: 0, ironMg: 8.6, calciumMg: 940, zincMg: 1.1, sodiumMg: 4300,
+      potassiumMg: 8200, vitaminAUgRae: 5, vitaminCMg: 15, vitaminDUg: 0,
+      vitaminB12Ug: 0.1, folateUg: 15,
     },
   },
 ];
