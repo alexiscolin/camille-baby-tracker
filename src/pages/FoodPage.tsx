@@ -116,17 +116,21 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
    * A manual status set on an allergen applies to every catalog food carrying
    * it. `null` clears it back to whatever the log alone supports.
    *
-   * Clearing also drops `reactionEventIds`. Nothing counts clean re-exposures,
-   * so a food carrying a past reaction re-derives straight back to `suspected`
-   * and the clear would be a no-op — a one-way door with no exit. The reaction
-   * *events* are untouched in the `events` collection; `reactionEventIds` is a
-   * derived index, and a parent clearing it is saying "I have re-tested this".
+   * Every manual write drops `reactionEventIds`, whichever direction it goes.
+   * Nothing counts clean re-exposures, so a food carrying a past reaction
+   * re-derives straight back to `suspected`/`watch` off a stale reaction
+   * link — a one-way door with no exit otherwise. The reaction *events* are
+   * untouched in the `events` collection; `reactionEventIds` is a derived
+   * index, and a parent overriding the status by hand is saying "I have
+   * re-assessed this". This also keeps every manual write in the shape
+   * firestore.rules requires to change a locked (`confirmed_allergy`/`avoid`)
+   * status: empty incoming `reactionEventIds`.
    */
   function setAllergenStatus(allergen: Allergen, next: FoodStatus | null) {
     const stamp = Timestamp.now();
     for (const food of foods.filter((f) => f.allergens.includes(allergen))) {
       const update: Partial<Food> = next
-        ? { status: next, statusUpdatedAt: stamp }
+        ? { status: next, reactionEventIds: [], statusUpdatedAt: stamp }
         : {
             status: deriveStatus({ ...food, status: 'untried', reactionEventIds: [] }, 0),
             reactionEventIds: [],

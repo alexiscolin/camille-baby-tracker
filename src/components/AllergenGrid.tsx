@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { ALLERGEN_LABELS } from '../utils/allergens';
@@ -85,6 +85,11 @@ interface AllergenSheetProps {
  * Reuses EventModal's overlay: ✕, outside click and Escape all close it.
  */
 export function AllergenSheet({ status, foodCount, onClose, onSetStatus }: AllergenSheetProps) {
+  // Clearing wipes status + reactionEventIds across every food carrying this
+  // allergen — including ones flagged by an unrelated, real reaction. That
+  // blast radius gets the same two-tap confirmation as deleting an event.
+  const [confirmClear, setConfirmClear] = useState(false);
+
   useEffect(() => {
     document.body.classList.add('modal-open');
     function handleEscape(e: KeyboardEvent) {
@@ -105,7 +110,12 @@ export function AllergenSheet({ status, foodCount, onClose, onSetStatus }: Aller
   ];
 
   function toggle(next: FoodStatus) {
-    onSetStatus(status.allergen, status.status === next ? null : next);
+    const resolved = status.status === next ? null : next;
+    if (resolved === null) {
+      setConfirmClear(true);
+      return;
+    }
+    onSetStatus(status.allergen, resolved);
   }
 
   return (
@@ -140,36 +150,64 @@ export function AllergenSheet({ status, foodCount, onClose, onSetStatus }: Aller
           </p>
         )}
 
-        <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.actionBtn}
-            aria-pressed={status.status === 'watch'}
-            disabled={foodCount === 0}
-            onClick={() => toggle('watch')}
-          >
-            Watch
-          </button>
-          <button
-            type="button"
-            className={`${styles.actionBtn} ${styles.actionAlert}`}
-            aria-pressed={status.status === 'confirmed_allergy'}
-            disabled={foodCount === 0}
-            onClick={() => toggle('confirmed_allergy')}
-          >
-            Allergy
-          </button>
-        </div>
-        <p className={styles.sheetNote}>
-          {foodCount === 0
-            ? 'No food in your catalog carries this allergen yet.'
-            : `Applies to the ${foodCount} food${foodCount > 1 ? 's' : ''} in your catalog carrying it.`}
-        </p>
-        {foodCount > 0 && (
-          <p className={styles.sheetNote}>
-            Tapping the active button again clears the flag and forgets which meals
-            flagged it. The meals themselves are kept.
-          </p>
+        {confirmClear ? (
+          <div className={modal.deleteConfirm}>
+            <span>
+              Clear the flag on {foodCount} food{foodCount > 1 ? 's' : ''}? This forgets
+              which meals flagged it, including any from a separate reaction.
+            </span>
+            <button
+              type="button"
+              className={modal.deleteConfirmBtn}
+              onClick={() => {
+                onSetStatus(status.allergen, null);
+                setConfirmClear(false);
+              }}
+            >
+              Yes, clear
+            </button>
+            <button
+              type="button"
+              className={modal.cancelBtn}
+              onClick={() => setConfirmClear(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.actionBtn}
+                aria-pressed={status.status === 'watch'}
+                disabled={foodCount === 0}
+                onClick={() => toggle('watch')}
+              >
+                Watch
+              </button>
+              <button
+                type="button"
+                className={`${styles.actionBtn} ${styles.actionAlert}`}
+                aria-pressed={status.status === 'confirmed_allergy'}
+                disabled={foodCount === 0}
+                onClick={() => toggle('confirmed_allergy')}
+              >
+                Allergy
+              </button>
+            </div>
+            <p className={styles.sheetNote}>
+              {foodCount === 0
+                ? 'No food in your catalog carries this allergen yet.'
+                : `Applies to the ${foodCount} food${foodCount > 1 ? 's' : ''} in your catalog carrying it.`}
+            </p>
+            {foodCount > 0 && (
+              <p className={styles.sheetNote}>
+                Tapping the active button again clears the flag and forgets which meals
+                flagged it. The meals themselves are kept.
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>

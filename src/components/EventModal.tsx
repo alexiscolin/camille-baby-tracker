@@ -226,8 +226,6 @@ export function EventModal(props: EventModalProps) {
 
     const catalog = new Map(foodById);
     const uniqueIds = [...new Set(items.map((i) => i.foodId))];
-    /** Foods this save had to create — the only ones an edit may count. */
-    const createdIds: string[] = [];
 
     for (const id of uniqueIds) {
       if (catalog.has(id)) continue;
@@ -236,7 +234,6 @@ export function EventModal(props: EventModalProps) {
       const food: Food = seed ? foodFromSeed(seed) : minimalFood(id, name);
       await upsertFood(familyId, food);
       catalog.set(id, food);
-      createdIds.push(id);
     }
 
     const payloadItems: MealItem[] = items.map((i) => ({
@@ -251,7 +248,6 @@ export function EventModal(props: EventModalProps) {
     return {
       catalog,
       uniqueIds,
-      createdIds,
       items: payloadItems,
       reactionPayload: reaction ? buildReactionPayload(reaction, payloadItems) : undefined,
       stamp: Timestamp.fromDate(eventDate),
@@ -398,12 +394,24 @@ export function EventModal(props: EventModalProps) {
           // Absent, never null: firestore.rules only accepts a map or nothing.
           updates.reaction = prepared.reactionPayload ?? deleteField();
           await updateEvent(familyId, editEvent.id, updates);
-          // Only foods this edit had to create are counted. A food already in
-          // the catalog was counted when the meal was first logged; a food
-          // added during the edit was never counted at all, and without this
-          // it would sit at exposureCount 0 with no firstTriedAt for good.
-          await countExposures(prepared, prepared.createdIds);
+          // Attribution first: it only needs prepared.catalog and the meal id,
+          // has no dependency on the counters below, and applyReaction is
+          // idempotent on mealId. If a counter write below throws (the
+          // monotonicity clause rejects a concurrent increment from another
+          // device), the meal and its reaction are already saved either way —
+          // this ordering makes the failure mode over-suspicion, not a meal
+          // with a real reaction leaving no food flagged.
           await persistAttribution(prepared, editEvent.id);
+          // Count every food not already in the meal's previously-saved items,
+          // whether or not it exists in the catalog. A food already in the
+          // catalog but newly added to *this* meal (e.g. Rice, eaten before at
+          // breakfast, added to today's lunch on edit) was never counted for
+          // this exposure — createdIds alone missed it, since Rice didn't need
+          // creating. A food already in the meal is left alone so it isn't
+          // double-counted.
+          const previousFoodIds = new Set((editEvent as MealEvent).items.map((i) => i.foodId));
+          const idsToCount = prepared.uniqueIds.filter((id) => !previousFoodIds.has(id));
+          await countExposures(prepared, idsToCount);
           setSaved(true);
           setTimeout(onClose, 1000);
           return;
@@ -462,6 +470,10 @@ export function EventModal(props: EventModalProps) {
             ...(prepared.reactionPayload ? { reaction: prepared.reactionPayload } : {}),
           } as Parameters<typeof addEvent>[1]);
 
+          // Attribution first, before the counter loop below can throw — see
+          // the matching comment on the edit path for why.
+          await persistAttribution(prepared, ref.id);
+
           for (const id of prepared.uniqueIds) {
             const food = prepared.catalog.get(id)!;
             await updateFood(familyId, id, {
@@ -471,8 +483,6 @@ export function EventModal(props: EventModalProps) {
               ...(food.firstTriedAt ? {} : { firstTriedAt: prepared.stamp }),
             });
           }
-
-          await persistAttribution(prepared, ref.id);
         } else if (selectedType === 'poop' && stoolColor) {
           await addEvent(familyId, {
             ...base,

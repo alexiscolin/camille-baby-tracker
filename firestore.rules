@@ -246,8 +246,24 @@ service cloud.firestore {
         // second protection silently disappears with it — a re-upsert would
         // then quietly reset a confirmed_allergy back to untried.
         // (The app only ever increments this counter — no decrement exists.)
+        //
+        // A confirmed_allergy/avoid status is a human's manual call, but every
+        // client works from a snapshot: a derived write (applyReaction,
+        // withdrawReaction) computed on a stale snapshot can't tell the food
+        // is manually locked, and would blindly overwrite the server's real
+        // status. Since a derived write always carries the mealId it's acting
+        // on in reactionEventIds, requiring an empty reactionEventIds to
+        // change a locked status blocks that clobber while still allowing the
+        // one write that legitimately changes it: a human's manual
+        // reassignment from FoodPage, which always clears reactionEventIds
+        // (see setAllergenStatus).
         allow update: if isFamilyMember(familyId) && isValidFood()
-          && request.resource.data.exposureCount >= resource.data.exposureCount;
+          && request.resource.data.exposureCount >= resource.data.exposureCount
+          && (
+            !(resource.data.status in ['confirmed_allergy', 'avoid'])
+            || request.resource.data.status == resource.data.status
+            || request.resource.data.reactionEventIds.size() == 0
+          );
         // A food the baby has actually eaten is history and must not vanish.
         allow delete: if isFamilyMember(familyId)
           && resource.data.exposureCount == 0;
