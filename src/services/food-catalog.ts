@@ -13,6 +13,20 @@ const VALID_GROUPS = new Set<FoodGroup>(FOOD_GROUPS);
 const VALID_STATUSES = new Set<FoodStatus>(FOOD_STATUSES);
 const VALID_NUTRIENT_SOURCES = new Set<Food['nutrientSource']>(['seed', 'manual']);
 
+/** firestore.rules caps a food's sourceRef at 200 characters. */
+const MAX_SOURCE_REF_LENGTH = 200;
+
+/**
+ * The seed file's sourceRef is a full citation for a human reading the
+ * committed table; only a provenance breadcrumb needs to reach Firestore.
+ * Keeps the head — the table entry a row is named after — and drops the
+ * explanation tail, which is what's expendable.
+ */
+function truncateSourceRef(sourceRef: string): string {
+  if (sourceRef.length <= MAX_SOURCE_REF_LENGTH) return sourceRef;
+  return `${sourceRef.slice(0, MAX_SOURCE_REF_LENGTH - 3)}...`;
+}
+
 function foodsCollection(familyId: string) {
   return collection(db, 'families', familyId, 'foods');
 }
@@ -50,7 +64,7 @@ export function foodFromSeed(
     reactionEventIds: [],
     nutrients: seed.nutrients,
     nutrientSource: 'seed',
-    sourceRef: seed.sourceRef,
+    sourceRef: truncateSourceRef(seed.sourceRef),
   };
 }
 

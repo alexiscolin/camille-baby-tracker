@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { FOOD_SEED, NUTRIENT_CEILINGS, IMPLIED_ALLERGENS } from './food-seed';
 import { NUTRIENT_KEYS, FOOD_GROUPS } from '../types/food';
 import { ALLERGENS } from '../utils/allergens';
+import { foodFromSeed } from '../services/food-catalog';
 
 const VALID_GROUPS = new Set<string>(FOOD_GROUPS);
 const VALID_ALLERGENS = new Set<string>(ALLERGENS);
@@ -26,6 +27,18 @@ describe('food seed table', () => {
     for (const food of FOOD_SEED) {
       expect(food.name.trim(), food.id).not.toBe('');
       expect(food.sourceRef.trim(), food.id).not.toBe('');
+    }
+  });
+
+  // The raw seed sourceRef is a citation for a human reading this file and is
+  // allowed to run long (worst case today: 405 characters). What matters is
+  // what actually gets written to Firestore, which firestore.rules caps at
+  // 200 — so this asserts on foodFromSeed's output, the real write path,
+  // rather than on FOOD_SEED itself. Asserting on the raw seed would just
+  // force trimming the citations to fit, which is the wrong file to edit.
+  it('should produce a sourceRef within firestore.rules\' 200-character limit', () => {
+    for (const seedFood of FOOD_SEED) {
+      expect((foodFromSeed(seedFood).sourceRef ?? '').length, seedFood.id).toBeLessThanOrEqual(200);
     }
   });
 
