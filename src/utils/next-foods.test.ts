@@ -99,6 +99,16 @@ describe('rankNextFoods', () => {
     expect(result[result.length - 1].seed.id).toBe('kiwi');
     expect(result).toHaveLength(2);
   });
+
+  it('should score a two-mandatory-allergen food the same as a one-allergen food (max, not sum)', () => {
+    const [oneAllergen] = rankNextFoods({ ...base,
+      seed: [seed({ id: 'egg-yolk', allergens: ['egg'] })] });
+    const [twoAllergens] = rankNextFoods({ ...base,
+      seed: [seed({ id: 'egg-wheat-mix', allergens: ['egg', 'wheat'] })] });
+
+    expect(twoAllergens.score).toBe(oneAllergen.score);
+    expect(twoAllergens.reasons.join(' ')).toMatch(/2 new allergens/i);
+  });
 });
 
 describe('getAllergenStatus', () => {

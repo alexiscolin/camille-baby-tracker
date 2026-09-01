@@ -161,16 +161,24 @@ export function rankNextFoods(input: NextFoodsInput): NextFoodCandidate[] {
       const reasons: string[] = [];
       let score = 0;
 
-      for (const allergen of s.allergens) {
-        if (isAllergenIntroduced(foods, allergen)) continue;
-        if (isMandatoryAllergen(allergen)) {
-          score += 100;
+      // Controller Ruling 23: take the max single-allergen bonus, never the
+      // sum. A food carrying two new allergens is a worse first introduction,
+      // not a better one — a reaction can't be attributed to either allergen.
+      const newAllergens = s.allergens.filter((a) => !isAllergenIntroduced(foods, a));
+      if (newAllergens.length > 0) {
+        const hasMandatory = newAllergens.some(isMandatoryAllergen);
+        score += hasMandatory ? 100 : 60;
+        for (const allergen of newAllergens) {
           reasons.push(
-            `Introduces the un-tried allergen ${ALLERGEN_LABELS[allergen]} — early, repeated exposure is current guidance.`,
+            isMandatoryAllergen(allergen)
+              ? `Introduces the un-tried allergen ${ALLERGEN_LABELS[allergen]} — early, repeated exposure is current guidance.`
+              : `Introduces the un-tried allergen ${ALLERGEN_LABELS[allergen]}.`,
           );
-        } else {
-          score += 60;
-          reasons.push(`Introduces the un-tried allergen ${ALLERGEN_LABELS[allergen]}.`);
+        }
+        if (newAllergens.length > 1) {
+          reasons.push(
+            `Carries ${newAllergens.length} new allergens — harder to attribute a reaction if one occurs.`,
+          );
         }
       }
 
