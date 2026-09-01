@@ -8,7 +8,6 @@ interface FeedingFieldsProps {
   onLeftCountChange: (value: number) => void;
   rightCount: number;
   onRightCountChange: (value: number) => void;
-  startTime: string;
   endTime: string;
   onEndTimeChange: (value: string) => void;
   infection: boolean;

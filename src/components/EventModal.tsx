@@ -336,7 +336,6 @@ export function EventModal(props: EventModalProps) {
                 onLeftCountChange={setLeftCount}
                 rightCount={rightCount}
                 onRightCountChange={setRightCount}
-                startTime={time}
                 endTime={endTime}
                 onEndTimeChange={setEndTime}
                 infection={infection}
