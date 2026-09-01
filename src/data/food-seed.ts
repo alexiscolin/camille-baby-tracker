@@ -97,7 +97,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     minStage: 1,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), spinach, boiled and drained',
     nutrients: {
-      energyKcal: 23, proteinG: 2.6, fatG: 0.4, carbsG: 1.9, fiberG: 3.1,
+      energyKcal: 23, proteinG: 2.6, fatG: 0.5, carbsG: 0.4, fiberG: 3.6,
       sugarsG: 0.4, ironMg: 1.0, calciumMg: 69, zincMg: 0.6, sodiumMg: 20,
       potassiumMg: 350, vitaminAUgRae: 350, vitaminCMg: 12, vitaminDUg: 0,
       vitaminB12Ug: 0, folateUg: 90,

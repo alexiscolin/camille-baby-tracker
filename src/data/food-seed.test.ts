@@ -87,10 +87,14 @@ describe('food seed table', () => {
 
   it('should have energy coherent with its macros within 25%', () => {
     for (const food of FOOD_SEED) {
-      const { energyKcal, proteinG, fatG, carbsG } = food.nutrients;
+      const { energyKcal, proteinG, fatG, carbsG, fiberG } = food.nutrients;
       // Skip near-zero-energy foods: the ratio is meaningless there.
       if (energyKcal < 20) continue;
-      const computed = 4 * proteinG + 9 * fatG + 4 * carbsG;
+      // carbsG is available carbohydrate, excluding fibre (see Nutrients doc
+      // comment). Fibre still contributes ~2 kcal/g in the Japanese and EU
+      // schemes, so it must be added back in here or genuinely fibre-rich,
+      // low-calorie foods (e.g. boiled spinach) fail this check.
+      const computed = 4 * proteinG + 9 * fatG + 4 * carbsG + 2 * fiberG;
       const ratio = computed / energyKcal;
       expect(ratio, `${food.id}: ${computed.toFixed(0)} vs ${energyKcal}`)
         .toBeGreaterThan(0.75);
