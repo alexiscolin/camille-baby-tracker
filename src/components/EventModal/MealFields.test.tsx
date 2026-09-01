@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MealFields } from './MealFields';
 import type { Food, MealItem } from '../../types/food';
@@ -82,6 +82,19 @@ describe('MealFields', () => {
 
     expect(screen.queryByLabelText(/acceptance/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/quantity/i)).not.toBeInTheDocument();
+  });
+
+  it('should clamp a typed negative quantity to zero', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { foodId: 'kabocha', name: 'Kabocha', quantity: 2, unit: 'tsp' },
+    ] as MealItem[];
+    const onItemsChange = vi.fn();
+    render(<MealFields {...base} items={items} onItemsChange={onItemsChange} />);
+    await user.click(screen.getByRole('button', { name: /edit kabocha/i }));
+    const input = await screen.findByLabelText(/quantity/i);
+    fireEvent.change(input, { target: { value: '-5' } });
+    expect(onItemsChange.mock.calls.at(-1)?.[0][0].quantity).toBe(0);
   });
 
   it('should keep per-item detail collapsed until the chip is tapped', async () => {

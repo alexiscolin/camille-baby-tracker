@@ -4,6 +4,20 @@ import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { EventTimeline } from './EventTimeline';
 import type { FeedingEvent, PeeEvent } from '../types/events';
+import type { MealEvent, MealItem } from '../types/food';
+
+function makeMealEvent(items: MealItem[]): MealEvent {
+  return {
+    id: 'evt-meal',
+    babyId: 'baby-1',
+    type: 'meal',
+    mealSlot: 'lunch',
+    items,
+    timestamp: Timestamp.fromDate(new Date()),
+    createdBy: 'user-1',
+    createdAt: Timestamp.fromDate(new Date()),
+  };
+}
 
 function makeFeedingEvent(overrides: Partial<FeedingEvent> = {}): FeedingEvent {
   return {
@@ -61,6 +75,26 @@ describe('EventTimeline', () => {
 
     expect(screen.queryByText(/infection/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/engorgement/i)).not.toBeInTheDocument();
+  });
+
+  it('should show the food names for a meal event', () => {
+    const event = makeMealEvent([
+      { foodId: 'rice', name: 'Rice', quantity: 1, unit: 'tsp' },
+      { foodId: 'kabocha', name: 'Kabocha', quantity: 1, unit: 'tsp' },
+    ]);
+    render(<EventTimeline events={[event]} />);
+    expect(screen.getByText('Rice, Kabocha')).toBeInTheDocument();
+  });
+
+  it('should truncate a long list of meal food names', () => {
+    const event = makeMealEvent([
+      { foodId: 'a', name: 'Aaaaaaaaaaaaaaaaaaaa', quantity: 1, unit: 'tsp' },
+      { foodId: 'b', name: 'Bbbbbbbbbbbbbbbbbbbb', quantity: 1, unit: 'tsp' },
+      { foodId: 'c', name: 'Cccccccccccccccccccc', quantity: 1, unit: 'tsp' },
+    ]);
+    render(<EventTimeline events={[event]} />);
+    const detail = screen.getByText(/\.\.\.$/);
+    expect(detail.textContent!.length).toBeLessThanOrEqual(43);
   });
 
   it('should show empty message when no events', () => {

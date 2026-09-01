@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getWeaningStage, STAGE_LABELS, EXPECTED_MEALS_PER_DAY } from './weaning-stage';
+import { getWeaningStage, STAGE_LABELS } from './weaning-stage';
 
 const birth = new Date('2026-02-01T00:00:00Z');
 const at = (months: number) => {
@@ -33,10 +33,9 @@ describe('getWeaningStage', () => {
     expect(getWeaningStage(birth, at(24))).toBe(4);
   });
 
-  it('should label and set expected meal counts for every stage', () => {
+  it('should label every stage', () => {
     for (const stage of [1, 2, 3, 4] as const) {
       expect(STAGE_LABELS[stage]).toBeTruthy();
-      expect(EXPECTED_MEALS_PER_DAY[stage]).toBeGreaterThan(0);
     }
   });
 });

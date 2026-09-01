@@ -212,13 +212,16 @@ a {
     --color-bath-bg: rgba(6, 182, 212, 0.15);
     --color-meal-bg: rgba(34, 197, 94, 0.15);
 
-    /* Same seven hues, stepped for the dark surface — a selected set. */
+    /* Same seven hues, stepped for the dark surface — a selected set. Fat
+       was left at the light-mode value by mistake (3.46:1, the rest sit
+       4.71–5.58:1); #169c16 was re-validated with validate_palette.js
+       against #1a1930 before landing. */
     --color-group-grain: #3987e5;
     --color-group-vegetable: #d95926;
     --color-group-fruit: #199e70;
     --color-group-protein: #c98500;
     --color-group-dairy: #d55181;
-    --color-group-fat: #008300;
+    --color-group-fat: #169c16;
     --color-group-other: #9085e9;
 
     --color-sidebar: #0a0919;

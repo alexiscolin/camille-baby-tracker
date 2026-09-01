@@ -204,7 +204,7 @@ export function MealFields({
                       min="0"
                       step="0.5"
                       value={item.quantity}
-                      onChange={(e) => patchItem(index, { quantity: Number(e.target.value) || 0 })}
+                      onChange={(e) => patchItem(index, { quantity: Math.max(0, Number(e.target.value) || 0) })}
                     />
                   </div>
                   <div className={styles.field}>

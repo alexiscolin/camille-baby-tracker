@@ -8,10 +8,6 @@ export const STAGE_LABELS: Record<WeaningStage, string> = {
   4: 'Stage 4 · 12-18 months',
 };
 
-export const EXPECTED_MEALS_PER_DAY: Record<WeaningStage, number> = {
-  1: 1, 2: 2, 3: 3, 4: 3,
-};
-
 /** Returns null before weaning normally starts at 5 months. */
 export function getWeaningStage(birthDate: Date, on: Date = new Date()): WeaningStage | null {
   const months = differenceInMonths(on, birthDate);
