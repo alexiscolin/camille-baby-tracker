@@ -39,8 +39,19 @@
   --color-bg: #f8f9fc;
   --color-surface: #ffffff;
   --color-text: #1e1b4b;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
+  /*
+   * text/secondary/muted form a 3-step legibility ladder, all against
+   * --color-surface. secondary and muted were both stepped one notch
+   * darker (WCAG audit): the old muted (#9ca3af, 2.54:1) failed AA outright,
+   * and raising it to the floor alone would have landed almost on top of
+   * the old secondary (#6b7280, 4.83:1), collapsing the ladder to two
+   * visible levels. Fix: old secondary's value becomes the new muted
+   * floor (already-vetted, comfortably >=4.5:1), and secondary moves one
+   * Tailwind gray step darker for a clearly visible gap above it.
+   * text 15.99:1, secondary 7.56:1, muted 4.83:1 against #ffffff.
+   */
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
   --color-border: #e5e7eb;
   --color-border-light: #f0f1f5;
 
@@ -198,8 +209,12 @@ a {
     --color-bg: #0f0e1a;
     --color-surface: #1a1930;
     --color-text: #e8e6f0;
-    --color-text-secondary: #9b99b0;
-    --color-text-muted: #6b6982;
+    /* Same ladder fix as light mode above. Old muted (#6b6982, 3.24:1)
+     * failed AA; old secondary's value becomes the new muted floor
+     * (6.18:1), secondary steps lighter for a clear gap.
+     * text 13.88:1, secondary 8.44:1, muted 6.18:1 against #1a1930. */
+    --color-text-secondary: #b6b4c7;
+    --color-text-muted: #9b99b0;
     --color-border: #2d2b45;
     --color-border-light: #23213a;
 
