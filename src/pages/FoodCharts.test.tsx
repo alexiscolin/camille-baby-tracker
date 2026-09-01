@@ -49,6 +49,15 @@ describe('FoodCharts', () => {
     expect(screen.queryByTestId('chart-groups')).not.toBeInTheDocument();
   });
 
+  it('should still answer the lifetime question when the range is empty', async () => {
+    const user = userEvent.setup();
+    const tried = { ...kabocha, firstTriedAt: Timestamp.fromDate(D1) } as Food;
+    render(<FoodCharts {...props} events={[]} byId={new Map([['kabocha', tried]])} />);
+    await user.click(screen.getByRole('button', { name: 'First' }));
+    expect(screen.getByTestId('chart-first')).toBeInTheDocument();
+    expect(screen.queryByText(/no meals logged/i)).not.toBeInTheDocument();
+  });
+
   it('should show the no-data message instead of an empty chart frame', () => {
     render(<FoodCharts {...props} events={[]} />);
     expect(screen.getByText(/no meals logged/i)).toBeInTheDocument();

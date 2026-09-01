@@ -189,10 +189,13 @@ export const FoodCharts = memo(function FoodCharts({
     [coverage],
   );
 
-  const hasMeals = events.some((event) => event.type === 'meal');
-  if (!hasMeals) {
-    return <p className={styles.noData}>No meals logged in this range.</p>;
-  }
+  /**
+   * Three of the four views are range-scoped and have nothing to draw without
+   * meals. First is not: it reads the lifetime catalog, so an empty range must
+   * not hide the answer to "when did we start this nutrient". The picker stays
+   * rendered either way, or the exempt view would be unreachable.
+   */
+  const emptyRange = !events.some((event) => event.type === 'meal') && view !== 'first';
 
   const scrolls = view === 'first' || view === 'coverage';
 
@@ -203,7 +206,9 @@ export const FoodCharts = memo(function FoodCharts({
       </div>
 
       <div className={`${styles.chartCard} ${scrolls ? styles.scrollCard : ''}`}>
-        {view === 'groups' && (
+        {emptyRange && <p className={styles.noData}>No meals logged in this range.</p>}
+
+        {!emptyRange && view === 'groups' && (
           <div data-testid="chart-groups" className={styles.chartFill}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={groupRows} margin={MARGIN}>
@@ -232,7 +237,7 @@ export const FoodCharts = memo(function FoodCharts({
           </div>
         )}
 
-        {view === 'variety' && (
+        {!emptyRange && view === 'variety' && (
           <div data-testid="chart-variety" className={styles.chartFill}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={varietyRows} margin={MARGIN}>
@@ -260,7 +265,7 @@ export const FoodCharts = memo(function FoodCharts({
           </div>
         )}
 
-        {view === 'first' && (
+        {!emptyRange && view === 'first' && (
           <div data-testid="chart-first">
             {exposureRows.length === 0 ? (
               <p className={styles.noData}>Nothing logged carries nutrient data yet.</p>
@@ -306,7 +311,7 @@ export const FoodCharts = memo(function FoodCharts({
           </div>
         )}
 
-        {view === 'coverage' && (
+        {!emptyRange && view === 'coverage' && (
           <div data-testid="chart-coverage">
             {UNIT_PANELS.map((panel) => (
               <div key={panel.unit} className={styles.panel}>
@@ -353,7 +358,7 @@ export const FoodCharts = memo(function FoodCharts({
         )}
       </div>
 
-      <p className={styles.chartNote}>{VIEW_NOTES[view]}</p>
+      {!emptyRange && <p className={styles.chartNote}>{VIEW_NOTES[view]}</p>}
     </>
   );
 });
