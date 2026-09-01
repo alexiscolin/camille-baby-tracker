@@ -301,7 +301,7 @@ export const FoodCharts = memo(function FoodCharts({
               </ResponsiveContainer>
             )}
             {notYet.length > 0 && (
-              <p className={styles.chartNote}>Not seen in this range: {notYet.join(', ')}.</p>
+              <p className={styles.chartNote}>Not yet introduced: {notYet.join(', ')}.</p>
             )}
           </div>
         )}
