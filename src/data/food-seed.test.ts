@@ -103,6 +103,18 @@ describe('food seed table', () => {
     }
   });
 
+  it('should cover at least 280 foods across every group', () => {
+    expect(FOOD_SEED.length).toBeGreaterThanOrEqual(280);
+    const groups = new Set(FOOD_SEED.map((f) => f.group));
+    for (const group of FOOD_GROUPS) {
+      expect(groups.has(group), `no seed food in group ${group}`).toBe(true);
+    }
+  });
+
+  it('should offer at least 20 stage-1 foods', () => {
+    expect(FOOD_SEED.filter((f) => f.minStage === 1).length).toBeGreaterThanOrEqual(20);
+  });
+
   it('should carry the allergen implied by its name', () => {
     for (const food of FOOD_SEED) {
       const segments = food.id.split('-');
