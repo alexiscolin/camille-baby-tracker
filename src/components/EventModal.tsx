@@ -534,180 +534,200 @@ export function EventModal(props: EventModalProps) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>
-            {mode === 'edit' ? 'Edit Event' : 'Add Event'}
-          </h2>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
-            <X size={20} />
-          </button>
-        </div>
-
-        {mode === 'add' && !selectedType && (
-          <div className={styles.typeGrid}>
-            {EVENT_TYPES.map((type) => {
-              const config = EVENT_CONFIG[type];
-              const Icon = config.icon;
-              return (
-                <button
-                  key={type}
-                  className={styles.typeBtn}
-                  style={{
-                    '--btn-color': config.color,
-                    '--btn-bg': config.bg,
-                  } as React.CSSProperties}
-                  onClick={() => setSelectedType(type)}
-                >
-                  <Icon size={24} />
-                  <span>{config.label}</span>
-                </button>
-              );
-            })}
+        {/*
+          Everything that can grow taller than the modal scrolls in here;
+          .stickyActions lives outside as a normal (non-overlapping) flex
+          sibling below, not inside this scrolling region — see its own
+          comment for why that matters for the reaction alert.
+        */}
+        <div className={styles.scrollArea}>
+          <div className={styles.modalHeader}>
+            <h2 className={styles.modalTitle}>
+              {mode === 'edit' ? 'Edit Event' : 'Add Event'}
+            </h2>
+            <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
+              <X size={20} />
+            </button>
           </div>
-        )}
 
-        {selectedType && (
-          <div className={styles.form}>
-            {mode === 'edit' && (
-              <div className={styles.eventTypeBadge}>
-                {(() => {
-                  const config = EVENT_CONFIG[selectedType];
-                  const Icon = config.icon;
-                  return (
-                    <>
-                      <Icon size={16} />
-                      <span>{config.label}</span>
-                    </>
-                  );
-                })()}
-              </div>
-            )}
-
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="event-time">Time</label>
-              <input
-                id="event-time"
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-              />
+          {mode === 'add' && !selectedType && (
+            <div className={styles.typeGrid}>
+              {EVENT_TYPES.map((type) => {
+                const config = EVENT_CONFIG[type];
+                const Icon = config.icon;
+                return (
+                  <button
+                    key={type}
+                    className={styles.typeBtn}
+                    style={{
+                      '--btn-color': config.color,
+                      '--btn-bg': config.bg,
+                    } as React.CSSProperties}
+                    onClick={() => setSelectedType(type)}
+                  >
+                    <Icon size={24} />
+                    <span>{config.label}</span>
+                  </button>
+                );
+              })}
             </div>
+          )}
 
-            {selectedType === 'feeding' && (
-              <FeedingFields
-                feedingType={feedingType}
-                onFeedingTypeChange={handleFeedingTypeChange}
-                leftCount={leftCount}
-                onLeftCountChange={setLeftCount}
-                rightCount={rightCount}
-                onRightCountChange={setRightCount}
-                endTime={endTime}
-                onEndTimeChange={setEndTime}
-                infection={infection}
-                onInfectionChange={setInfection}
-                engorgement={engorgement}
-                onEngorgementChange={setEngorgement}
-              />
-            )}
+          {selectedType && (
+            <div className={styles.form}>
+              {mode === 'edit' && (
+                <div className={styles.eventTypeBadge}>
+                  {(() => {
+                    const config = EVENT_CONFIG[selectedType];
+                    const Icon = config.icon;
+                    return (
+                      <>
+                        <Icon size={16} />
+                        <span>{config.label}</span>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
 
-            {selectedType === 'poop' && (
               <div className={styles.field}>
-                <label className={styles.label}>Color (optional)</label>
-                <PoopFields
-                  color={stoolColor}
-                  onColorChange={setStoolColor}
-                  warning={stoolColorWarning}
+                <label className={styles.label} htmlFor="event-time">Time</label>
+                <input
+                  id="event-time"
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
                 />
               </div>
-            )}
 
-            {selectedType === 'meal' && (
-              <MealFields
-                mealSlot={mealSlot}
-                onMealSlotChange={setMealSlot}
-                items={itemsWithFirstTry}
-                onItemsChange={setMealItems}
-                foods={foods}
-                reaction={reaction}
-                onReactionChange={setReaction}
-              />
-            )}
-
-            {selectedType === 'medication' && (
-              <MedicationFields
-                medicationName={medicationName}
-                onMedicationNameChange={setMedicationName}
-                dose={dose}
-                onDoseChange={setDose}
-                maxLength={MAX_TEXT_LENGTH}
-              />
-            )}
-
-            <div className={styles.field}>
-              <label className={styles.label}>Notes (optional)</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value.slice(0, MAX_NOTES_LENGTH))}
-                placeholder="Any additional notes..."
-                rows={2}
-                maxLength={MAX_NOTES_LENGTH}
-              />
-              {notes.length > MAX_NOTES_LENGTH - 50 && (
-                <span className={styles.charCount}>
-                  {notes.length}/{MAX_NOTES_LENGTH}
-                </span>
+              {selectedType === 'feeding' && (
+                <FeedingFields
+                  feedingType={feedingType}
+                  onFeedingTypeChange={handleFeedingTypeChange}
+                  leftCount={leftCount}
+                  onLeftCountChange={setLeftCount}
+                  rightCount={rightCount}
+                  onRightCountChange={setRightCount}
+                  endTime={endTime}
+                  onEndTimeChange={setEndTime}
+                  infection={infection}
+                  onInfectionChange={setInfection}
+                  engorgement={engorgement}
+                  onEngorgementChange={setEngorgement}
+                />
               )}
-            </div>
 
-            {error && (
-              <div className={styles.error}>
-                <AlertCircle size={16} />
-                <span>{error}</span>
+              {selectedType === 'poop' && (
+                <div className={styles.field}>
+                  <label className={styles.label}>Color (optional)</label>
+                  <PoopFields
+                    color={stoolColor}
+                    onColorChange={setStoolColor}
+                    warning={stoolColorWarning}
+                  />
+                </div>
+              )}
+
+              {selectedType === 'meal' && (
+                <MealFields
+                  mealSlot={mealSlot}
+                  onMealSlotChange={setMealSlot}
+                  items={itemsWithFirstTry}
+                  onItemsChange={setMealItems}
+                  foods={foods}
+                  reaction={reaction}
+                  onReactionChange={setReaction}
+                />
+              )}
+
+              {selectedType === 'medication' && (
+                <MedicationFields
+                  medicationName={medicationName}
+                  onMedicationNameChange={setMedicationName}
+                  dose={dose}
+                  onDoseChange={setDose}
+                  maxLength={MAX_TEXT_LENGTH}
+                />
+              )}
+
+              <div className={styles.field}>
+                <label className={styles.label}>Notes (optional)</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value.slice(0, MAX_NOTES_LENGTH))}
+                  placeholder="Any additional notes..."
+                  rows={2}
+                  maxLength={MAX_NOTES_LENGTH}
+                />
+                {notes.length > MAX_NOTES_LENGTH - 50 && (
+                  <span className={styles.charCount}>
+                    {notes.length}/{MAX_NOTES_LENGTH}
+                  </span>
+                )}
               </div>
-            )}
 
-            <div className={`${styles.actions} ${styles.stickyActions}`}>
-              <button
-                className={styles.saveBtn}
-                onClick={handleSave}
-                disabled={
-                  saving
-                  || (selectedType === 'medication' && (!medicationName.trim() || !dose.trim()))
-                  || (selectedType === 'meal' && foodsLoading)
-                }
-              >
-                {saving ? 'Saving...' : mode === 'edit' ? 'Update' : 'Save'}
-              </button>
-
-              {mode === 'edit' && (
-                confirmDelete ? (
-                  <div className={styles.deleteConfirm}>
-                    <span>Delete this event?</span>
-                    <button
-                      className={styles.deleteConfirmBtn}
-                      onClick={handleDelete}
-                      disabled={deleting}
-                    >
-                      {deleting ? 'Deleting...' : 'Yes, delete'}
-                    </button>
-                    <button
-                      className={styles.cancelBtn}
-                      onClick={() => setConfirmDelete(false)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    className={styles.deleteBtn}
-                    onClick={() => setConfirmDelete(true)}
-                  >
-                    <Trash2 size={16} />
-                    <span>Delete</span>
-                  </button>
-                )
+              {error && (
+                <div className={styles.error}>
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
+                </div>
               )}
             </div>
+          )}
+        </div>
+
+        {/*
+          A normal flex sibling, not `position: sticky` inside the scroll
+          area above: sticky only reserves its own natural-flow space once,
+          so once its "stuck" copy detaches from that spot it can render on
+          top of whatever content the user has scrolled to underneath it —
+          which is exactly how a freshly-added reaction alert (role="alert",
+          telling a parent to seek emergency care) ended up fully hidden
+          behind this bar. A physically separate box below the scroll area
+          can never overlap what's inside it, sticky or not.
+        */}
+        {selectedType && (
+          <div className={`${styles.actions} ${styles.stickyActions}`}>
+            <button
+              className={styles.saveBtn}
+              onClick={handleSave}
+              disabled={
+                saving
+                || (selectedType === 'medication' && (!medicationName.trim() || !dose.trim()))
+                || (selectedType === 'meal' && foodsLoading)
+              }
+            >
+              {saving ? 'Saving...' : mode === 'edit' ? 'Update' : 'Save'}
+            </button>
+
+            {mode === 'edit' && (
+              confirmDelete ? (
+                <div className={styles.deleteConfirm}>
+                  <span>Delete this event?</span>
+                  <button
+                    className={styles.deleteConfirmBtn}
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? 'Deleting...' : 'Yes, delete'}
+                  </button>
+                  <button
+                    className={styles.cancelBtn}
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </button>
+              )
+            )}
           </div>
         )}
       </div>

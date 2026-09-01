@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { FoodTagInput } from '../FoodTagInput';
 import { SegmentedControl } from '../SegmentedControl';
 import { novelFoodIds } from '../../utils/food-status';
@@ -107,6 +107,14 @@ export function MealFields({
   const hasNewFood = items.some((item) => item.firstTry);
   const isSystemic = (draft?.symptoms ?? []).some((s) => SYSTEMIC_SYMPTOMS.includes(s));
   const widenable = items.filter((item) => !mandatorySuspects.includes(item.foodId));
+
+  // Reserved space keeps the sticky Save bar from ever covering this alert
+  // (see EventModal.module.css); this scrolls it into view too, so a parent
+  // who has already scrolled past this point isn't left to find it by luck.
+  const emergencyNoteRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (isSystemic) emergencyNoteRef.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [isSystemic]);
 
   function patchItem(index: number, patch: Partial<MealItem>) {
     onItemsChange(items.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -271,7 +279,9 @@ export function MealFields({
           </div>
 
           {isSystemic && (
-            <p role="alert" className={styles.emergencyNote}>{EMERGENCY_REMINDER}</p>
+            <p ref={emergencyNoteRef} role="alert" className={styles.emergencyNote}>
+              {EMERGENCY_REMINDER}
+            </p>
           )}
 
           <div className={styles.field}>
