@@ -45,6 +45,14 @@ describe('getIntroductionWindow', () => {
   it('should be open when nothing has ever been introduced', () => {
     expect(getIntroductionWindow([], NOW)).toEqual({ open: true });
   });
+
+  it('should be open exactly at the boundary, three days after the last new food', () => {
+    // NOW is 2026-09-01T08:00:00Z; three days before that, to the second, is
+    // 2026-08-29T08:00:00Z. The window uses >=, so this exact instant must
+    // already be open, not still closed.
+    const foods = [food({ firstTriedAt: ts('2026-08-29T08:00:00Z') })];
+    expect(getIntroductionWindow(foods, NOW)).toEqual({ open: true });
+  });
 });
 
 describe('rankNextFoods', () => {
@@ -166,5 +174,22 @@ describe('getAllergenStatus', () => {
   it('should not flag maintenance for an allergen never introduced', () => {
     const egg = getAllergenStatus([], NOW).find((a) => a.allergen === 'egg');
     expect(egg?.needsMaintenance).toBe(false);
+  });
+
+  it('should not flag maintenance at exactly 14 days — the gap must be over, not at, the limit', () => {
+    // NOW is 2026-09-01T08:00:00Z; 14 days before that, to the second, is
+    // 2026-08-18T08:00:00Z. The check is `>`, so exactly 14 days must not
+    // trip it yet.
+    const foods = [food({ allergens: ['egg'], firstTriedAt: ts('2026-08-01T00:00:00Z'),
+                          lastTriedAt: ts('2026-08-18T08:00:00Z') })];
+    const egg = getAllergenStatus(foods, NOW).find((a) => a.allergen === 'egg');
+    expect(egg?.needsMaintenance).toBe(false);
+  });
+
+  it('should flag maintenance just past the 14-day boundary', () => {
+    const foods = [food({ allergens: ['egg'], firstTriedAt: ts('2026-08-01T00:00:00Z'),
+                          lastTriedAt: ts('2026-08-17T08:00:00Z') })];
+    const egg = getAllergenStatus(foods, NOW).find((a) => a.allergen === 'egg');
+    expect(egg?.needsMaintenance).toBe(true);
   });
 });

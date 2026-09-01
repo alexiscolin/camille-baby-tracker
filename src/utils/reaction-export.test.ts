@@ -52,7 +52,19 @@ describe('buildReactionCsv', () => {
   });
 
   it('should resolve the allergens of the suspected foods', () => {
-    expect(buildReactionCsv([mealWithReaction], byId)).toContain('Kiwi');
+    // Kiwi's food name and allergen label are both literally "Kiwi", so that
+    // fixture can't tell an allergens-column bug from a foods-column one.
+    // Ebi/Shrimp have different labels, so only a correctly resolved
+    // allergen column contains "Shrimp".
+    const ebiById = new Map([
+      ['ebi', { id: 'ebi', name: 'Ebi', allergens: ['shrimp'] } as Food],
+    ]);
+    const mealWithEbi = {
+      ...mealWithReaction,
+      items: [{ foodId: 'ebi', name: 'Ebi', quantity: 1, unit: 'tsp' }],
+      reaction: { ...reaction, suspectedFoodIds: ['ebi'] },
+    } as unknown as BabyEvent;
+    expect(buildReactionCsv([mealWithEbi], ebiById)).toContain('Shrimp');
   });
 
   it('should quote a note containing a comma', () => {

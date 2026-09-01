@@ -27,6 +27,19 @@ describe('rankSuggestions', () => {
     expect(ids.indexOf('shirasu')).toBeLessThan(ids.indexOf('shiratamako'));
   });
 
+  it('should rank a catalog prefix match above a catalog substring match', () => {
+    // Both candidates are catalog entries, so this can't be satisfied by the
+    // catalog-beats-seed tier alone — it specifically needs tier 0 (prefix)
+    // ranked above tier 1 (substring) within the catalog.
+    const localFoods = [
+      catalogFood('shirasu', 'Shirasu', 1),
+      catalogFood('sushi', 'Sushi', 1),
+    ];
+    const result = rankSuggestions('shi', localFoods, []);
+    const ids = result.map((r) => r.id);
+    expect(ids.indexOf('shirasu')).toBeLessThan(ids.indexOf('sushi'));
+  });
+
   it('should rank catalog entries above unused seed entries', () => {
     const result = rankSuggestions('shir', foods, seed);
     expect(result[0].source).toBe('catalog');
