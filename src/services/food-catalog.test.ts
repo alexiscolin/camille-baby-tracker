@@ -37,6 +37,24 @@ describe('slugify', () => {
     expect(slug).toMatch(/^[a-z0-9-]+$/);
     expect(slugify('しらす')).toBe(slug);
   });
+
+  it('should not merge foods that differ only by a meaningful "%"', () => {
+    // "5%" and plain "5" are different products, not a typing variant of
+    // the same one — must not collapse to the same catalog document.
+    expect(slugify('5% yoghurt')).not.toBe(slugify('5 yoghurt'));
+  });
+
+  it('should map the same name to the same slug every time (stability)', () => {
+    expect(slugify('Happy Baby (Organic)')).toBe(slugify('Happy Baby (Organic)'));
+    expect(slugify('5% yoghurt')).toBe('5-pct-yoghurt');
+  });
+
+  it('should treat bracket-style punctuation as decorative (documented, intentional collision)', () => {
+    // Different bracket styles around the same food name are a typing
+    // variation, not a different product — this is a deliberate judgment
+    // call (see the slugify comment), unlike the "%" case above.
+    expect(slugify('Happy Baby (Organic)')).toBe(slugify('Happy Baby [Organic]'));
+  });
 });
 
 describe('foodFromSeed', () => {

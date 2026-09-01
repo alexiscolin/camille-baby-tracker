@@ -31,10 +31,21 @@ function foodsCollection(familyId: string) {
   return collection(db, 'families', familyId, 'foods');
 }
 
+/**
+ * Judgment call on which punctuation is meaningful (kept distinct) versus
+ * decorative (folded into the same separator as everything else):
+ * '%' changes what the food *is* — "5% yoghurt" and "5 yoghurt" are
+ * different products — so it's kept as a literal token rather than
+ * collapsed away like the rest of the punctuation. Bracket/quote-style
+ * punctuation ("(Organic)" vs "[Organic]") is typed inconsistently around
+ * the same food and is treated as equivalent on purpose: those still
+ * collide into one slug, same as before this fix.
+ */
 export function slugify(name: string): string {
   const base = name
     .toLowerCase()
     .normalize('NFKD')
+    .replace(/%/g, '-pct-')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
   if (base) return base;
