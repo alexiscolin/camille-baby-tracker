@@ -61,6 +61,29 @@ describe('MealFields', () => {
     expect(screen.getByText(/3 days/i)).toBeInTheDocument();
   });
 
+  it('should close the detail panel when an earlier item is removed', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { foodId: 'rice', name: 'Rice', quantity: 1, unit: 'tsp' },
+      { foodId: 'kabocha', name: 'Kabocha', quantity: 2, unit: 'tsp' },
+      { foodId: 'natto', name: 'Natto', quantity: 3, unit: 'tsp' },
+    ] as MealItem[];
+    const onItemsChange = vi.fn();
+    const props = { ...base, onItemsChange };
+    const { rerender } = render(<MealFields {...props} items={items} />);
+
+    await user.click(screen.getByRole('button', { name: /edit kabocha/i }));
+    expect(await screen.findByLabelText(/acceptance/i)).toBeInTheDocument();
+
+    // Removing Rice reindexes the list: slot 1 was Kabocha and is now Natto.
+    // A panel left open would write Kabocha's quantity onto Natto.
+    await user.click(screen.getByRole('button', { name: /remove Rice/i }));
+    rerender(<MealFields {...props} items={onItemsChange.mock.calls[0][0]} />);
+
+    expect(screen.queryByLabelText(/acceptance/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/quantity/i)).not.toBeInTheDocument();
+  });
+
   it('should keep per-item detail collapsed until the chip is tapped', async () => {
     const user = userEvent.setup();
     const items = [

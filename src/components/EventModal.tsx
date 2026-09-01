@@ -141,6 +141,8 @@ export function EventModal(props: EventModalProps) {
     // On edit the stored flag is a historical fact — "her first taste of natto"
     // — and step 4 has since written firstTriedAt, so re-deriving would erase
     // it. Only items added during this edit carry no flag and are derived.
+    // Depends on the payload omitting a falsy firstTry: a stored `false` is an
+    // absent key and must fall through to the derivation, not be preserved.
     return derived.map((item, i) => ({
       ...item,
       firstTry: mealItems[i].firstTry ?? item.firstTry,
