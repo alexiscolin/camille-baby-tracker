@@ -4,7 +4,9 @@ import { Timestamp } from 'firebase/firestore';
 import { addEvent, updateEvent, deleteEvent } from '../services/events';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { getStoolColorWarning, type StoolColorId } from '../utils/stool-color';
-import { ColorSelector } from './ColorSelector';
+import { FeedingFields } from './EventModal/FeedingFields';
+import { PoopFields } from './EventModal/PoopFields';
+import { MedicationFields } from './EventModal/MedicationFields';
 import type { EventType, FeedingType, BabyEvent, FeedingEvent, PoopEvent, MedicationEvent } from '../types/events';
 import { getTimeString, addMinutesToTime, computeDurationMinutes } from '../utils/time';
 import styles from './EventModal.module.css';
@@ -94,6 +96,16 @@ export function EventModal(props: EventModalProps) {
       document.removeEventListener('keydown', handleEscape);
     };
   }, [onClose]);
+
+  function handleFeedingTypeChange(ft: FeedingType) {
+    setFeedingType(ft);
+    if (ft === 'bottle') {
+      setLeftCount(0);
+      setRightCount(0);
+    } else if (leftCount === 0 && rightCount === 0) {
+      setLeftCount(1);
+    }
+  }
 
   function buildEventDate(): Date | null {
     const [hours, minutes] = time.split(':').map(Number);
@@ -317,148 +329,42 @@ export function EventModal(props: EventModalProps) {
             </div>
 
             {selectedType === 'feeding' && (
-              <>
-                <div className={styles.field}>
-                  <label className={styles.label}>Type</label>
-                  <div className={styles.segmented}>
-                    {(['breast', 'bottle'] as FeedingType[]).map((ft) => (
-                      <button
-                        key={ft}
-                        className={`${styles.segmentBtn} ${feedingType === ft ? styles.segmentActive : ''}`}
-                        onClick={() => {
-                          setFeedingType(ft);
-                          if (ft === 'bottle') {
-                            setLeftCount(0);
-                            setRightCount(0);
-                          } else if (leftCount === 0 && rightCount === 0) {
-                            setLeftCount(1);
-                          }
-                        }}
-                      >
-                        {ft === 'breast' ? 'Breast' : 'Bottle'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {feedingType === 'breast' && (
-                  <div className={styles.field}>
-                    <label className={styles.label}>Sides</label>
-                    <div className={styles.sideCounters}>
-                      <div className={styles.sideCounter}>
-                        <span className={styles.sideLabel}>Left</span>
-                        <div className={styles.counterControls}>
-                          <button
-                            type="button"
-                            className={styles.counterBtn}
-                            onClick={() => setLeftCount((c) => Math.max(0, c - 1))}
-                            disabled={leftCount === 0}
-                            aria-label="Decrease left"
-                          >
-                            −
-                          </button>
-                          <span className={styles.counterValue} aria-label="Left count">{leftCount}</span>
-                          <button
-                            type="button"
-                            className={styles.counterBtn}
-                            onClick={() => setLeftCount((c) => c + 1)}
-                            aria-label="Increase left"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                      <div className={styles.sideCounter}>
-                        <span className={styles.sideLabel}>Right</span>
-                        <div className={styles.counterControls}>
-                          <button
-                            type="button"
-                            className={styles.counterBtn}
-                            onClick={() => setRightCount((c) => Math.max(0, c - 1))}
-                            disabled={rightCount === 0}
-                            aria-label="Decrease right"
-                          >
-                            −
-                          </button>
-                          <span className={styles.counterValue} aria-label="Right count">{rightCount}</span>
-                          <button
-                            type="button"
-                            className={styles.counterBtn}
-                            onClick={() => setRightCount((c) => c + 1)}
-                            aria-label="Increase right"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className={styles.field}>
-                  <label className={styles.label} htmlFor="event-end-time">End time (optional)</label>
-                  <input
-                    id="event-end-time"
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                  />
-                </div>
-                <div className={styles.checkboxGroup}>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={infection}
-                      onChange={(e) => setInfection(e.target.checked)}
-                    />
-                    <span>Infection</span>
-                  </label>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={engorgement}
-                      onChange={(e) => setEngorgement(e.target.checked)}
-                    />
-                    <span>Engorgement</span>
-                  </label>
-                </div>
-              </>
+              <FeedingFields
+                feedingType={feedingType}
+                onFeedingTypeChange={handleFeedingTypeChange}
+                leftCount={leftCount}
+                onLeftCountChange={setLeftCount}
+                rightCount={rightCount}
+                onRightCountChange={setRightCount}
+                startTime={time}
+                endTime={endTime}
+                onEndTimeChange={setEndTime}
+                infection={infection}
+                onInfectionChange={setInfection}
+                engorgement={engorgement}
+                onEngorgementChange={setEngorgement}
+              />
             )}
 
             {selectedType === 'poop' && (
               <div className={styles.field}>
                 <label className={styles.label}>Color (optional)</label>
-                <ColorSelector
-                  value={stoolColor}
-                  onChange={setStoolColor}
+                <PoopFields
+                  color={stoolColor}
+                  onColorChange={setStoolColor}
                   warning={stoolColorWarning}
                 />
               </div>
             )}
 
             {selectedType === 'medication' && (
-              <>
-                <div className={styles.field}>
-                  <label className={styles.label}>Medication name</label>
-                  <input
-                    type="text"
-                    value={medicationName}
-                    onChange={(e) => setMedicationName(e.target.value.slice(0, MAX_TEXT_LENGTH))}
-                    placeholder="e.g. Vitamin D"
-                    required
-                    maxLength={MAX_TEXT_LENGTH}
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>Dose</label>
-                  <input
-                    type="text"
-                    value={dose}
-                    onChange={(e) => setDose(e.target.value.slice(0, MAX_TEXT_LENGTH))}
-                    placeholder="e.g. 1 drop"
-                    required
-                    maxLength={MAX_TEXT_LENGTH}
-                  />
-                </div>
-              </>
+              <MedicationFields
+                medicationName={medicationName}
+                onMedicationNameChange={setMedicationName}
+                dose={dose}
+                onDoseChange={setDose}
+                maxLength={MAX_TEXT_LENGTH}
+              />
             )}
 
             <div className={styles.field}>
