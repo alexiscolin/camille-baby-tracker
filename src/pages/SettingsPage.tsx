@@ -34,12 +34,22 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
   // Whole history, not a rolling window: this export answers "what happened
   // since day one", so the range runs from birth to the moment the page
   // opened rather than the last-N-days window the dashboard uses.
+  // The subscription only opens once the user actually asks for the export
+  // (wantsHistory) — without this gate, every visit to Settings (e.g. just
+  // to rename the baby) would open a live listener over the baby's entire
+  // event history.
+  const [wantsHistory, setWantsHistory] = useState(false);
   const rangeStart = useMemo(
     () => baby?.birthDate.toDate() ?? new Date(0),
     [baby?.birthDate],
   );
   const rangeEnd = useMemo(() => new Date(), []);
-  const { events } = useRangeEvents(familyId, babyId, rangeStart, rangeEnd);
+  const { events, loading: historyLoading } = useRangeEvents(
+    wantsHistory ? familyId : undefined,
+    babyId,
+    rangeStart,
+    rangeEnd,
+  );
   const { foods } = useFoods(familyId);
   const foodsById = useMemo(() => new Map(foods.map((f) => [f.id, f])), [foods]);
   const reactionCsv = useMemo(
@@ -159,14 +169,28 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
           Export every logged reaction as a CSV for a doctor's visit.
         </p>
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.saveBtn}
-            disabled={!hasReactions}
-            onClick={() => downloadCsv(reactionCsv, `reaction-history-${format(new Date(), 'yyyy-MM-dd')}.csv`)}
-          >
-            {hasReactions ? 'Download CSV' : 'No reactions logged'}
-          </button>
+          {!wantsHistory ? (
+            <button
+              type="button"
+              className={styles.saveBtn}
+              onClick={() => setWantsHistory(true)}
+            >
+              Load reaction history
+            </button>
+          ) : historyLoading ? (
+            <button type="button" className={styles.saveBtn} disabled>
+              Loading...
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.saveBtn}
+              disabled={!hasReactions}
+              onClick={() => downloadCsv(reactionCsv, `reaction-history-${format(new Date(), 'yyyy-MM-dd')}.csv`)}
+            >
+              {hasReactions ? 'Download CSV' : 'No reactions logged'}
+            </button>
+          )}
         </div>
       </div>
 
