@@ -1,12 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Check, AlertCircle, Trash2, X } from 'lucide-react';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, deleteField } from 'firebase/firestore';
 import { addEvent, updateEvent, deleteEvent } from '../services/events';
+import { upsertFood, updateFood, foodFromSeed } from '../services/food-catalog';
+import { useFoods } from '../hooks/useFoods';
+import { FOOD_SEED } from '../data/food-seed';
+import { applyReaction, novelFoodIds } from '../utils/food-status';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { getStoolColorWarning, type StoolColorId } from '../utils/stool-color';
 import { FeedingFields } from './EventModal/FeedingFields';
 import { PoopFields } from './EventModal/PoopFields';
 import { MedicationFields } from './EventModal/MedicationFields';
+import { MealFields } from './EventModal/MealFields';
+import { MAX_MEAL_ITEMS } from '../types/food';
+import type { Food, MealEvent, MealItem, MealSlot, Reaction } from '../types/food';
 import type { EventType, FeedingType, BabyEvent, FeedingEvent, PoopEvent, MedicationEvent } from '../types/events';
 import { getTimeString, addMinutesToTime, computeDurationMinutes } from '../utils/time';
 import styles from './EventModal.module.css';
@@ -14,6 +21,10 @@ import styles from './EventModal.module.css';
 const MAX_TEXT_LENGTH = 200;
 const MAX_NOTES_LENGTH = 500;
 const MAX_DURATION_MINUTES = 300;
+/** firestore.rules caps a food name at 100 characters. */
+const MAX_FOOD_NAME_LENGTH = 100;
+/** 小さじ = 5 ml. The rules reject gramsPerTsp <= 0, so never default it to 0. */
+const DEFAULT_GRAMS_PER_TSP = 5;
 
 type EventModalProps = {
   familyId: string;
@@ -28,6 +39,46 @@ type EventModalProps = {
 
 function sanitizeText(text: string, maxLength: number): string {
   return text.trim().slice(0, maxLength);
+}
+
+/**
+ * Firestore rejects `undefined` client-side and the rules reject `null` for an
+ * optional field, so optional keys have to be absent rather than empty.
+ */
+function buildReactionPayload(reaction: Reaction, items: MealItem[]): Reaction {
+  return {
+    symptoms: reaction.symptoms,
+    severity: reaction.severity,
+    // Conservative by construction: a reaction after a multi-food meal cannot
+    // identify the culprit, so novelFoodIds(items) is the floor and is always
+    // kept whole, whatever the UI sent up. The UI's set only ever adds to it,
+    // minus ids no longer in the meal — a food that was not served cannot have
+    // caused this reaction.
+    suspectedFoodIds: [...new Set([
+      ...novelFoodIds(items),
+      ...reaction.suspectedFoodIds.filter((id) => items.some((i) => i.foodId === id)),
+    ])],
+    ...(reaction.onsetMinutes !== undefined ? { onsetMinutes: reaction.onsetMinutes } : {}),
+    ...(reaction.resolvedMinutes !== undefined ? { resolvedMinutes: reaction.resolvedMinutes } : {}),
+    ...(reaction.note ? { note: reaction.note } : {}),
+  };
+}
+
+/** A free-text food, with every field set to a value firestore.rules accepts. */
+function minimalFood(foodId: string, name: string): Food {
+  return {
+    id: foodId,
+    name: sanitizeText(name, MAX_FOOD_NAME_LENGTH) || foodId,
+    group: 'other',
+    allergens: [],
+    gramsPerTsp: DEFAULT_GRAMS_PER_TSP,
+    minStage: 1,
+    status: 'untried',
+    usageCount: 0,
+    exposureCount: 0,
+    reactionEventIds: [],
+    nutrientSource: 'manual',
+  };
 }
 
 export function EventModal(props: EventModalProps) {
@@ -70,6 +121,15 @@ export function EventModal(props: EventModalProps) {
   const [stoolColor, setStoolColor] = useState<StoolColorId | undefined>(
     editEvent?.type === 'poop' ? ((editEvent as PoopEvent).color as StoolColorId | undefined) : undefined,
   );
+  const [mealSlot, setMealSlot] = useState<MealSlot>(
+    editEvent?.type === 'meal' ? (editEvent as MealEvent).mealSlot : 'lunch',
+  );
+  const [mealItems, setMealItems] = useState<MealItem[]>(
+    editEvent?.type === 'meal' ? (editEvent as MealEvent).items : [],
+  );
+  const [reaction, setReaction] = useState<Reaction | undefined>(
+    editEvent?.type === 'meal' ? (editEvent as MealEvent).reaction : undefined,
+  );
   const [notes, setNotes] = useState(editEvent?.notes ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -77,6 +137,26 @@ export function EventModal(props: EventModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const saveInFlight = useRef(false);
+
+  // Only meals need the catalog; passing undefined keeps the listener closed
+  // for every other event type.
+  const { foods, loading: foodsLoading } = useFoods(
+    selectedType === 'meal' ? familyId : undefined,
+  );
+  const foodById = useMemo(() => new Map(foods.map((f) => [f.id, f])), [foods]);
+
+  // `firstTry` is derived from the catalog as items are added, so the "new
+  // food" hint is live and the saved value needs no second computation.
+  // Always recomputed rather than trusted from a stored item: the catalog
+  // arrives asynchronously, and losing a `firstTry` only ever widens the
+  // suspected set (novelFoodIds falls back to every item), never narrows it.
+  const itemsWithFirstTry = useMemo<MealItem[]>(
+    () => mealItems.map((item) => ({
+      ...item,
+      firstTry: !foodById.get(item.foodId)?.firstTriedAt,
+    })),
+    [mealItems, foodById],
+  );
 
   const babyAgeDays = babyBirthDate
     ? Math.floor((Date.now() - babyBirthDate.getTime()) / (1000 * 60 * 60 * 24))
@@ -114,6 +194,86 @@ export function EventModal(props: EventModalProps) {
     const eventDate = new Date(targetDate);
     eventDate.setHours(hours, minutes, 0, 0);
     return eventDate;
+  }
+
+  /**
+   * Steps 1 and 2 of the meal save: make sure every food in the meal has a
+   * catalog document, then freeze the items into a Firestore-safe payload.
+   * `firstTry` is read from the food's *pre-existing* `firstTriedAt`, so this
+   * has to run before any `firstTriedAt` is written.
+   */
+  async function prepareMeal(eventDate: Date) {
+    const items = itemsWithFirstTry.slice(0, MAX_MEAL_ITEMS);
+    if (items.length === 0) {
+      setError('Add at least one food');
+      return null;
+    }
+    // Without the catalog, every food looks new and the merge below would reset
+    // a known food's status and reaction history to a blank one.
+    if (foodsLoading) {
+      setError('Still loading foods. Try again in a moment.');
+      return null;
+    }
+
+    const catalog = new Map(foodById);
+    const uniqueIds = [...new Set(items.map((i) => i.foodId))];
+
+    for (const id of uniqueIds) {
+      if (catalog.has(id)) continue;
+      const seed = FOOD_SEED.find((s) => s.id === id);
+      const name = items.find((i) => i.foodId === id)!.name;
+      const food: Food = seed ? { ...foodFromSeed(seed) } : minimalFood(id, name);
+      await upsertFood(familyId, food);
+      catalog.set(id, food);
+    }
+
+    const payloadItems: MealItem[] = items.map((i) => ({
+      foodId: i.foodId,
+      name: sanitizeText(i.name, MAX_FOOD_NAME_LENGTH) || i.foodId,
+      quantity: i.quantity,
+      unit: i.unit,
+      ...(i.acceptance ? { acceptance: i.acceptance } : {}),
+      ...(i.firstTry ? { firstTry: true } : {}),
+    }));
+
+    return {
+      catalog,
+      uniqueIds,
+      items: payloadItems,
+      reactionPayload: reaction ? buildReactionPayload(reaction, payloadItems) : undefined,
+      stamp: Timestamp.fromDate(eventDate),
+    };
+  }
+
+  /** Step 5: every suspected food carries the reaction and becomes suspected. */
+  async function persistReactionAttribution(
+    prepared: NonNullable<Awaited<ReturnType<typeof prepareMeal>>>,
+    mealId: string,
+  ) {
+    const { catalog, uniqueIds, items, reactionPayload, stamp } = prepared;
+    if (!reactionPayload) return;
+
+    const meal: MealEvent = {
+      id: mealId,
+      babyId,
+      type: 'meal',
+      mealSlot,
+      timestamp: stamp,
+      createdBy: userId,
+      createdAt: stamp,
+      items,
+      reaction: reactionPayload,
+    };
+    const before = uniqueIds.map((id) => catalog.get(id)!);
+    for (const food of applyReaction(before, meal, mealId)) {
+      // applyReaction returns the same object when a food is untouched.
+      if (food === catalog.get(food.id)) continue;
+      await updateFood(familyId, food.id, {
+        status: food.status,
+        reactionEventIds: food.reactionEventIds,
+        statusUpdatedAt: stamp,
+      });
+    }
   }
 
   async function handleSave() {
@@ -175,6 +335,24 @@ export function EventModal(props: EventModalProps) {
           }
           updates.medicationName = name;
           updates.dose = d;
+        } else if (selectedType === 'meal') {
+          const prepared = await prepareMeal(eventDate);
+          if (!prepared) {
+            setSaving(false);
+            saveInFlight.current = false;
+            return;
+          }
+          updates.mealSlot = mealSlot;
+          updates.items = prepared.items;
+          // Absent, never null: firestore.rules only accepts a map or nothing.
+          updates.reaction = prepared.reactionPayload ?? deleteField();
+          await updateEvent(familyId, editEvent.id, updates);
+          // Counters are not touched on edit: the exposure was already counted
+          // when the meal was first logged.
+          await persistReactionAttribution(prepared, editEvent.id);
+          setSaved(true);
+          setTimeout(onClose, 1000);
+          return;
         }
 
         await updateEvent(familyId, editEvent.id, updates);
@@ -218,6 +396,33 @@ export function EventModal(props: EventModalProps) {
             medicationName: name,
             dose: d,
           } as Parameters<typeof addEvent>[1]);
+        } else if (selectedType === 'meal') {
+          const prepared = await prepareMeal(eventDate);
+          if (!prepared) {
+            setSaving(false);
+            saveInFlight.current = false;
+            return;
+          }
+          const ref = await addEvent(familyId, {
+            ...base,
+            mealSlot,
+            items: prepared.items,
+            // Omitted entirely when there is no reaction: the SDK throws on
+            // `undefined` and firestore.rules rejects `null`.
+            ...(prepared.reactionPayload ? { reaction: prepared.reactionPayload } : {}),
+          } as Parameters<typeof addEvent>[1]);
+
+          for (const id of prepared.uniqueIds) {
+            const food = prepared.catalog.get(id)!;
+            await updateFood(familyId, id, {
+              usageCount: food.usageCount + 1,
+              exposureCount: food.exposureCount + 1,
+              lastTriedAt: prepared.stamp,
+              ...(food.firstTriedAt ? {} : { firstTriedAt: prepared.stamp }),
+            });
+          }
+
+          await persistReactionAttribution(prepared, ref.id);
         } else if (selectedType === 'poop' && stoolColor) {
           await addEvent(familyId, {
             ...base,
@@ -356,6 +561,18 @@ export function EventModal(props: EventModalProps) {
               </div>
             )}
 
+            {selectedType === 'meal' && (
+              <MealFields
+                mealSlot={mealSlot}
+                onMealSlotChange={setMealSlot}
+                items={itemsWithFirstTry}
+                onItemsChange={setMealItems}
+                foods={foods}
+                reaction={reaction}
+                onReactionChange={setReaction}
+              />
+            )}
+
             {selectedType === 'medication' && (
               <MedicationFields
                 medicationName={medicationName}
@@ -389,11 +606,15 @@ export function EventModal(props: EventModalProps) {
               </div>
             )}
 
-            <div className={styles.actions}>
+            <div className={`${styles.actions} ${styles.stickyActions}`}>
               <button
                 className={styles.saveBtn}
                 onClick={handleSave}
-                disabled={saving || (selectedType === 'medication' && (!medicationName.trim() || !dose.trim()))}
+                disabled={
+                  saving
+                  || (selectedType === 'medication' && (!medicationName.trim() || !dose.trim()))
+                  || (selectedType === 'meal' && foodsLoading)
+                }
               >
                 {saving ? 'Saving...' : mode === 'edit' ? 'Update' : 'Save'}
               </button>
