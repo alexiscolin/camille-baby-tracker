@@ -197,7 +197,13 @@
     margin-left: 72px;
     padding: var(--space-xl) var(--space-2xl);
     padding-bottom: var(--space-xl);
-    max-width: calc(100vw - 72px);
+    /* No existing app-wide content cap to match (SettingsPage's 640px is a
+     * narrow single-column form, not a precedent for this). 1200px is a
+     * conventional reading-optimized content width (Tailwind's max-w-6xl,
+     * Bootstrap's xl container) — keeps FoodPage's fixed 7-column allergen
+     * grid from ballooning to ~200px circles on very wide desktops while
+     * leaving normal desktop widths untouched. */
+    max-width: min(calc(100vw - 72px), 1200px);
     width: 100%;
   }
 }
