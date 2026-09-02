@@ -148,6 +148,34 @@ describe('SettingsPage tracked events', () => {
     });
   });
 
+  /**
+   * The checkbox is controlled by the document, so this only holds while the
+   * document is live. It was not: useBaby read it once, the write never came
+   * back, and the box ticked itself again on the next render.
+   */
+  it('should follow the document rather than its own click', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <SettingsPage familyId="fam-1" babyId="baby-1" baby={makeBaby()} />,
+    );
+
+    const box = screen.getByRole('checkbox', { name: /feedings/i });
+    expect(box).toBeChecked();
+
+    await user.click(box);
+    // Nothing has come back from Firestore yet, so it is still ticked.
+    expect(screen.getByRole('checkbox', { name: /feedings/i })).toBeChecked();
+
+    rerender(
+      <SettingsPage
+        familyId="fam-1"
+        babyId="baby-1"
+        baby={makeBaby({ hiddenEventTypes: ['feeding'] })}
+      />,
+    );
+    expect(screen.getByRole('checkbox', { name: /feedings/i })).not.toBeChecked();
+  });
+
   /** An app with nothing tracked has no add button and no charts. */
   it('should not let the last tracked type be unticked', async () => {
     const user = userEvent.setup();
