@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Baby } from '../types/events';
-import { getBaby } from '../services/family';
+import { subscribeToBaby } from '../services/family';
 
 export function useBaby(familyId: string | undefined, babyId: string | undefined) {
   const [baby, setBaby] = useState<Baby | null>(null);
@@ -12,21 +12,20 @@ export function useBaby(familyId: string | undefined, babyId: string | undefined
       return;
     }
 
-    let cancelled = false;
     setLoading(true);
 
-    getBaby(familyId, babyId)
-      .then((b) => {
-        if (!cancelled) {
-          setBaby(b);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => { cancelled = true; };
+    // A subscription, not a read: Settings writes preferences onto this
+    // document and needs them back on screen, and the other parent's phone
+    // should see them without a reload.
+    return subscribeToBaby(
+      familyId,
+      babyId,
+      (next) => {
+        setBaby(next);
+        setLoading(false);
+      },
+      () => setLoading(false),
+    );
   }, [familyId, babyId]);
 
   return { baby, loading };
