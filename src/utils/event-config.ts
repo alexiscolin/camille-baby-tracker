@@ -18,3 +18,27 @@ export const EVENT_CONFIG: Record<EventType, EventTypeConfig> = {
 } as const;
 
 export const EVENT_TYPES = Object.keys(EVENT_CONFIG) as EventType[];
+
+/**
+ * The event types a family has chosen to keep tracking.
+ *
+ * Stored as what is *hidden* rather than what is kept: absence of the field
+ * means the current behaviour, so no baby document needs migrating, and a type
+ * added in a later version shows up without anyone having to opt in.
+ *
+ * Hiding every type is refused rather than honoured — it would leave the add
+ * button with nothing to offer and every chart with no series, and the value
+ * comes from a shared document that this build does not exclusively write.
+ */
+export function visibleEventTypes(hidden: readonly EventType[] | undefined): EventType[] {
+  if (!hidden || hidden.length === 0) return EVENT_TYPES;
+  const hide = new Set<string>(hidden);
+  const visible = EVENT_TYPES.filter((type) => !hide.has(type));
+  return visible.length > 0 ? visible : EVENT_TYPES;
+}
+
+/**
+ * A radar needs three axes to enclose an area; with two it is a line and with
+ * one a dot. Below this many tracked types the activity radar is not drawn.
+ */
+export const MIN_RADAR_AXES = 3;

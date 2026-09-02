@@ -6,7 +6,8 @@ import { upsertFood, updateFood, foodFromSeed } from '../services/food-catalog';
 import { useFoods } from '../hooks/useFoods';
 import { FOOD_SEED } from '../data/food-seed';
 import { applyReaction, withdrawReaction } from '../utils/food-status';
-import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
+import { EVENT_CONFIG } from '../utils/event-config';
+import { useVisibleEventTypes } from '../hooks/useVisibleEventTypes';
 import { getStoolColorWarning, type StoolColorId } from '../utils/stool-color';
 import { FeedingFields } from './EventModal/FeedingFields';
 import { PoopFields } from './EventModal/PoopFields';
@@ -63,6 +64,7 @@ function minimalFood(foodId: string, name: string): Food {
 }
 
 export function EventModal(props: EventModalProps) {
+  const visibleTypes = useVisibleEventTypes();
   const { familyId, babyId, userId, onClose, mode, babyBirthDate } = props;
 
   const editEvent = mode === 'edit' ? props.event : null;
@@ -552,7 +554,7 @@ export function EventModal(props: EventModalProps) {
 
           {mode === 'add' && !selectedType && (
             <div className={styles.typeGrid}>
-              {EVENT_TYPES.map((type) => {
+              {visibleTypes.map((type) => {
                 const config = EVENT_CONFIG[type];
                 const Icon = config.icon;
                 return (

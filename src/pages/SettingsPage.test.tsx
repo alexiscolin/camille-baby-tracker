@@ -113,3 +113,56 @@ describe('SettingsPage', () => {
     expect(await screen.findByText('Failed to save. Please try again.')).toBeInTheDocument();
   });
 });
+
+describe('SettingsPage tracked events', () => {
+  beforeEach(() => {
+    mockUpdateBaby.mockReset();
+    mockUpdateBaby.mockResolvedValue(undefined);
+  });
+
+  it('should record a type as no longer tracked when it is unticked', async () => {
+    const user = userEvent.setup();
+    render(<SettingsPage familyId="fam-1" babyId="baby-1" baby={makeBaby()} />);
+
+    await user.click(screen.getByRole('checkbox', { name: /feedings/i }));
+
+    expect(mockUpdateBaby).toHaveBeenCalledWith('fam-1', 'baby-1', {
+      hiddenEventTypes: ['feeding'],
+    });
+  });
+
+  it('should bring a type back when it is ticked again', async () => {
+    const user = userEvent.setup();
+    render(
+      <SettingsPage
+        familyId="fam-1"
+        babyId="baby-1"
+        baby={makeBaby({ hiddenEventTypes: ['feeding', 'bath'] })}
+      />,
+    );
+
+    await user.click(screen.getByRole('checkbox', { name: /feedings/i }));
+
+    expect(mockUpdateBaby).toHaveBeenCalledWith('fam-1', 'baby-1', {
+      hiddenEventTypes: ['bath'],
+    });
+  });
+
+  /** An app with nothing tracked has no add button and no charts. */
+  it('should not let the last tracked type be unticked', async () => {
+    const user = userEvent.setup();
+    render(
+      <SettingsPage
+        familyId="fam-1"
+        babyId="baby-1"
+        baby={makeBaby({ hiddenEventTypes: ['feeding', 'pee', 'poop', 'medication', 'bath'] })}
+      />,
+    );
+
+    const last = screen.getByRole('checkbox', { name: /meals/i });
+    expect(last).toBeDisabled();
+
+    await user.click(last);
+    expect(mockUpdateBaby).not.toHaveBeenCalled();
+  });
+});

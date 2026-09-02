@@ -3,7 +3,8 @@ import { Plus } from 'lucide-react';
 import type { BabyEvent } from '../types/events';
 import { computeSummary } from '../utils/summary';
 import { getRelativeDayLabel, formatShortDate } from '../utils/date';
-import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
+import { EVENT_CONFIG } from '../utils/event-config';
+import { useVisibleEventTypes } from '../hooks/useVisibleEventTypes';
 import { EventTimeline } from './EventTimeline';
 import styles from './DaySection.module.css';
 
@@ -16,6 +17,7 @@ interface DaySectionProps {
 }
 
 export const DaySection = memo(function DaySection({ date, events, onEventClick, onAddClick, showHourMarkers = false }: DaySectionProps) {
+  const visibleTypes = useVisibleEventTypes();
   const summary = computeSummary(events);
   const label = getRelativeDayLabel(date);
   /**
@@ -33,7 +35,7 @@ export const DaySection = memo(function DaySection({ date, events, onEventClick,
           {shortDate && <span className={styles.shortDate}>{shortDate}</span>}
         </div>
         <div className={styles.summaryBadges}>
-          {EVENT_TYPES.map((type) => {
+          {visibleTypes.map((type) => {
             const count = summary[type];
             if (count === 0) return null;
             const config = EVENT_CONFIG[type];

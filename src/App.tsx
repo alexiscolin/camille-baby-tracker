@@ -6,6 +6,7 @@ import { useFamily } from './hooks/useFamily';
 import { useBaby } from './hooks/useBaby';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
+import { VisibleEventTypesProvider } from './components/VisibleEventTypesProvider';
 import { withChunkReload } from './utils/lazy-route';
 import { LoginPage } from './pages/LoginPage';
 import { SetupPage } from './pages/SetupPage';
@@ -61,63 +62,65 @@ function AppContent() {
   }
 
   return (
-    <Layout babyName={baby?.firstName}>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <DashboardPage
-              familyId={family.id}
-              babyId={babyId}
-              userId={user.uid}
-              baby={baby}
-            />
-          }
-        />
-        <Route
-          path="/food"
-          element={suspended(
-            <FoodPage
-              familyId={family.id}
-              babyId={babyId}
-              userId={user.uid}
-              baby={baby}
-            />,
-          )}
-        />
-        <Route
-          path="/stats"
-          element={suspended(
-            <StatsPage
-              familyId={family.id}
-              babyId={babyId}
-              baby={baby}
-            />,
-          )}
-        />
-        <Route
-          path="/growth"
-          element={suspended(
-            <GrowthPage
-              familyId={family.id}
-              babyId={babyId}
-              userId={user.uid}
-              baby={baby}
-            />,
-          )}
-        />
-        <Route
-          path="/settings"
-          element={suspended(
-            <SettingsPage
-              familyId={family.id}
-              babyId={babyId}
-              baby={baby}
-            />,
-          )}
-        />
-      </Routes>
-    </Layout>
+    <VisibleEventTypesProvider hidden={baby?.hiddenEventTypes}>
+      <Layout babyName={baby?.firstName}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <DashboardPage
+                familyId={family.id}
+                babyId={babyId}
+                userId={user.uid}
+                baby={baby}
+              />
+            }
+          />
+          <Route
+            path="/food"
+            element={suspended(
+              <FoodPage
+                familyId={family.id}
+                babyId={babyId}
+                userId={user.uid}
+                baby={baby}
+              />,
+            )}
+          />
+          <Route
+            path="/stats"
+            element={suspended(
+              <StatsPage
+                familyId={family.id}
+                babyId={babyId}
+                baby={baby}
+              />,
+            )}
+          />
+          <Route
+            path="/growth"
+            element={suspended(
+              <GrowthPage
+                familyId={family.id}
+                babyId={babyId}
+                userId={user.uid}
+                baby={baby}
+              />,
+            )}
+          />
+          <Route
+            path="/settings"
+            element={suspended(
+              <SettingsPage
+                familyId={family.id}
+                babyId={babyId}
+                baby={baby}
+              />,
+            )}
+          />
+        </Routes>
+      </Layout>
+    </VisibleEventTypesProvider>
   );
 }
 

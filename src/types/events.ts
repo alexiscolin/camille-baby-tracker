@@ -58,6 +58,11 @@ export interface Baby {
   firstName: string;
   birthDate: Timestamp;
   sex?: BabySex;
+  /**
+   * Event types this family has stopped tracking. Absent means all of them are
+   * tracked, so nothing needs migrating; see `visibleEventTypes`.
+   */
+  hiddenEventTypes?: EventType[];
   createdAt: Timestamp;
 }
 
