@@ -19,6 +19,8 @@ import { QuickStats } from '../components/QuickStats';
 import { SummaryCard } from '../components/SummaryCard';
 import { CalendarStrip } from '../components/CalendarStrip';
 import { DaySection } from '../components/DaySection';
+import { ModalFallback } from '../components/ModalFallback';
+import { withChunkReload } from '../utils/lazy-route';
 import { SegmentedControl } from '../components/SegmentedControl';
 import type { BabyEvent, Baby } from '../types/events';
 import styles from './DashboardPage.module.css';
@@ -28,8 +30,10 @@ import styles from './DashboardPage.module.css';
  * ever mounted after a tap. Loading it with the dashboard put ~170 kB of
  * reference data on the first-paint path for nothing.
  */
-const EventModal = lazy(() =>
-  import('../components/EventModal').then((m) => ({ default: m.EventModal })),
+const EventModal = lazy(
+  withChunkReload(() =>
+    import('../components/EventModal').then((m) => ({ default: m.EventModal })),
+  ),
 );
 
 const ActivityRadar = lazy(() =>
@@ -260,7 +264,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
             </div>
             {/* Radar (desktop only) */}
             <div className={styles.radarCol}>
-              <Suspense fallback={null}>
+              <Suspense fallback={<ModalFallback />}>
                 <ActivityRadar today={todaySummary} average={avgSummary} />
               </Suspense>
             </div>
@@ -315,7 +319,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
         </div>
       </div>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<ModalFallback />}>
         {editEvent && (
           <EventModal
             mode="edit"
