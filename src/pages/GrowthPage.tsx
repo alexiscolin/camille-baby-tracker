@@ -56,7 +56,9 @@ export function GrowthPage({ familyId, babyId, userId, baby }: GrowthPageProps) 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const { measurements, loading, fromCache, hasPendingWrites } = useMeasurements(familyId, babyId);
+  const {
+    measurements, loading, fromCache, hasPendingWrites, error: loadError,
+  } = useMeasurements(familyId, babyId);
 
   const babySex = baby?.sex;
   const birthDate = baby?.birthDate.toDate();
@@ -137,6 +139,18 @@ export function GrowthPage({ familyId, babyId, userId, baby }: GrowthPageProps) 
         </div>
         <CacheIndicator fromCache={fromCache} hasPendingWrites={hasPendingWrites} />
       </div>
+
+      {/*
+        * Distinct from the form's `error` below: this one means the list on
+        * screen is not the family's data. Without it a refused read looks
+        * exactly like a family that has not measured anything yet.
+        */}
+      {loadError && (
+        <div className={styles.loadError} role="alert">
+          <AlertCircle size={16} />
+          <span>Could not load measurements — {loadError}</span>
+        </div>
+      )}
 
       {/* Metric Selector */}
       <div className={styles.controls}>

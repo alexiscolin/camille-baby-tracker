@@ -264,7 +264,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
             </div>
             {/* Radar (desktop only) */}
             <div className={styles.radarCol}>
-              <Suspense fallback={<ModalFallback />}>
+              <Suspense fallback={null}>
                 <ActivityRadar today={todaySummary} average={avgSummary} />
               </Suspense>
             </div>
