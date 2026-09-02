@@ -7,12 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-icon.svg'],
       manifest: {
         name: 'Baby Tracker',
         short_name: 'BabyTracker',
         description: 'Track your baby\'s feedings, diapers, and medications',
-        theme_color: '#6366f1',
+        theme_color: '#ffffff',
         background_color: '#f8f9fc',
         display: 'standalone',
         orientation: 'portrait',

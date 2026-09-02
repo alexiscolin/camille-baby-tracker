@@ -3,13 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- index.css @imports the webfont, so first paint blocks on a cross-origin
+         round trip that cannot start until the stylesheet has parsed. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Baby Tracker</title>
     <meta name="description" content="Track your baby's feedings, diapers, and medications" />
-    <!-- Matches --color-bg in each scheme: an indigo bar over a near-black app
-         reads as a rendering glitch once the PWA is installed. -->
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8f9fc" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f0e1a" />
+    <!-- Matches --color-surface, the sticky header that actually sits under the
+         status bar, in each scheme. An indigo bar over a near-black app reads
+         as a rendering glitch once the PWA is installed. A UA that ignores the
+         media attribute takes the first tag, so light stays first. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1930" />
     <!-- Apple PWA support -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
