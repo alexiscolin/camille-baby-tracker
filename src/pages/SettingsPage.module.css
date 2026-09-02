@@ -167,3 +167,43 @@
     padding: var(--space-xl);
   }
 }
+
+/* ─── Tracked events ─── */
+.checkList {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  /* The touch floor the rest of the UI holds to. */
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.checkbox:disabled {
+  cursor: not-allowed;
+}
+
+.checkRow:has(.checkbox:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.checkLabel {
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+}

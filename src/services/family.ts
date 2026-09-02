@@ -49,7 +49,7 @@ export async function getBaby(
 export async function updateBaby(
   familyId: string,
   babyId: string,
-  data: Partial<Pick<Baby, 'firstName' | 'sex'>>,
+  data: Partial<Pick<Baby, 'firstName' | 'sex' | 'hiddenEventTypes'>>,
 ) {
   return updateDoc(doc(db, 'families', familyId, 'babies', babyId), data);
 }

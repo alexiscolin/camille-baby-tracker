@@ -27,7 +27,8 @@ import {
 import type { ChartDataPoint } from '../utils/chart-data';
 import type { ChartType, RangeType } from '../utils/chart-helpers';
 import { CHART_COLORS, TOOLTIP_STYLE, hideZero } from '../utils/chart-helpers';
-import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
+import { EVENT_CONFIG } from '../utils/event-config';
+import { useVisibleEventTypes } from '../hooks/useVisibleEventTypes';
 import type { DailySummary } from '../types/events';
 import type {
   DayNightSplit,
@@ -71,6 +72,8 @@ export const StatsCharts = memo(function StatsCharts({
   durationTrend,
   hourDist,
 }: StatsChartsProps) {
+  const visibleTypes = useVisibleEventTypes();
+
   return (
     <>
       {/* Main Chart */}
@@ -89,7 +92,7 @@ export const StatsCharts = memo(function StatsCharts({
                 <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
-                {EVENT_TYPES.map((type) => (
+                {visibleTypes.map((type) => (
                   <Bar key={type} dataKey={type} fill={CHART_COLORS[type]} radius={[4, 4, 0, 0]} name={EVENT_CONFIG[type].label} />
                 ))}
               </BarChart>
@@ -100,7 +103,7 @@ export const StatsCharts = memo(function StatsCharts({
                 <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
-                {EVENT_TYPES.map((type) => (
+                {visibleTypes.map((type) => (
                   <Line key={type} type="monotone" dataKey={type} stroke={CHART_COLORS[type]} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name={EVENT_CONFIG[type].label} />
                 ))}
               </LineChart>
@@ -124,7 +127,7 @@ export const StatsCharts = memo(function StatsCharts({
               <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
               <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
-              {EVENT_TYPES.map((type, i) => (
+              {visibleTypes.map((type, i) => (
                 <Area key={type} type="monotone" dataKey={type} stackId="1" stroke={CHART_COLORS[type]} fill={CHART_COLORS[type]} fillOpacity={i === 0 ? 0.6 : 0.5} name={EVENT_CONFIG[type].label} />
               ))}
             </AreaChart>
@@ -139,7 +142,7 @@ export const StatsCharts = memo(function StatsCharts({
           <h2 className={styles.sectionTitle}>Daily Averages</h2>
         </div>
         <div className={styles.avgGrid}>
-          {EVENT_TYPES.map((type) => {
+          {visibleTypes.map((type) => {
             const config = EVENT_CONFIG[type];
             const Icon = config.icon;
             return (

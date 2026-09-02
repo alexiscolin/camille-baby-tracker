@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { Baby as BabyIcon, AlertCircle, Check, Settings, Download } from 'lucide-react';
+import { Baby as BabyIcon, AlertCircle, Check, Settings, Download, ListChecks } from 'lucide-react';
 import { updateBaby } from '../services/family';
 import { formatBabyAge } from '../utils/date';
+import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { useFoods } from '../hooks/useFoods';
 import { buildReactionCsv } from '../utils/reaction-export';
-import type { Baby, BabySex } from '../types/events';
+import type { Baby, BabySex, EventType } from '../types/events';
 import styles from './SettingsPage.module.css';
 
 function downloadCsv(csv: string, filename: string) {
@@ -28,6 +29,14 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
   const [firstName, setFirstName] = useState(baby?.firstName ?? '');
   const [sex, setSex] = useState<BabySex | ''>(baby?.sex ?? '');
   const [saving, setSaving] = useState(false);
+  /**
+   * Written straight through on each tick rather than behind the Save button:
+   * this is a preference, not a form, and the snapshot listener is what puts
+   * the new value back on screen — including on the other parent's phone.
+   */
+  const hiddenTypes = baby?.hiddenEventTypes ?? [];
+  const [savingTypes, setSavingTypes] = useState(false);
+  const [typesError, setTypesError] = useState('');
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
@@ -80,6 +89,25 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
       setError('Failed to save. Please try again.');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function toggleType(type: EventType) {
+    // The last tracked type cannot be removed: the add button would have
+    // nothing to offer. The checkbox is disabled too; this is the real guard.
+    const next = hiddenTypes.includes(type)
+      ? hiddenTypes.filter((t) => t !== type)
+      : [...hiddenTypes, type];
+    if (next.length >= EVENT_TYPES.length) return;
+
+    setSavingTypes(true);
+    setTypesError('');
+    try {
+      await updateBaby(familyId, babyId, { hiddenEventTypes: next });
+    } catch {
+      setTypesError('Could not save. Please try again.');
+    } finally {
+      setSavingTypes(false);
     }
   }
 
@@ -157,6 +185,48 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
             </div>
           )}
         </form>
+      </div>
+
+      {/* ─── Tracked events ─── */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <ListChecks size={20} className={styles.sectionIcon} />
+          Tracked events
+        </h2>
+        <p className={styles.hint}>
+          Untick what you no longer record. It leaves the add button, the
+          summary tiles and every chart. Nothing is deleted — what you already
+          logged stays in the timeline, and ticking it back brings it all back.
+        </p>
+        <ul className={styles.checkList}>
+          {EVENT_TYPES.map((type) => {
+            const config = EVENT_CONFIG[type];
+            const Icon = config.icon;
+            const tracked = !hiddenTypes.includes(type);
+            const lastOne = tracked && hiddenTypes.length === EVENT_TYPES.length - 1;
+            return (
+              <li key={type}>
+                <label className={styles.checkRow}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={tracked}
+                    disabled={lastOne || savingTypes}
+                    onChange={() => toggleType(type)}
+                  />
+                  <Icon size={18} style={{ color: config.color }} />
+                  <span className={styles.checkLabel}>{config.label}</span>
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+        {typesError && (
+          <div className={styles.error}>
+            <AlertCircle size={16} />
+            <span>{typesError}</span>
+          </div>
+        )}
       </div>
 
       {/* Reaction History */}

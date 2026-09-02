@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { EventModal } from './EventModal';
+import { VisibleEventTypesProvider } from './VisibleEventTypesProvider';
 import type { FeedingEvent, PeeEvent, PoopEvent, MedicationEvent } from '../types/events';
 
 const mockAddEvent = vi.fn();
@@ -530,5 +531,38 @@ describe('EventModal', () => {
       const updates = mockUpdateEvent.mock.calls[0][2];
       expect(updates.color).toBe('brown');
     });
+  });
+});
+
+describe('EventModal type picker', () => {
+  const addProps = {
+    mode: 'add' as const,
+    date: new Date(2026, 3, 1),
+    familyId: 'fam-1',
+    babyId: 'baby-1',
+    userId: 'user-1',
+    onClose: vi.fn(),
+  };
+
+  it('should offer every tracked type', () => {
+    render(
+      <VisibleEventTypesProvider hidden={[]}>
+        <EventModal {...addProps} />
+      </VisibleEventTypesProvider>,
+    );
+
+    expect(screen.getByRole('button', { name: /feedings/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /meals/i })).toBeInTheDocument();
+  });
+
+  it('should not offer a type the family has stopped tracking', () => {
+    render(
+      <VisibleEventTypesProvider hidden={['feeding']}>
+        <EventModal {...addProps} />
+      </VisibleEventTypesProvider>,
+    );
+
+    expect(screen.queryByRole('button', { name: /feedings/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /meals/i })).toBeInTheDocument();
   });
 });

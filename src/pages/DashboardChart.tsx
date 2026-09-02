@@ -14,7 +14,8 @@ import {
 import type { ChartDataPoint } from '../utils/chart-data';
 import type { ChartType } from '../utils/chart-helpers';
 import { CHART_COLORS, TOOLTIP_STYLE, hideZero } from '../utils/chart-helpers';
-import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
+import { EVENT_CONFIG } from '../utils/event-config';
+import { useVisibleEventTypes } from '../hooks/useVisibleEventTypes';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 interface DashboardChartProps {
@@ -29,6 +30,7 @@ const MARGIN_MOBILE = { top: 5, right: 0, left: 0, bottom: 5 };
 
 export const DashboardChart = memo(function DashboardChart({ chartData, chartType }: DashboardChartProps) {
   const isMobile = useIsMobile();
+  const visibleTypes = useVisibleEventTypes();
   const margin = isMobile ? MARGIN_MOBILE : MARGIN;
 
   return (
@@ -40,7 +42,7 @@ export const DashboardChart = memo(function DashboardChart({ chartData, chartTyp
           <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} hide={isMobile} />
           <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
           <Legend iconType="circle" wrapperStyle={{ fontSize: isMobile ? '11px' : '13px', paddingTop: '8px' }} />
-          {EVENT_TYPES.map((type) => (
+          {visibleTypes.map((type) => (
             <Bar key={type} dataKey={type} fill={CHART_COLORS[type]} radius={[4, 4, 0, 0]} name={EVENT_CONFIG[type].label} />
           ))}
         </BarChart>
@@ -51,7 +53,7 @@ export const DashboardChart = memo(function DashboardChart({ chartData, chartTyp
           <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} hide={isMobile} />
           <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
           <Legend iconType="circle" wrapperStyle={{ fontSize: isMobile ? '11px' : '13px', paddingTop: '8px' }} />
-          {EVENT_TYPES.map((type) => (
+          {visibleTypes.map((type) => (
             <Line key={type} type="monotone" dataKey={type} stroke={CHART_COLORS[type]} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name={EVENT_CONFIG[type].label} />
           ))}
         </LineChart>

@@ -96,6 +96,18 @@ service cloud.firestore {
         && (!('notes' in data) || (data.notes is string && data.notes.size() <= 500));
     }
 
+    // Helper: the event types a family has stopped tracking. Optional, and
+    // never all of them — an empty app has no add button and no charts. The
+    // client refuses that too; this is the copy that a hand-written document
+    // cannot get past.
+    function hasValidHiddenEventTypes() {
+      let types = ['feeding', 'pee', 'poop', 'medication', 'bath', 'meal'];
+      return !('hiddenEventTypes' in request.resource.data)
+        || (request.resource.data.hiddenEventTypes is list
+            && request.resource.data.hiddenEventTypes.size() < types.size()
+            && request.resource.data.hiddenEventTypes.hasOnly(types));
+    }
+
     // Helper: validate measurement update
     function isValidMeasurementUpdate() {
       let data = request.resource.data;
@@ -206,12 +218,14 @@ service cloud.firestore {
           && request.resource.data.firstName.size() > 0
           && request.resource.data.firstName.size() <= 100
           && request.resource.data.birthDate is timestamp
-          && (!('sex' in request.resource.data) || request.resource.data.sex in ['male', 'female']);
+          && (!('sex' in request.resource.data) || request.resource.data.sex in ['male', 'female'])
+          && hasValidHiddenEventTypes();
         allow update: if isFamilyMember(familyId)
           && request.resource.data.firstName is string
           && request.resource.data.firstName.size() > 0
           && request.resource.data.firstName.size() <= 100
-          && (!('sex' in request.resource.data) || request.resource.data.sex in ['male', 'female']);
+          && (!('sex' in request.resource.data) || request.resource.data.sex in ['male', 'female'])
+          && hasValidHiddenEventTypes();
         allow delete: if false;
       }
 
