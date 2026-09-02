@@ -5,9 +5,11 @@ import styles from './LoginPage.module.css';
 
 interface LoginPageProps {
   allowed?: boolean;
+  /** Set when the allowlist check itself failed, rather than refused. */
+  accessError?: string | null;
 }
 
-export function LoginPage({ allowed = true }: LoginPageProps) {
+export function LoginPage({ allowed = true, accessError = null }: LoginPageProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -54,6 +56,8 @@ export function LoginPage({ allowed = true }: LoginPageProps) {
             This account is not authorized to use this app.
           </p>
         )}
+
+        {accessError && <p className={styles.error} role="alert">{accessError}</p>}
 
         {error && <p className={styles.error} role="alert">{error}</p>}
 

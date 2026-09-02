@@ -38,7 +38,7 @@ function suspended(element: ReactNode) {
 }
 
 function AppContent() {
-  const { user, loading: authLoading, allowed } = useAuth();
+  const { user, loading: authLoading, allowed, error: authError } = useAuth();
   const { family, loading: familyLoading, setFamily } = useFamily(user?.uid);
 
   const babyId = family?.babies[0] ?? null;
@@ -49,7 +49,7 @@ function AppContent() {
   }
 
   if (!user) {
-    return <LoginPage allowed={allowed} />;
+    return <LoginPage allowed={allowed} accessError={authError} />;
   }
 
   if (!family || family.babies.length === 0 || !babyId) {

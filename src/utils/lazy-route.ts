@@ -1,4 +1,6 @@
 const RELOAD_FLAG = 'chunk-reload-attempted';
+/** How long to let `location.reload()` tear the page down before giving up. */
+const RELOAD_GRACE_MS = 10_000;
 
 function reloadAlreadyTried(): boolean {
   // Storage throws in some privacy modes; treat that as "no second chance".
@@ -52,8 +54,18 @@ export function withChunkReload<T>(load: () => Promise<T>): () => Promise<T> {
         if (reloadAlreadyTried()) throw error;
         markReloadTried();
         window.location.reload();
-        // Never settles: the document is already being torn down.
-        return new Promise<T>(() => {});
+        /*
+         * Normally this never settles, because the document is already being
+         * torn down. It has to reject eventually all the same: if the reload
+         * cannot take effect — a cached index.html pointing at chunks that no
+         * longer exist, say — a promise that hangs leaves Suspense showing its
+         * fallback for ever, which reads as an app that never finishes
+         * loading. Failing lands on the error boundary, which at least offers
+         * a way out.
+         */
+        return new Promise<T>((_resolve, reject) => {
+          setTimeout(() => reject(error), RELOAD_GRACE_MS);
+        });
       },
     );
 }
