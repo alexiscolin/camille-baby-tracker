@@ -13,7 +13,7 @@ export default defineConfig({
         short_name: 'BabyTracker',
         description: 'Track your baby\'s feedings, diapers, and medications',
         theme_color: '#6366f1',
-        background_color: '#fafafe',
+        background_color: '#f8f9fc',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
