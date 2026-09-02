@@ -1,36 +1,31 @@
-/* ─── Grid ─── */
+/* ─── Tokens ─── */
+/*
+ * Pills sized by their own text, not a fixed grid of circles. A circle forces
+ * the name into whatever fits its width — a four-character slice, which left
+ * "Whea", "Buck" and "Mats" to be guessed, and needed a hand-written override
+ * so salmon roe did not read as salmon. Wrapping pills cost about the same
+ * height on the narrowest phone and say what they are.
+ */
 .grid {
-  display: grid;
-  /*
-   * The column count follows the width instead of a fixed 7. Seven columns
-   * inside a 320px screen's gutters left 35px tokens — under the 44px touch
-   * floor, with the 4-letter label touching the rim — and on a 1200px desktop
-   * the same rule stretched them to ~150px circles. `auto-fit` at the touch
-   * floor gives 5 columns on the narrowest phone and 7 on a normal one; the
-   * max-width (8 columns at that floor) stops the growth on desktop.
-   */
-  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-xs);
-}
-
-/* The cap belongs here, not on .grid: the legend below annotates the grid and
-   has to end where it ends. 400px is eight columns at the 44px touch floor. */
-.wrapper {
-  max-width: 400px;
 }
 
 .token {
   position: relative;
-  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  /* The touch floor the bottom nav and the rest of the UI hold to. */
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-md);
   border: var(--space-2xs) solid transparent;
   border-radius: var(--radius-full);
-  font-size: var(--font-size-2xs);
-  font-weight: 700;
-  line-height: 1;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
   transition: transform var(--transition-fast);
 }
 
@@ -42,14 +37,14 @@
   border-color: var(--color-text-secondary);
 }
 
-/* A dot on an allergen whose tolerance window has lapsed. */
-/* Offsets are proportional so the badge stays on the rim at every token size:
-   at top/right 0 it sits outside the circle once the token passes ~40px. */
+/* A dot on an allergen whose tolerance window has lapsed. Fixed offsets, not
+   proportional: a pill is as wide as its name, so a percentage would drift the
+   badge away from the corner it belongs to. */
 .lapsed::after {
   content: '';
   position: absolute;
-  top: 8%;
-  right: 8%;
+  top: 3px;
+  right: 8px;
   width: var(--space-sm);
   height: var(--space-sm);
   border-radius: var(--radius-full);

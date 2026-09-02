@@ -11,17 +11,6 @@ import modal from './EventModal.module.css';
 import styles from './AllergenGrid.module.css';
 
 /**
- * A 4-character slice fits the token and stays unambiguous for every allergen
- * except salmon roe, which would otherwise read the same as salmon. The full
- * name is on the accessible label and in the detail sheet.
- */
-const SHORT_OVERRIDES: Partial<Record<Allergen, string>> = { salmon_roe: 'Roe' };
-
-function shortLabel(allergen: Allergen): string {
-  return SHORT_OVERRIDES[allergen] ?? ALLERGEN_LABELS[allergen].slice(0, 4);
-}
-
-/**
  * Colour carries status. `suspected` shares the watch colour rather than the
  * allergy colour: a suspicion is not a diagnosis.
  */
@@ -41,7 +30,7 @@ interface AllergenGridProps {
 
 export function AllergenGrid({ statuses, onSelect }: AllergenGridProps) {
   return (
-    <div className={styles.wrapper}>
+    <div>
       <div className={styles.grid}>
         {statuses.map((s) => (
           <button
@@ -57,7 +46,7 @@ export function AllergenGrid({ statuses, onSelect }: AllergenGridProps) {
             aria-label={`${ALLERGEN_LABELS[s.allergen]} — ${statusLabel(s)}`}
             onClick={() => onSelect(s)}
           >
-            {shortLabel(s.allergen)}
+            {ALLERGEN_LABELS[s.allergen]}
           </button>
         ))}
       </div>

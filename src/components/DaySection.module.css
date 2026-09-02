@@ -1,11 +1,3 @@
-.section {
-  margin-bottom: var(--space-xl);
-}
-
-.section:last-child {
-  margin-bottom: 0;
-}
-
 .header {
   display: flex;
   align-items: center;

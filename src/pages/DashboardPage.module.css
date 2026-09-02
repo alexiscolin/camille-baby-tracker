@@ -197,6 +197,11 @@
 .timeline {
   display: flex;
   flex-direction: column;
+  /* Owned here, not by DaySection: each day is wrapped in its own ref'd div,
+     so the margin the section used to carry was always dropped by its own
+     :last-child rule and consecutive days sat flush — the previous day's last
+     event ended exactly where the next day's 44px add button began. */
+  gap: var(--space-xl);
 }
 
 .loadMoreBtn {
