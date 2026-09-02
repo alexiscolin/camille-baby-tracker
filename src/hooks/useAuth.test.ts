@@ -63,4 +63,28 @@ describe('useAuth', () => {
     await waitFor(() => expect(result.current.allowed).toBe(false));
     expect(mockSignOut).toHaveBeenCalled();
   });
+
+  /**
+   * The allowlist check is a Firestore read, and it throws when the network or
+   * the rules refuse it. That rejection used to escape the auth callback, so
+   * `loading` never cleared and the app sat on its loading screen for ever —
+   * no login form, no message, nothing to retry.
+   */
+  it('should stop loading and explain itself when the allowlist check fails', async () => {
+    const fakeUser = { uid: '789', email: 'parent@example.com' };
+    mockOnAuthChanged.mockImplementation((cb: (u: typeof fakeUser) => void) => {
+      cb(fakeUser);
+      return vi.fn();
+    });
+    mockIsEmailAllowed.mockRejectedValue(
+      new Error('Failed to get document because the client is offline.'),
+    );
+
+    const { result } = renderHook(() => useAuth());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    // Fails closed — an unverifiable account is not an admitted one.
+    expect(result.current.user).toBeNull();
+    expect(result.current.error).toContain('client is offline');
+  });
 });
