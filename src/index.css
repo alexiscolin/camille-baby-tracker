@@ -186,10 +186,43 @@ input, select, textarea {
   width: 100%;
 }
 
-/* iOS renders a wide time field's value centred; every other field in the app
-   is left-aligned, and the modal puts them side by side. */
+/*
+ * Date and time fields are native controls, and iOS lays them out from the
+ * control rather than from the box we declared: the value is centred in a wide
+ * field while every neighbouring field is left-aligned, the control keeps an
+ * intrinsic minimum width that a grid or flex track cannot shrink past — so a
+ * multi-column form overflows and the field is cut — and the value block gets
+ * no line height of its own, which clips the glyphs. Neutralising the native
+ * appearance makes the declared box authoritative on every platform.
+ */
+input[type='date'],
+input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  /* `auto` resolves to the native control's intrinsic width inside a grid or
+     flex item, which is what pushes the field past its column on iOS. */
+  min-width: 0;
+  /* The native control is 40.5px tall, under the touch floor the rest of the
+     UI holds to, and too short for the value at the inherited line height. */
+  min-height: 44px;
+  line-height: 1.5;
+}
+
+input[type='date']::-webkit-date-and-time-value,
 input[type='time']::-webkit-date-and-time-value {
   text-align: left;
+  /* Without a height of its own the value sits on the control's baseline and
+     iOS clips it against the padding box. */
+  line-height: 1.5;
+  min-height: 1.5em;
+  margin: 0;
+}
+
+/* The editable spinner fields inherit the same clipping. */
+input[type='date']::-webkit-datetime-edit,
+input[type='time']::-webkit-datetime-edit {
+  line-height: 1.5;
+  padding: 0;
 }
 
 input:focus, select:focus, textarea:focus {

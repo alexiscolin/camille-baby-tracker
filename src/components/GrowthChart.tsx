@@ -105,13 +105,17 @@ export function GrowthChart({ metric, sex, birthDate, measurements }: GrowthChar
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -5, bottom: 5 }}>
+      {/* bottom: the axis label sits under the ticks, and 5px cut its descenders
+          against the card, which clips its overflow. */}
+      <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -5, bottom: 16 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
         <XAxis
           dataKey="month"
           tick={AXIS_TICK}
           tickLine={false}
-          label={{ value: 'Age (months)', position: 'insideBottomRight', offset: -5, fontSize: 11, fill: 'var(--color-text-muted)' }}
+          /* Centred, not right-anchored: against the card's right edge the
+             closing bracket was the next thing to be cut. */
+          label={{ value: 'Age (months)', position: 'insideBottom', offset: -14, fontSize: 11, fill: 'var(--color-text-muted)' }}
         />
         <YAxis
           tick={AXIS_TICK}
