@@ -19,7 +19,14 @@
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   width: 100%;
   max-width: 480px;
-  max-height: 85vh;
+  /*
+   * A fixed backdrop strip rather than a percentage. 85vh left 140px of dead
+   * space on a tall phone while cutting 65px off the shortest meal form on a
+   * short one; a sheet only needs enough backdrop to read as a sheet, and the
+   * gap should not grow with the screen. dvh, not vh: on iOS vh is the large
+   * viewport, which overflows whenever the browser chrome is showing.
+   */
+  max-height: calc(100dvh - var(--space-2xl));
   /* A flex column, not a single scrollport: .scrollArea below is the only
      part that scrolls, and .stickyActions is a normal sibling after it —
      never `position: sticky` inside the scrolling content. Sticky only
@@ -490,11 +497,33 @@
   /* A normal flex sibling of .scrollArea, not a scrolled child — see the
      comment on .modal. This box's own height is real reserved layout space,
      so nothing can ever render underneath it. */
+  position: relative;
   flex-shrink: 0;
   background: var(--color-surface);
   padding-top: var(--space-md);
   margin-top: var(--space-sm);
   padding-bottom: var(--space-lg);
+}
+
+/*
+ * A form long enough to scroll used to end in a flat cut against this bar — a
+ * half-sliced field with nothing to say more follows, since iOS draws no
+ * persistent scrollbar. This has to be a layer over the content: the scroll
+ * area's own background sits behind its children, and the reaction panel and
+ * the item rows paint their own.
+ *
+ * It is invisible when there is nothing to scroll, because the strip it covers
+ * is then the scroll area's bottom padding, the same colour as the gradient.
+ */
+.stickyActions::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  height: var(--space-md);
+  background: linear-gradient(transparent, var(--color-surface));
+  pointer-events: none;
 }
 
 /* Desktop: centered modal instead of bottom sheet */
@@ -506,7 +535,7 @@
   .modal {
     border-radius: var(--radius-xl);
     max-width: 520px;
-    max-height: 80vh;
+    max-height: calc(100dvh - var(--space-2xl) * 2);
     animation: scaleIn 200ms ease;
   }
 }
