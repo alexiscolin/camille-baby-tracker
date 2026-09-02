@@ -3,7 +3,6 @@ import { Plus } from 'lucide-react';
 import type { BabyEvent } from '../types/events';
 import { computeSummary } from '../utils/summary';
 import { getRelativeDayLabel, formatShortDate } from '../utils/date';
-import { isToday } from '../utils/date';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { EventTimeline } from './EventTimeline';
 import styles from './DaySection.module.css';
@@ -19,7 +18,12 @@ interface DaySectionProps {
 export const DaySection = memo(function DaySection({ date, events, onEventClick, onAddClick, showHourMarkers = false }: DaySectionProps) {
   const summary = computeSummary(events);
   const label = getRelativeDayLabel(date);
-  const shortDate = isToday(date) ? '' : formatShortDate(date);
+  /**
+   * Only a relative label ("Yesterday") needs the date spelled out beside it.
+   * An absolute label already reads "Saturday, August 29", and repeating
+   * "Aug 29" after it pushed the row past a 320px screen.
+   */
+  const shortDate = label === 'Yesterday' ? formatShortDate(date) : '';
 
   return (
     <section className={styles.section}>

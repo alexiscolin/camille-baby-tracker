@@ -25,6 +25,7 @@ import {
 } from '../utils/food-chart-data';
 import { FOOD_GROUPS } from '../types/food';
 import type { BabyEvent } from '../types/events';
+import type { LabelProps } from 'recharts';
 import type { Food, FoodGroup, NutrientKey } from '../types/food';
 import styles from './FoodPage.module.css';
 
@@ -106,9 +107,9 @@ const VIEW_NOTES: Record<ChartView, string> = {
 const AXIS_TICK = { fontSize: 11, fill: 'var(--color-text-muted)' };
 const AXIS_LINE = { stroke: 'var(--color-border-light)' };
 const MARGIN = { top: 10, right: 10, left: -12, bottom: 0 };
-/** The date scale sits on top: the card scrolls, and a bottom axis would be
- *  below the fold on the very view whose whole question is "when". */
-const EXPOSURE_MARGIN = { top: 4, right: 78, left: 0, bottom: 8 };
+/** The date scale sits on top: sixteen rows run past a phone screen, and a
+ *  bottom axis would be off it on the very view whose question is "when". */
+const EXPOSURE_MARGIN = { top: 4, right: 88, left: 0, bottom: 8 };
 const PANEL_MARGIN = { top: 0, right: 52, left: 0, bottom: 0 };
 const ROW_HEIGHT = 26;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -121,9 +122,30 @@ function formatAmount(value: number): string {
   return String(Math.round(value));
 }
 
-/** SVG text does not wrap or ellipsize; a long seed name has to be cut here. */
+/** SVG text does not ellipsize; a long seed name has to be cut here. Twelve
+ *  characters at 11px fit the right margin above on the narrowest phone. */
 function truncate(name: string): string {
-  return name.length > 14 ? `${name.slice(0, 13)}…` : name;
+  return name.length > 12 ? `${name.slice(0, 11).trimEnd()}…` : name;
+}
+
+/**
+ * Recharts sizes a scatter label from the dot's own viewBox — a few pixels
+ * wide — and wraps anything longer, so a two-word food name spilled a second
+ * line into the row below on every phone width. A plain <text> node never
+ * wraps; `truncate` is what keeps it inside the margin.
+ */
+function ExposureLabel({ x, y, value }: LabelProps) {
+  return (
+    <text
+      x={Number(x) + 14}
+      y={Number(y)}
+      dy={4}
+      fontSize={11}
+      fill="var(--color-text-secondary)"
+    >
+      {value}
+    </text>
+  );
 }
 
 interface FoodChartsProps {
@@ -288,19 +310,13 @@ export const FoodCharts = memo(function FoodCharts({
                   <YAxis
                     type="category"
                     dataKey="label"
-                    width={92}
+                    width={84}
                     tick={AXIS_TICK}
                     tickLine={false}
                     axisLine={false}
                   />
                   <Scatter data={exposureRows} fill="var(--color-primary)" isAnimationActive={false}>
-                    <LabelList
-                      dataKey="foodName"
-                      position="right"
-                      offset={8}
-                      fill="var(--color-text-secondary)"
-                      fontSize={11}
-                    />
+                    <LabelList dataKey="foodName" content={ExposureLabel} />
                   </Scatter>
                 </ScatterChart>
               </ResponsiveContainer>
@@ -341,6 +357,10 @@ export const FoodCharts = memo(function FoodCharts({
                       barSize={10}
                       radius={[0, 4, 4, 0]}
                       isAnimationActive={false}
+                      /* A nutrient at exactly 0 draws no rect, and recharts
+                         hangs the value label off the rect — so the row went
+                         blank instead of reading "0". */
+                      minPointSize={1}
                     >
                       <LabelList
                         dataKey="text"

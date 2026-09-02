@@ -494,7 +494,7 @@
   background: var(--color-surface);
   padding-top: var(--space-md);
   margin-top: var(--space-sm);
-  padding-bottom: max(var(--space-lg), env(safe-area-inset-bottom));
+  padding-bottom: var(--space-lg);
 }
 
 /* Desktop: centered modal instead of bottom sheet */

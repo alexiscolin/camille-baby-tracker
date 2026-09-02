@@ -222,10 +222,12 @@
   font-size: 10px;
 }
 
-/* Sixteen nutrient rows do not fit a fixed card: these two views scroll. */
+/* Sixteen nutrient rows do not fit the fixed card height. A scroller nested in
+   a scrolling page is a touch trap, and 240px left only ~7 rows visible on a
+   phone, so these two views size to their content and let the page scroll. */
 .scrollCard {
-  overflow-y: auto;
-  overflow-x: hidden;
+  height: auto;
+  overflow: visible;
   padding-top: var(--space-md);
 }
 
@@ -337,6 +339,10 @@
   .chartCard {
     height: 300px;
     padding: var(--space-xl) var(--space-md) var(--space-lg);
+  }
+
+  .scrollCard {
+    height: auto;
   }
 
   .chartCard :global(.recharts-legend-wrapper) {

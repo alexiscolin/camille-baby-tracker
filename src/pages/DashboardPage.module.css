@@ -167,6 +167,14 @@
   white-space: nowrap;
 }
 
+/* Two columns leave ~75px per label on a 320px screen, so "Feedings/day"
+   ellipsised to "Feedings/d…". Same single-column fallback as QuickStats. */
+@media (max-width: 380px) {
+  .averagesRow {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ─── Timeline Panel ─── */
 .timelinePanel {
   display: flex;

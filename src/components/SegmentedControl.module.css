@@ -3,6 +3,15 @@
   background: var(--color-border-light);
   border-radius: var(--radius-lg);
   padding: 2px;
+  max-width: 100%;
+  /* Four options overflow a 320px screen. Padding shrinks below, but a long
+     label set can still exceed the row: scroll rather than clip it away. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segmented::-webkit-scrollbar {
+  display: none;
 }
 
 .segmentBtn {
@@ -19,6 +28,15 @@
   background: var(--color-surface);
   color: var(--color-primary);
   box-shadow: var(--shadow-sm);
+}
+
+/* Narrow phones: four options at 16px side padding need 295px and only get
+   266px inside the page gutters, so "Coverage" / "Snack" were cut off. */
+@media (max-width: 380px) {
+  .segmentBtn {
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+  }
 }
 
 @media (min-width: 1024px) {

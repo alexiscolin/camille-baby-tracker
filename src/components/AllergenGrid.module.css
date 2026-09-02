@@ -1,8 +1,17 @@
 /* ─── Grid ─── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /*
+   * The column count follows the width instead of a fixed 7. Seven columns
+   * inside a 320px screen's gutters left 35px tokens — under the 44px touch
+   * floor, with the 4-letter label touching the rim — and on a 1200px desktop
+   * the same rule stretched them to ~150px circles. `auto-fit` at the touch
+   * floor gives 5 columns on the narrowest phone and 7 on a normal one; the
+   * max-width (8 columns at that floor) stops the growth on desktop.
+   */
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
   gap: var(--space-xs);
+  max-width: 400px;
 }
 
 .token {

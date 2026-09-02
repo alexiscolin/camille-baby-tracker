@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
+import { format, subDays } from 'date-fns';
 import { DaySection } from './DaySection';
 import type { PeeEvent, FeedingEvent } from '../types/events';
 
@@ -44,6 +45,25 @@ describe('DaySection', () => {
     );
 
     expect(screen.getByText('Today')).toBeInTheDocument();
+  });
+
+  it('should repeat the short date only next to a relative label', () => {
+    const yesterday = subDays(today, 1);
+    const older = subDays(today, 4);
+
+    const { rerender } = render(
+      <DaySection date={yesterday} events={[]} onEventClick={vi.fn()} onAddClick={vi.fn()} />,
+    );
+    expect(screen.getByText('Yesterday')).toBeInTheDocument();
+    expect(screen.getByText(format(yesterday, 'MMM d'))).toBeInTheDocument();
+
+    // An absolute label already spells the date out; repeating it overflowed
+    // the row on a 320px screen.
+    rerender(
+      <DaySection date={older} events={[]} onEventClick={vi.fn()} onAddClick={vi.fn()} />,
+    );
+    expect(screen.getByText(format(older, 'EEEE, MMMM d'))).toBeInTheDocument();
+    expect(screen.queryByText(format(older, 'MMM d'))).not.toBeInTheDocument();
   });
 
   it('should show summary badges for events', () => {
