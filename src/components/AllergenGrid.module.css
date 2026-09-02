@@ -11,6 +11,11 @@
    */
   grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
   gap: var(--space-xs);
+}
+
+/* The cap belongs here, not on .grid: the legend below annotates the grid and
+   has to end where it ends. 400px is eight columns at the 44px touch floor. */
+.wrapper {
   max-width: 400px;
 }
 
@@ -38,11 +43,13 @@
 }
 
 /* A dot on an allergen whose tolerance window has lapsed. */
+/* Offsets are proportional so the badge stays on the rim at every token size:
+   at top/right 0 it sits outside the circle once the token passes ~40px. */
 .lapsed::after {
   content: '';
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 8%;
+  right: 8%;
   width: var(--space-sm);
   height: var(--space-sm);
   border-radius: var(--radius-full);

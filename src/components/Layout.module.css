@@ -81,6 +81,9 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
   padding: var(--space-xs) var(--space-sm);
+  /* The shortest label ("Food") is ~27px wide, which the reduced side padding
+     leaves just under the 44px touch floor the allergen grid also holds to. */
+  min-width: 44px;
   border-radius: var(--radius-md);
   transition: color var(--transition-fast);
   text-decoration: none;

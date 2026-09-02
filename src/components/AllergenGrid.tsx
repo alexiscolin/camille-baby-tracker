@@ -41,7 +41,7 @@ interface AllergenGridProps {
 
 export function AllergenGrid({ statuses, onSelect }: AllergenGridProps) {
   return (
-    <div>
+    <div className={styles.wrapper}>
       <div className={styles.grid}>
         {statuses.map((s) => (
           <button

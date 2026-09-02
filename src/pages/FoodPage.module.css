@@ -343,6 +343,7 @@
 
   .scrollCard {
     height: auto;
+    padding-top: var(--space-md);
   }
 
   .chartCard :global(.recharts-legend-wrapper) {

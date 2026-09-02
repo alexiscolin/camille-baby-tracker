@@ -128,18 +128,28 @@ function truncate(name: string): string {
   return name.length > 12 ? `${name.slice(0, 11).trimEnd()}…` : name;
 }
 
+/** Half of recharts' own 0.71em cap height, the shift it applies to centre an
+ *  11px label on its anchor. Hard-coded because we bypass its <Text>. */
+const LABEL_BASELINE_DY = 3.9;
+/** Clear space between the dot's edge and the first glyph. */
+const LABEL_GAP = 8;
+
 /**
- * Recharts sizes a scatter label from the dot's own viewBox — a few pixels
- * wide — and wraps anything longer, so a two-word food name spilled a second
- * line into the row below on every phone width. A plain <text> node never
- * wraps; `truncate` is what keeps it inside the margin.
+ * A built-in `position="right"` label is measured against the plot area, and
+ * every label here sits *past* that area in the right margin — so recharts
+ * computed a near-zero width and wrapped each food name onto a second line
+ * that landed in the row below. A plain <text> node never wraps.
+ *
+ * Recharts hands a scatter label the dot's viewBox top-left, not the anchor
+ * it would otherwise compute, so the centring has to be redone here: `value`
+ * is already cut to width by `truncate`.
  */
-function ExposureLabel({ x, y, value }: LabelProps) {
+export function ExposureLabel({ x, y, width, height, value }: LabelProps) {
   return (
     <text
-      x={Number(x) + 14}
-      y={Number(y)}
-      dy={4}
+      x={Number(x) + Number(width) + LABEL_GAP}
+      y={Number(y) + Number(height) / 2}
+      dy={LABEL_BASELINE_DY}
       fontSize={11}
       fill="var(--color-text-secondary)"
     >

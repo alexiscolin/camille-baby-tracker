@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
-import { FoodCharts } from './FoodCharts';
+import { FoodCharts, ExposureLabel } from './FoodCharts';
 import type { BabyEvent } from '../types/events';
 import type { Food } from '../types/food';
 
@@ -62,5 +62,33 @@ describe('FoodCharts', () => {
     render(<FoodCharts {...props} events={[]} />);
     expect(screen.getByText(/no meals logged/i)).toBeInTheDocument();
     expect(screen.queryByTestId('chart-groups')).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * Recharts passes a scatter label the dot's viewBox — top-left corner plus
+ * width/height — not the anchor it computes for its own <Text>. Reading those
+ * props as if they were the anchor puts every name 4px above its own row.
+ */
+describe('ExposureLabel', () => {
+  it('should sit clear of the dot and centred on its row', () => {
+    const r = 4.5;
+    const cx = 100;
+    const cy = 50;
+
+    const { container } = render(
+      <svg>
+        <ExposureLabel x={cx - r} y={cy - r} width={2 * r} height={2 * r} value="Kabocha" />
+      </svg>,
+    );
+
+    const text = container.querySelector('text');
+    expect(text).toHaveTextContent('Kabocha');
+    // 8px past the dot's right edge, never overlapping it.
+    expect(Number(text?.getAttribute('x'))).toBe(cx + r + 8);
+    // Vertically on the dot's centre, then nudged by half a cap height so the
+    // baseline — not the top of the glyphs — lines up with the row.
+    expect(Number(text?.getAttribute('y'))).toBe(cy);
+    expect(Number(text?.getAttribute('dy'))).toBeCloseTo(3.9, 1);
   });
 });
