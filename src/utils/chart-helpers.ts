@@ -14,6 +14,20 @@ export const CHART_COLORS: Record<EventType, string> = Object.fromEntries(
   EVENT_TYPES.map((t) => [t, EVENT_CONFIG[t].color]),
 ) as Record<EventType, string>;
 
+/**
+ * Recharts drops an item whose formatter returns null. Every multi-series chart
+ * here has one series per event type or food group, and a real day uses one or
+ * two of them — the default tooltip listed all six or seven, so it grew taller
+ * than the card it lives in and spilled over the legend on a phone. Only the
+ * series that actually carry a value are worth a row.
+ */
+export function hideZero(value: unknown): string | null {
+  // Only an exact zero is dropped: anything that does not read as a number is
+  // a label the chart meant to show, not an empty series.
+  if (value == null || Number(value) === 0) return null;
+  return String(value);
+}
+
 export const TOOLTIP_STYLE = {
   borderRadius: '12px',
   border: 'none',

@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import type { ChartDataPoint } from '../utils/chart-data';
 import type { ChartType } from '../utils/chart-helpers';
-import { CHART_COLORS, TOOLTIP_STYLE } from '../utils/chart-helpers';
+import { CHART_COLORS, TOOLTIP_STYLE, hideZero } from '../utils/chart-helpers';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -38,7 +38,7 @@ export const DashboardChart = memo(function DashboardChart({ chartData, chartTyp
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
           <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={AXIS_LINE} />
           <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} hide={isMobile} />
-          <Tooltip contentStyle={TOOLTIP_STYLE} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
           <Legend iconType="circle" wrapperStyle={{ fontSize: isMobile ? '11px' : '13px', paddingTop: '8px' }} />
           {EVENT_TYPES.map((type) => (
             <Bar key={type} dataKey={type} fill={CHART_COLORS[type]} radius={[4, 4, 0, 0]} name={EVENT_CONFIG[type].label} />
@@ -49,7 +49,7 @@ export const DashboardChart = memo(function DashboardChart({ chartData, chartTyp
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
           <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={AXIS_LINE} />
           <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} hide={isMobile} />
-          <Tooltip contentStyle={TOOLTIP_STYLE} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
           <Legend iconType="circle" wrapperStyle={{ fontSize: isMobile ? '11px' : '13px', paddingTop: '8px' }} />
           {EVENT_TYPES.map((type) => (
             <Line key={type} type="monotone" dataKey={type} stroke={CHART_COLORS[type]} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name={EVENT_CONFIG[type].label} />

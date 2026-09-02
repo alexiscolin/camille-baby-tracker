@@ -253,7 +253,12 @@ export const FoodCharts = memo(function FoodCharts({
                   interval="preserveStartEnd"
                 />
                 <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} unit="g" width={44} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => `${formatAmount(Number(value))} g`} />
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  formatter={(value) =>
+                    (Number(value) > 0 ? `${formatAmount(Number(value))} g` : null)
+                  }
+                />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
                 {FOOD_GROUPS.map((group) => (
                   <Bar

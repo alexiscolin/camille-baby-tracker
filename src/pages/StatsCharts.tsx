@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import type { ChartDataPoint } from '../utils/chart-data';
 import type { ChartType, RangeType } from '../utils/chart-helpers';
-import { CHART_COLORS, TOOLTIP_STYLE } from '../utils/chart-helpers';
+import { CHART_COLORS, TOOLTIP_STYLE, hideZero } from '../utils/chart-helpers';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import type { DailySummary } from '../types/events';
 import type {
@@ -87,7 +87,7 @@ export const StatsCharts = memo(function StatsCharts({
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
                 <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={AXIS_LINE} />
                 <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
                 {EVENT_TYPES.map((type) => (
                   <Bar key={type} dataKey={type} fill={CHART_COLORS[type]} radius={[4, 4, 0, 0]} name={EVENT_CONFIG[type].label} />
@@ -98,7 +98,7 @@ export const StatsCharts = memo(function StatsCharts({
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
                 <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={AXIS_LINE} />
                 <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
                 {EVENT_TYPES.map((type) => (
                   <Line key={type} type="monotone" dataKey={type} stroke={CHART_COLORS[type]} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} name={EVENT_CONFIG[type].label} />
@@ -122,7 +122,7 @@ export const StatsCharts = memo(function StatsCharts({
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
               <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={AXIS_LINE} />
               <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
               <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '8px' }} />
               {EVENT_TYPES.map((type, i) => (
                 <Area key={type} type="monotone" dataKey={type} stackId="1" stroke={CHART_COLORS[type]} fill={CHART_COLORS[type]} fillOpacity={i === 0 ? 0.6 : 0.5} name={EVENT_CONFIG[type].label} />
@@ -202,7 +202,7 @@ export const StatsCharts = memo(function StatsCharts({
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
                 <XAxis dataKey="label" tick={AXIS_TICK_SM} tickLine={false} />
                 <YAxis allowDecimals={false} tick={AXIS_TICK_SM} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={hideZero} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                 <Bar dataKey="left" stackId="lr" fill="var(--color-primary)" name="Left" />
                 <Bar dataKey="right" stackId="lr" fill="var(--color-feeding)" radius={[4, 4, 0, 0]} name="Right" />

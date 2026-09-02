@@ -4,6 +4,7 @@ import {
   computeAverageSummary,
   computeDailyAverages,
   CHART_COLORS,
+  hideZero,
 } from './chart-helpers';
 import { createEmptySummary } from './summary';
 import { EVENT_TYPES } from './event-config';
@@ -73,5 +74,23 @@ describe('computeDailyAverages', () => {
     ];
     const result = computeDailyAverages(data);
     expect(result.feeding).toBe('8.0');
+  });
+});
+
+/**
+ * Recharts skips a tooltip row whose formatter returns null. Every series of a
+ * stacked day chart is in the payload, so without this the tooltip listed one
+ * "0" row per unused event type and outgrew the card on a phone.
+ */
+describe('hideZero', () => {
+  it('should drop a zero row and keep everything else', () => {
+    expect(hideZero(0)).toBeNull();
+    expect(hideZero('0')).toBeNull();
+    expect(hideZero(5)).toBe('5');
+    expect(hideZero(0.4)).toBe('0.4');
+  });
+
+  it('should keep a value it cannot read as a number', () => {
+    expect(hideZero('left')).toBe('left');
   });
 });

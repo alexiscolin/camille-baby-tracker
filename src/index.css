@@ -186,6 +186,12 @@ input, select, textarea {
   width: 100%;
 }
 
+/* iOS renders a wide time field's value centred; every other field in the app
+   is left-aligned, and the modal puts them side by side. */
+input[type='time']::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 input:focus, select:focus, textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-bg);
@@ -252,6 +258,12 @@ a {
     --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.4);
     --color-overlay: rgba(0, 0, 0, 0.6);
   }
+}
+
+/* Recharts renders the legend after the tooltip and gives neither a z-index, so
+   the legend painted on top of the tooltip that overlapped it. */
+.recharts-tooltip-wrapper {
+  z-index: 1;
 }
 
 ::-webkit-scrollbar {
