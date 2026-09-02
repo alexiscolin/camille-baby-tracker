@@ -11,7 +11,6 @@ import { SegmentedControl } from '../components/SegmentedControl';
 import { getRangeDays } from '../utils/chart-helpers';
 import type { RangeType } from '../utils/chart-helpers';
 import { AllergenGrid, AllergenSheet } from '../components/AllergenGrid';
-import { EventModal } from '../components/EventModal';
 import { formatBabyAge } from '../utils/date';
 import { getWeaningStage, STAGE_LABELS } from '../utils/weaning-stage';
 import { rankNextFoods, getIntroductionWindow, getAllergenStatus } from '../utils/next-foods';
@@ -27,6 +26,11 @@ import styles from './FoodPage.module.css';
 
 const FoodCharts = lazy(() =>
   import('./FoodCharts').then((m) => ({ default: m.FoodCharts })),
+);
+
+/** Same reason as on the dashboard: the modal drags the food seed with it. */
+const EventModal = lazy(() =>
+  import('../components/EventModal').then((m) => ({ default: m.EventModal })),
 );
 
 interface FoodPageProps {
@@ -291,19 +295,21 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
         />
       )}
 
-      {logTarget && (
-        <EventModal
-          mode="add"
-          date={today}
-          familyId={familyId}
-          babyId={babyId}
-          userId={userId}
-          babyBirthDate={baby?.birthDate.toDate()}
-          initialType="meal"
-          initialItems={[{ foodId: logTarget.id, name: logTarget.name, quantity: 1, unit: 'tsp' }]}
-          onClose={() => setLogTarget(null)}
-        />
-      )}
+      <Suspense fallback={null}>
+        {logTarget && (
+          <EventModal
+            mode="add"
+            date={today}
+            familyId={familyId}
+            babyId={babyId}
+            userId={userId}
+            babyBirthDate={baby?.birthDate.toDate()}
+            initialType="meal"
+            initialItems={[{ foodId: logTarget.id, name: logTarget.name, quantity: 1, unit: 'tsp' }]}
+            onClose={() => setLogTarget(null)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

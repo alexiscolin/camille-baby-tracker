@@ -19,10 +19,18 @@ import { QuickStats } from '../components/QuickStats';
 import { SummaryCard } from '../components/SummaryCard';
 import { CalendarStrip } from '../components/CalendarStrip';
 import { DaySection } from '../components/DaySection';
-import { EventModal } from '../components/EventModal';
 import { SegmentedControl } from '../components/SegmentedControl';
 import type { BabyEvent, Baby } from '../types/events';
 import styles from './DashboardPage.module.css';
+
+/**
+ * The modal carries the whole food seed through FoodTagInput, and it is only
+ * ever mounted after a tap. Loading it with the dashboard put ~170 kB of
+ * reference data on the first-paint path for nothing.
+ */
+const EventModal = lazy(() =>
+  import('../components/EventModal').then((m) => ({ default: m.EventModal })),
+);
 
 const ActivityRadar = lazy(() =>
   import('../components/ActivityRadar').then((m) => ({ default: m.ActivityRadar })),
@@ -307,29 +315,31 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
         </div>
       </div>
 
-      {editEvent && (
-        <EventModal
-          mode="edit"
-          event={editEvent}
-          familyId={familyId}
-          babyId={babyId}
-          userId={userId}
-          babyBirthDate={baby?.birthDate.toDate()}
-          onClose={() => setEditEvent(null)}
-        />
-      )}
+      <Suspense fallback={null}>
+        {editEvent && (
+          <EventModal
+            mode="edit"
+            event={editEvent}
+            familyId={familyId}
+            babyId={babyId}
+            userId={userId}
+            babyBirthDate={baby?.birthDate.toDate()}
+            onClose={() => setEditEvent(null)}
+          />
+        )}
 
-      {addDate && (
-        <EventModal
-          mode="add"
-          date={addDate}
-          familyId={familyId}
-          babyId={babyId}
-          userId={userId}
-          babyBirthDate={baby?.birthDate.toDate()}
-          onClose={() => setAddDate(null)}
-        />
-      )}
+        {addDate && (
+          <EventModal
+            mode="add"
+            date={addDate}
+            familyId={familyId}
+            babyId={babyId}
+            userId={userId}
+            babyBirthDate={baby?.birthDate.toDate()}
+            onClose={() => setAddDate(null)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }
