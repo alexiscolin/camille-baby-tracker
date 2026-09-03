@@ -104,8 +104,14 @@ export function GrowthPage({ familyId, babyId, userId, baby }: GrowthPageProps) 
       });
       setMeasureValue('');
       setNotes('');
-    } catch {
-      setError('Failed to save. Please try again.');
+    } catch (saveFailed) {
+      // Not "please try again": the write that broke this was rejected
+      // identically every time, and a generic message hid that for weeks.
+      setError(
+        saveFailed instanceof Error
+          ? `Could not save — ${saveFailed.message}`
+          : 'Could not save this measurement.',
+      );
     } finally {
       setSaving(false);
     }
@@ -114,8 +120,12 @@ export function GrowthPage({ familyId, babyId, userId, baby }: GrowthPageProps) 
   async function handleDelete(measurementId: string) {
     try {
       await deleteMeasurement(familyId, measurementId);
-    } catch {
-      setError('Failed to delete. Please try again.');
+    } catch (deleteFailed) {
+      setError(
+        deleteFailed instanceof Error
+          ? `Could not delete — ${deleteFailed.message}`
+          : 'Could not delete this measurement.',
+      );
     }
   }
 

@@ -35,9 +35,22 @@ function isValidMeasurementData(data: Record<string, unknown>): boolean {
 
 export type NewMeasurement = Omit<Measurement, 'id' | 'createdAt'>;
 
+/**
+ * Firestore rejects a document that carries a key whose value is undefined,
+ * and this app does not set `ignoreUndefinedProperties`. An optional field the
+ * caller left blank must therefore be absent, not present-and-undefined —
+ * which is the difference between a measurement that saves and one that throws
+ * on every ordinary weigh-in.
+ */
+function withoutUndefined<T extends object>(data: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined),
+  ) as Partial<T>;
+}
+
 export function addMeasurement(familyId: string, measurement: NewMeasurement) {
   return addDoc(measurementsCollection(familyId), {
-    ...measurement,
+    ...withoutUndefined(measurement),
     createdAt: Timestamp.now(),
   });
 }
@@ -49,7 +62,7 @@ export function updateMeasurement(
 ) {
   return updateDoc(
     doc(db, 'families', familyId, 'measurements', measurementId),
-    data,
+    withoutUndefined(data),
   );
 }
 

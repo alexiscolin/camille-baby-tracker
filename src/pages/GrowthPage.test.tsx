@@ -148,7 +148,9 @@ describe('GrowthPage', () => {
     await user.type(valueInput, '3.5');
     await user.click(screen.getByText('Add'));
 
-    expect(await screen.findByText('Failed to save. Please try again.')).toBeInTheDocument();
+    // The reason, not a generic retry prompt: the write that broke this in
+    // production was rejected identically every time.
+    expect(await screen.findByText(/Could not save — Network/)).toBeInTheDocument();
   });
 
   it('should display measurements in history list', () => {
