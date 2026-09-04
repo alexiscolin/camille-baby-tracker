@@ -382,7 +382,7 @@ describe('EventModal', () => {
       await user.click(screen.getByText('Pees'));
       await user.click(screen.getByText('Save'));
 
-      expect(await screen.findByText('Failed to save. Please try again.')).toBeInTheDocument();
+      expect(await screen.findByText(/Could not save — /)).toBeInTheDocument();
     });
 
     it('should show error when delete fails', async () => {
@@ -397,7 +397,7 @@ describe('EventModal', () => {
       await user.click(screen.getByText('Delete'));
       await user.click(screen.getByText('Yes, delete'));
 
-      expect(await screen.findByText('Failed to delete. Please try again.')).toBeInTheDocument();
+      expect(await screen.findByText(/Could not delete — /)).toBeInTheDocument();
     });
   });
 
