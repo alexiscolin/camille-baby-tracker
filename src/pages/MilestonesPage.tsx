@@ -35,7 +35,19 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<MilestoneEvent | null>(null);
   const today = useToday();
-  const birthDate = baby?.birthDate.toDate();
+
+  /*
+   * Memoised on the instant, not on the Timestamp: `toDate()` builds a new
+   * Date every render, and useRangeEvents compares its dependencies by
+   * identity. Passing a fresh object each time tore the subscription down and
+   * rebuilt it on every render — and a new subscription always opens on a
+   * cached snapshot, so the page sat there reporting cached data for ever.
+   */
+  const birthMs = baby?.birthDate.toMillis();
+  const birthDate = useMemo(
+    () => (birthMs === undefined ? undefined : new Date(birthMs)),
+    [birthMs],
+  );
 
   // From birth, not a rolling window: the first smile does not stop mattering
   // because it was six months ago.

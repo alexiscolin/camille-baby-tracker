@@ -104,13 +104,27 @@ export function Layout({ children, babyName }: LayoutProps) {
       {/* ─── Mobile Header ─── */}
       <header className={styles.header}>
         <span className={styles.brand}>{babyName ? `${babyName}'s Tracker` : 'Baby Tracker'}</span>
-        <button
-          className={styles.logoutBtn}
-          onClick={() => { signOut().catch(() => { /* Auth listener handles state */ }); }}
-          aria-label="Log out"
-        >
-          <LogOut size={18} />
-        </button>
+        <div className={styles.headerActions}>
+          {/* Up here rather than in the bottom bar: settings is opened rarely,
+              and the bar is for the places you move between. It buys the tabs
+              their width back. */}
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `${styles.headerBtn} ${isActive ? styles.headerBtnActive : ''}`
+            }
+            aria-label="Settings"
+          >
+            <Settings size={18} />
+          </NavLink>
+          <button
+            className={styles.headerBtn}
+            onClick={() => { signOut().catch(() => { /* Auth listener handles state */ }); }}
+            aria-label="Log out"
+          >
+            <LogOut size={18} />
+          </button>
+        </div>
       </header>
 
       {/* ─── Main Content ─── */}
@@ -163,15 +177,6 @@ export function Layout({ children, babyName }: LayoutProps) {
         >
           <TrendingUp size={22} />
           <span>Growth</span>
-        </NavLink>
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            `${styles.navItem} ${isActive ? styles.active : ''}`
-          }
-        >
-          <Settings size={22} />
-          <span>Settings</span>
         </NavLink>
       </nav>
     </div>
