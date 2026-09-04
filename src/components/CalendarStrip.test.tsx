@@ -95,8 +95,10 @@ describe('CalendarStrip', () => {
 
     render(
       <CalendarStrip
+        days={3}
         selectedDate={new Date(2026, 8, 2)}
-        onDateChange={vi.fn()}
+        onSelectDate={vi.fn()}
+        onLoadMore={vi.fn()}
       />,
     );
 
