@@ -94,6 +94,7 @@ function AppContent() {
               <MilestonesPage
                 familyId={family.id}
                 babyId={babyId}
+                userId={user.uid}
                 baby={baby}
               />,
             )}

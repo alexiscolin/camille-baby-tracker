@@ -23,6 +23,34 @@
   margin-top: var(--space-2xs);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+  background: var(--color-primary-bg);
+  transition: all var(--transition-fast);
+}
+
+.addBtn:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.entry {
+  cursor: pointer;
+}
+
 .empty {
   padding: var(--space-lg);
   border-radius: var(--radius-xl);

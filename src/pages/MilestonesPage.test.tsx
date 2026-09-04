@@ -40,7 +40,9 @@ function renderWith(events: BabyEvent[]) {
   mockUseRangeEvents.mockReturnValue({
     events, fromCache: false, hasPendingWrites: false, settled: true,
   });
-  return render(<MilestonesPage familyId="fam-1" babyId="baby-1" baby={baby()} />);
+  return render(
+    <MilestonesPage familyId="fam-1" babyId="baby-1" userId="u1" baby={baby()} />,
+  );
 }
 
 describe('MilestonesPage', () => {
@@ -71,5 +73,14 @@ describe('MilestonesPage', () => {
   it('should say so when nothing has been recorded', () => {
     renderWith([pee(new Date(2026, 7, 1))]);
     expect(screen.getByText(/Nothing recorded yet/)).toBeInTheDocument();
+  });
+
+  /**
+   * A page about milestones that cannot add one sends the reader back to the
+   * timeline to do the thing the page exists for.
+   */
+  it('should offer to add one from here', () => {
+    renderWith([]);
+    expect(screen.getByRole('button', { name: /add a milestone/i })).toBeInTheDocument();
   });
 });
