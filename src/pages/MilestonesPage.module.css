@@ -51,6 +51,27 @@
   cursor: pointer;
 }
 
+/* ─── Search ─── */
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--space-md);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  /* Room for the icon on the left; the native clear control lives on the
+     right, which is why there is no button of our own. */
+  padding-left: calc(var(--space-md) * 2 + 16px);
+  min-height: 44px;
+}
+
 .empty {
   padding: var(--space-lg);
   border-radius: var(--radius-xl);
