@@ -115,12 +115,26 @@
   background: var(--color-primary-bg);
 }
 
+/*
+ * Never seen: it exists only so the button above can call showPicker() on it.
+ *
+ * The date/time normalisation in index.css assumes a field the user looks at
+ * and types into. Its declarations do not collide with anything here — this
+ * rule sets `height`, that one sets `min-height`; this one sets nothing about
+ * appearance — so they all applied, giving an invisible input a 44px box and
+ * stripping the native appearance the picker is opened through. Opted out
+ * explicitly rather than by weakening the global rule, which is right for
+ * every field that is actually on screen.
+ */
 .hiddenInput {
   position: absolute;
   opacity: 0;
   width: 0;
   height: 0;
+  min-height: 0;
   pointer-events: none;
+  -webkit-appearance: auto;
+  appearance: auto;
 }
 
 /* ─── Desktop ─── */
