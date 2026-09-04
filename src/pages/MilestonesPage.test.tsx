@@ -83,4 +83,25 @@ describe('MilestonesPage', () => {
     renderWith([]);
     expect(screen.getByRole('button', { name: /add a milestone/i })).toBeInTheDocument();
   });
+
+  /**
+   * `baby.birthDate.toDate()` builds a new Date on every render. Passing it
+   * straight to useRangeEvents made the effect's dependencies change every
+   * time, so the subscription was torn down and rebuilt on each render — and
+   * a fresh subscription always opens on a cached snapshot, which is why the
+   * page sat there saying "Showing cached data".
+   */
+  it('should not resubscribe on every render', () => {
+    const { rerender } = renderWith([]);
+    const callsAfterMount = mockUseRangeEvents.mock.calls.length;
+
+    rerender(
+      <MilestonesPage familyId="fam-1" babyId="baby-1" userId="u1" baby={baby()} />,
+    );
+
+    const [, , startA] = mockUseRangeEvents.mock.calls[callsAfterMount - 1];
+    const [, , startB] = mockUseRangeEvents.mock.calls.at(-1)!;
+    // Same object, not merely the same instant: the effect compares identity.
+    expect(startB).toBe(startA);
+  });
 });
