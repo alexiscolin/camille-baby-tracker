@@ -22,10 +22,18 @@ service cloud.firestore {
     }
 
     // Helper: validate event base fields
+    // The one list of event types. It used to be written out in two places —
+    // here and in the tracked-types check — and adding 'milestone' to the
+    // branch chain below while missing this copy is what refused every
+    // milestone at the door, before its own validator was ever reached.
+    function eventTypes() {
+      return ['feeding', 'pee', 'poop', 'medication', 'bath', 'meal', 'milestone'];
+    }
+
     function hasValidBaseFields() {
       let data = request.resource.data;
       return data.babyId is string
-        && data.type in ['feeding', 'pee', 'poop', 'medication', 'bath', 'meal']
+        && data.type in eventTypes()
         && data.timestamp is timestamp
         && data.createdBy == request.auth.uid
         && data.createdAt is timestamp
@@ -112,7 +120,7 @@ service cloud.firestore {
     // client refuses that too; this is the copy that a hand-written document
     // cannot get past.
     function hasValidHiddenEventTypes() {
-      let types = ['feeding', 'pee', 'poop', 'medication', 'bath', 'meal'];
+      let types = eventTypes();
       return !('hiddenEventTypes' in request.resource.data)
         || (request.resource.data.hiddenEventTypes is list
             && request.resource.data.hiddenEventTypes.size() < types.size()
