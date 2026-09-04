@@ -1,4 +1,4 @@
-import { Baby, Droplets, CircleDot, Pill, Bath, Salad } from 'lucide-react';
+import { Baby, Droplets, CircleDot, Pill, Bath, Salad, Star } from 'lucide-react';
 import type { EventType } from '../types/events';
 
 export interface EventTypeConfig {
@@ -15,9 +15,21 @@ export const EVENT_CONFIG: Record<EventType, EventTypeConfig> = {
   medication: { icon: Pill, label: 'Meds', color: 'var(--color-medication)', bg: 'var(--color-medication-bg)' },
   bath: { icon: Bath, label: 'Baths', color: 'var(--color-bath)', bg: 'var(--color-bath-bg)' },
   meal: { icon: Salad, label: 'Meals', color: 'var(--color-meal)', bg: 'var(--color-meal-bg)' },
+  milestone: { icon: Star, label: 'Milestones', color: 'var(--color-milestone)', bg: 'var(--color-milestone-bg)' },
 } as const;
 
 export const EVENT_TYPES = Object.keys(EVENT_CONFIG) as EventType[];
+
+/**
+ * The event types that have a rate — things that happen repeatedly and are
+ * worth counting per day. Every tile, average, chart series and radar axis
+ * reads this rather than EVENT_TYPES, because a milestone happens once: "0.1
+ * milestones/day" is noise, and a milestone series is a flat line with one
+ * spike on it. The timeline, the day badges, the add picker and the tracked-
+ * types setting still work from the full list — a milestone belongs in the
+ * chronology, just not in the statistics.
+ */
+export const RATE_EVENT_TYPES: EventType[] = EVENT_TYPES.filter((type) => type !== 'milestone');
 
 /**
  * The event types a family has chosen to keep tracking.

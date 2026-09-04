@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getRelativeDayLabel, parseDayKey, getDayKey } from './date';
+import { getRelativeDayLabel, parseDayKey, getDayKey, formatBabyAge} from './date';
 
 describe('getRelativeDayLabel', () => {
   afterEach(() => {
@@ -41,5 +41,27 @@ describe('parseDayKey', () => {
     expect(parsed.getFullYear()).toBe(2026);
     expect(parsed.getMonth()).toBe(0);
     expect(parsed.getDate()).toBe(15);
+  });
+});
+
+describe('formatBabyAge', () => {
+  const birth = new Date(2026, 2, 20);
+
+  it('should measure against now by default', () => {
+    expect(formatBabyAge(birth)).toMatch(/old|born today/);
+  });
+
+  /**
+   * A milestone is worth "she was 5 months old", not the age she happens to be
+   * the day you look at the list.
+   */
+  it('should measure against a given moment when one is passed', () => {
+    expect(formatBabyAge(birth, new Date(2026, 2, 20))).toBe('born today');
+    expect(formatBabyAge(birth, new Date(2026, 2, 21))).toBe('1 day old');
+    expect(formatBabyAge(birth, new Date(2026, 8, 3))).toBe('5 months old');
+  });
+
+  it('should say nothing for a moment before the birth', () => {
+    expect(formatBabyAge(birth, new Date(2026, 1, 1))).toBe('');
   });
 });

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { VisibleEventTypesProvider } from '../components/VisibleEventTypesProvider';
+import { RATE_EVENT_TYPES } from '../utils/event-config';
 import { DaySection } from '../components/DaySection';
 import { ActivityRadar } from '../components/ActivityRadar';
 import { EVENT_TYPES } from '../utils/event-config';
@@ -68,5 +69,19 @@ describe('hiding an event type', () => {
       </VisibleEventTypesProvider>,
     );
     expect(withoutRadar).toBeEmptyDOMElement();
+  });
+});
+
+/**
+ * A milestone belongs in the chronology and nowhere in the statistics: it
+ * happens once, so a per-day average or a chart series for it is noise.
+ */
+describe('milestones and the rate surfaces', () => {
+  it('should not be one of the types that get counted per day', () => {
+    expect(RATE_EVENT_TYPES).not.toContain('milestone');
+  });
+
+  it('should still be offered, and shown, like any other type', () => {
+    expect(EVENT_TYPES).toContain('milestone');
   });
 });

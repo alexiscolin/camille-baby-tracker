@@ -1,5 +1,5 @@
-import { createContext, useContext } from 'react';
-import { EVENT_TYPES } from '../utils/event-config';
+import { createContext, useContext, useMemo } from 'react';
+import { EVENT_TYPES, RATE_EVENT_TYPES } from '../utils/event-config';
 import type { EventType } from '../types/events';
 
 /**
@@ -18,4 +18,17 @@ export const VisibleEventTypesContext = createContext<EventType[]>(EVENT_TYPES);
 
 export function useVisibleEventTypes(): EventType[] {
   return useContext(VisibleEventTypesContext);
+}
+
+/**
+ * The tracked types that also have a rate — what the tiles, the per-day
+ * averages, the charts and the radar count. A milestone is tracked and shown
+ * in the timeline but has no rate, so it is never one of these.
+ */
+export function useVisibleRateTypes(): EventType[] {
+  const visible = useContext(VisibleEventTypesContext);
+  return useMemo(
+    () => visible.filter((type) => RATE_EVENT_TYPES.includes(type)),
+    [visible],
+  );
 }

@@ -45,9 +45,14 @@ export function getRelativeDayLabel(date: Date): string {
   return format(date, 'EEEE, MMMM d');
 }
 
-export function formatBabyAge(birthDate: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - birthDate.getTime();
+/**
+ * How old the baby was at a given moment, defaulting to now.
+ *
+ * The parameter exists for milestones: "she was 5 months old" is the point of
+ * the entry, and it must not drift to her age the day someone reads the list.
+ */
+export function formatBabyAge(birthDate: Date, at: Date = new Date()): string {
+  const diffMs = at.getTime() - birthDate.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) return '';

@@ -12,6 +12,7 @@ import { getStoolColorWarning, type StoolColorId } from '../utils/stool-color';
 import { FeedingFields } from './EventModal/FeedingFields';
 import { PoopFields } from './EventModal/PoopFields';
 import { MedicationFields } from './EventModal/MedicationFields';
+import { MilestoneFields } from './EventModal/MilestoneFields';
 import { MealFields } from './EventModal/MealFields';
 import { buildReactionPayload, markFirstTry, DEFAULT_GRAMS_PER_TSP } from '../utils/meal-nutrition';
 import { MAX_MEAL_ITEMS } from '../types/food';
@@ -116,6 +117,9 @@ export function EventModal(props: EventModalProps) {
     editEvent?.type === 'meal' ? (editEvent as MealEvent).reaction : undefined,
   );
   const [notes, setNotes] = useState(editEvent?.notes ?? '');
+  const [milestoneTitle, setMilestoneTitle] = useState(
+    editEvent?.type === 'milestone' ? editEvent.title : '',
+  );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -388,6 +392,15 @@ export function EventModal(props: EventModalProps) {
           }
           updates.medicationName = name;
           updates.dose = d;
+        } else if (selectedType === 'milestone') {
+          const title = sanitizeText(milestoneTitle, MAX_TEXT_LENGTH);
+          if (!title) {
+            setError('Say what happened');
+            setSaving(false);
+            saveInFlight.current = false;
+            return;
+          }
+          updates.title = title;
         } else if (selectedType === 'meal') {
           const prepared = await prepareMeal(eventDate);
           if (!prepared) return;
@@ -459,6 +472,18 @@ export function EventModal(props: EventModalProps) {
             ...base,
             medicationName: name,
             dose: d,
+          } as Parameters<typeof addEvent>[1]);
+        } else if (selectedType === 'milestone') {
+          const title = sanitizeText(milestoneTitle, MAX_TEXT_LENGTH);
+          if (!title) {
+            setError('Say what happened');
+            setSaving(false);
+            saveInFlight.current = false;
+            return;
+          }
+          await addEvent(familyId, {
+            ...base,
+            title,
           } as Parameters<typeof addEvent>[1]);
         } else if (selectedType === 'meal') {
           const prepared = await prepareMeal(eventDate);
@@ -648,6 +673,14 @@ export function EventModal(props: EventModalProps) {
                   onMedicationNameChange={setMedicationName}
                   dose={dose}
                   onDoseChange={setDose}
+                  maxLength={MAX_TEXT_LENGTH}
+                />
+              )}
+
+              {selectedType === 'milestone' && (
+                <MilestoneFields
+                  title={milestoneTitle}
+                  onTitleChange={setMilestoneTitle}
                   maxLength={MAX_TEXT_LENGTH}
                 />
               )}

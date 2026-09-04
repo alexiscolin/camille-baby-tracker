@@ -26,7 +26,7 @@ import {
   getRangeDays,
 } from '../utils/chart-helpers';
 import { MIN_RADAR_AXES } from '../utils/event-config';
-import { useVisibleEventTypes } from '../hooks/useVisibleEventTypes';
+import { useVisibleRateTypes } from '../hooks/useVisibleEventTypes';
 import type { RangeType, ChartType } from '../utils/chart-helpers';
 import { CacheIndicator } from '../components/CacheIndicator';
 import { SegmentedControl } from '../components/SegmentedControl';
@@ -59,7 +59,7 @@ export function StatsPage({ familyId, babyId, baby }: StatsPageProps) {
   const [chartType, setChartType] = useState<ChartType>('line');
 
   const today = useToday();
-  const visibleTypes = useVisibleEventTypes();
+  const rateTypes = useVisibleRateTypes();
   const days = getRangeDays(range);
   const startDate = useMemo(() => startOfDay(subDays(today, days)), [today, days]);
   const endDate = useMemo(() => endOfDay(today), [today]);
@@ -105,11 +105,11 @@ export function StatsPage({ familyId, babyId, baby }: StatsPageProps) {
     let max = 0;
     let maxDay = chartData[0];
     for (const d of chartData) {
-      const total = visibleTypes.reduce<number>((sum, type) => sum + d[type], 0);
+      const total = rateTypes.reduce<number>((sum, type) => sum + d[type], 0);
       if (total > max) { max = total; maxDay = d; }
     }
     return { label: maxDay.label, count: max };
-  }, [chartData, visibleTypes]);
+  }, [chartData, rateTypes]);
 
   // Peak feeding hour
   const peakHour = useMemo(() => {
@@ -214,7 +214,7 @@ export function StatsPage({ familyId, babyId, baby }: StatsPageProps) {
       </Suspense>
 
       {/* Today vs Average Radar */}
-      {visibleTypes.length >= MIN_RADAR_AXES && (
+      {rateTypes.length >= MIN_RADAR_AXES && (
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <Activity size={20} className={styles.sectionIcon} />

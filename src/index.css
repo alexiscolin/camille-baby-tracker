@@ -19,6 +19,10 @@
   --color-bath-bg: #cffafe;
   --color-meal: #22c55e;
   --color-meal-bg: #dcfce7;
+  /* Amber, distinct from feeding's orange at the sizes it is used: a milestone
+     only ever appears as an icon in the timeline, never as a chart series. */
+  --color-milestone: #a855f7;
+  --color-milestone-bg: #f3e8ff;
 
   /**
    * Food groups — a categorical palette, one fixed hue per group in FOOD_GROUPS
@@ -269,6 +273,7 @@ a {
     --color-danger-strong: #fca5a5;
     --color-bath-bg: rgba(6, 182, 212, 0.15);
     --color-meal-bg: rgba(34, 197, 94, 0.15);
+    --color-milestone-bg: rgba(168, 85, 247, 0.15);
 
     /* Same seven hues, stepped for the dark surface — a selected set. Fat
        was left at the light-mode value by mistake (3.46:1, the rest sit

@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import type { DailySummary } from '../types/events';
 import { EVENT_CONFIG, MIN_RADAR_AXES } from '../utils/event-config';
-import { useVisibleEventTypes } from '../hooks/useVisibleEventTypes';
+import { useVisibleRateTypes } from '../hooks/useVisibleEventTypes';
 
 import styles from './ActivityRadar.module.css';
 
@@ -20,16 +20,16 @@ interface ActivityRadarProps {
 }
 
 export function ActivityRadar({ today, average, title = 'Today vs Average' }: ActivityRadarProps) {
-  const visibleTypes = useVisibleEventTypes();
+  const rateTypes = useVisibleRateTypes();
 
   /**
    * A radar of two axes is a line and one is a dot. Rather than draw a
    * degenerate shape, the card steps aside; the callers hide their section
    * heading on the same condition so nothing is left labelling an empty box.
    */
-  if (visibleTypes.length < MIN_RADAR_AXES) return null;
+  if (rateTypes.length < MIN_RADAR_AXES) return null;
 
-  const data = visibleTypes.map((type) => ({
+  const data = rateTypes.map((type) => ({
     subject: EVENT_CONFIG[type].label,
     today: today[type],
     average: Number(average[type]),

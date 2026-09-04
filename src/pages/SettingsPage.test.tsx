@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { SettingsPage } from './SettingsPage';
 import type { Baby } from '../types/events';
+import { EVENT_TYPES } from '../utils/event-config';
 
 const mockUpdateBaby = vi.fn();
 
@@ -183,7 +184,9 @@ describe('SettingsPage tracked events', () => {
       <SettingsPage
         familyId="fam-1"
         babyId="baby-1"
-        baby={makeBaby({ hiddenEventTypes: ['feeding', 'pee', 'poop', 'medication', 'bath'] })}
+        // Derived, not spelled out: hard-coding the list makes this assert
+        // "five are hidden" rather than "only one is left".
+        baby={makeBaby({ hiddenEventTypes: EVENT_TYPES.filter((t) => t !== 'meal') })}
       />,
     );
 

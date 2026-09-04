@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { BabyEvent, FeedingEvent, MedicationEvent } from '../types/events';
+import type { BabyEvent, FeedingEvent, MedicationEvent, MilestoneEvent } from '../types/events';
 import type { MealEvent } from '../types/food';
 import { EVENT_CONFIG } from '../utils/event-config';
 import { formatTime, timeAgo } from '../utils/date';
@@ -103,7 +103,13 @@ export const EventTimeline = memo(function EventTimeline({ events, onEventClick,
                 <Icon size={18} />
               </div>
               <div className={styles.content}>
-                <span className={styles.label}>{config.label}</span>
+                {/* A milestone leads with its own words: "Milestones" as a
+                    heading over "First steps" says nothing the icon does not. */}
+                <span className={styles.label}>
+                  {event.type === 'milestone'
+                    ? (event as MilestoneEvent).title
+                    : config.label}
+                </span>
                 <span className={styles.time}>
                   {formatTime(event.timestamp)}
                   {showHourMarkers && (
