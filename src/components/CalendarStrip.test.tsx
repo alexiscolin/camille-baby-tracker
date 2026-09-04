@@ -13,9 +13,10 @@ describe('CalendarStrip', () => {
         onLoadMore={vi.fn()}
       />,
     );
-    // 3 day buttons + 2 action buttons (load more + date picker)
-    const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBe(5);
+    // The days themselves, not every button on the strip: counting the whole
+    // row made this assert its own fixture, and it broke when the date picker
+    // stopped being a button.
+    expect(screen.getAllByRole('button', { name: /\w{3}\s?\d+/ })).toHaveLength(3);
   });
 
   it('should call onSelectDate when a day is clicked', async () => {
@@ -81,18 +82,11 @@ describe('CalendarStrip', () => {
   });
 
   /**
-   * The button has no handler of its own — it reaches into a hidden date input
-   * and asks the browser for its picker. Nothing else in the app works this
-   * way, so nothing else would notice if it stopped.
+   * The picker is opened by tapping the date field itself, not by a script
+   * calling showPicker() on a hidden one — that API declined silently here.
+   * So the field has to be present, enabled and inside the control.
    */
-  it('should open the native date picker from the calendar button', async () => {
-    const user = userEvent.setup();
-    const showPicker = vi.fn();
-    // jsdom has no showPicker; stub it on the prototype for the duration.
-    Object.defineProperty(HTMLInputElement.prototype, 'showPicker', {
-      value: showPicker, configurable: true, writable: true,
-    });
-
+  it('should put a usable date field in the calendar button', () => {
     render(
       <CalendarStrip
         days={3}
@@ -102,7 +96,24 @@ describe('CalendarStrip', () => {
       />,
     );
 
-    await user.click(screen.getByTitle(/pick a date/i));
-    expect(showPicker).toHaveBeenCalled();
+    const field = screen.getByLabelText(/pick a date/i);
+    expect(field).toBeEnabled();
+    expect(field).toHaveAttribute('type', 'date');
+  });
+
+  it('should select the date the field is set to', async () => {
+    const user = userEvent.setup();
+    const onSelectDate = vi.fn();
+    render(
+      <CalendarStrip
+        days={3}
+        selectedDate={new Date(2026, 8, 2)}
+        onSelectDate={onSelectDate}
+        onLoadMore={vi.fn()}
+      />,
+    );
+
+    await user.type(screen.getByLabelText(/pick a date/i), '2026-08-30');
+    expect(onSelectDate).toHaveBeenCalled();
   });
 });

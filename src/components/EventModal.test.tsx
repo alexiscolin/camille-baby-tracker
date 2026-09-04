@@ -565,4 +565,35 @@ describe('EventModal type picker', () => {
     expect(screen.queryByRole('button', { name: /feedings/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /meals/i })).toBeInTheDocument();
   });
+
+  /**
+   * Every other event is logged as it happens, from a day the timeline already
+   * picked. A first step is remembered days later, and the milestones page has
+   * no day to pick from at all — so the date is the entry, and the time is the
+   * part that does not matter.
+   */
+  it('should offer a date for a milestone and not for other types', async () => {
+    const user = userEvent.setup();
+    render(
+      <VisibleEventTypesProvider hidden={[]}>
+        <EventModal {...addProps} />
+      </VisibleEventTypesProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /pees/i }));
+    expect(screen.queryByLabelText(/^date$/i)).not.toBeInTheDocument();
+  });
+
+  it('should let a milestone be dated', async () => {
+    const user = userEvent.setup();
+    render(
+      <VisibleEventTypesProvider hidden={[]}>
+        <EventModal {...addProps} />
+      </VisibleEventTypesProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /milestones/i }));
+    const dateField = screen.getByLabelText(/^date$/i);
+    expect(dateField).toHaveAttribute('type', 'date');
+  });
 });

@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { format, subDays, isSameDay } from 'date-fns';
 import { CalendarDays, ChevronRight } from 'lucide-react';
 import { isToday } from '../utils/date';
@@ -13,7 +13,6 @@ interface CalendarStripProps {
 
 export function CalendarStrip({ days, selectedDate, onSelectDate, onLoadMore }: CalendarStripProps) {
   const today = useMemo(() => new Date(), []);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const dateList = useMemo(() => {
     const list: Date[] = [];
@@ -59,21 +58,23 @@ export function CalendarStrip({ days, selectedDate, onSelectDate, onLoadMore }: 
         >
           <ChevronRight size={16} />
         </button>
-        <button
-          className={styles.actionBtn}
-          onClick={() => inputRef.current?.showPicker()}
-          title="Pick a date"
-        >
-          <CalendarDays size={16} />
-        </button>
-        <input
-          ref={inputRef}
-          type="date"
-          className={styles.hiddenInput}
-          onChange={handleDatePick}
-          max={format(today, 'yyyy-MM-dd')}
-          tabIndex={-1}
-        />
+        {/*
+          * The input *is* the button, laid transparently over the icon, rather
+          * than a hidden field a click handler calls showPicker() on. That API
+          * declines silently in more situations than it documents — it did
+          * nothing here — and needs no fallback if the thing the user taps is
+          * the date field itself, which every platform already knows to open.
+          */}
+        <label className={styles.actionBtn} title="Pick a date">
+          <CalendarDays size={16} aria-hidden />
+          <span className="sr-only">Pick a date</span>
+          <input
+            type="date"
+            className={styles.dateOverlay}
+            onChange={handleDatePick}
+            max={format(today, 'yyyy-MM-dd')}
+          />
+        </label>
       </div>
     </div>
   );
