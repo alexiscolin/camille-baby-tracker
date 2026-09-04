@@ -522,8 +522,13 @@ export function EventModal(props: EventModalProps) {
 
       setSaved(true);
       setTimeout(onClose, 1000);
-    } catch {
-      setError('Failed to save. Please try again.');
+    } catch (err) {
+      // Not "please try again": a rejected write is rejected identically every
+      // time, and a generic message is how a whole event type being refused by
+      // firestore.rules looked like a flaky network.
+      setError(
+        err instanceof Error ? `Could not save — ${err.message}` : 'Could not save this event.',
+      );
     } finally {
       setSaving(false);
       saveInFlight.current = false;
@@ -536,8 +541,12 @@ export function EventModal(props: EventModalProps) {
     try {
       await deleteEvent(familyId, editEvent.id);
       onClose();
-    } catch {
-      setError('Failed to delete. Please try again.');
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Could not delete — ${err.message}`
+          : 'Could not delete this event.',
+      );
       setDeleting(false);
       setConfirmDelete(false);
     }
