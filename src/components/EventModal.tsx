@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Check, AlertCircle, Trash2, X } from 'lucide-react';
 import { Timestamp, deleteField, increment } from 'firebase/firestore';
+import { format } from 'date-fns';
 import { addEvent, updateEvent, deleteEvent } from '../services/events';
 import { upsertFood, updateFood, foodFromSeed } from '../services/food-catalog';
 import { useFoods } from '../hooks/useFoods';
@@ -75,6 +76,13 @@ export function EventModal(props: EventModalProps) {
     editEvent?.type ?? (mode === 'add' ? props.initialType ?? null : null),
   );
   const [time, setTime] = useState(getTimeString(targetDate));
+  /**
+   * Milestones only. Every other event is logged as it happens, from a day the
+   * timeline already picked — but a first step is remembered, often days
+   * later, and the milestones page has no day to pick from at all. Time is
+   * what does not matter there; the date is the whole entry.
+   */
+  const [day, setDay] = useState(() => format(targetDate, 'yyyy-MM-dd'));
   const [feedingType, setFeedingType] = useState<FeedingType>(
     editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).feedingType : 'breast',
   );
@@ -200,7 +208,10 @@ export function EventModal(props: EventModalProps) {
     const [hours, minutes] = time.split(':').map(Number);
     if (isNaN(hours) || isNaN(minutes)) return null;
 
-    const eventDate = new Date(targetDate);
+    const base = selectedType === 'milestone' ? new Date(`${day}T00:00:00`) : targetDate;
+    if (isNaN(base.getTime())) return null;
+
+    const eventDate = new Date(base);
     eventDate.setHours(hours, minutes, 0, 0);
     return eventDate;
   }
@@ -623,6 +634,19 @@ export function EventModal(props: EventModalProps) {
                       </>
                     );
                   })()}
+                </div>
+              )}
+
+              {selectedType === 'milestone' && (
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="event-day">Date</label>
+                  <input
+                    id="event-day"
+                    type="date"
+                    value={day}
+                    max={format(new Date(), 'yyyy-MM-dd')}
+                    onChange={(e) => setDay(e.target.value)}
+                  />
                 </div>
               )}
 
