@@ -79,4 +79,30 @@ describe('CalendarStrip', () => {
     const dayButtons = screen.getAllByRole('button');
     expect(dayButtons[0].className).toContain('selected');
   });
+
+  /**
+   * The button has no handler of its own — it reaches into a hidden date input
+   * and asks the browser for its picker. Nothing else in the app works this
+   * way, so nothing else would notice if it stopped.
+   */
+  it('should open the native date picker from the calendar button', async () => {
+    const user = userEvent.setup();
+    const showPicker = vi.fn();
+    // jsdom has no showPicker; stub it on the prototype for the duration.
+    Object.defineProperty(HTMLInputElement.prototype, 'showPicker', {
+      value: showPicker, configurable: true, writable: true,
+    });
+
+    render(
+      <CalendarStrip
+        days={3}
+        selectedDate={new Date(2026, 8, 2)}
+        onSelectDate={vi.fn()}
+        onLoadMore={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByTitle(/pick a date/i));
+    expect(showPicker).toHaveBeenCalled();
+  });
 });
