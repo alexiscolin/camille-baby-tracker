@@ -1,5 +1,5 @@
 import { useMemo, useState, lazy, Suspense } from 'react';
-import { Plus, Star } from 'lucide-react';
+import { Plus, Search, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToday } from '../hooks/useToday';
 import { useRangeEvents } from '../hooks/useRangeEvents';
@@ -7,8 +7,16 @@ import { CacheIndicator } from '../components/CacheIndicator';
 import { ModalFallback } from '../components/ModalFallback';
 import { withChunkReload } from '../utils/lazy-route';
 import { formatBabyAge } from '../utils/date';
+import { matchesSearch } from '../utils/text-search';
 import type { Baby, MilestoneEvent } from '../types/events';
 import styles from './MilestonesPage.module.css';
+
+/**
+ * Below this many milestones the list is a couple of flicks of scrolling, and
+ * a search box would be more typing than looking. It appears once the list is
+ * long enough to be worth querying.
+ */
+const SEARCH_APPEARS_AT = 12;
 
 /** Same reasoning as the other pages: the modal is only mounted after a tap. */
 const EventModal = lazy(
@@ -34,6 +42,7 @@ interface MilestonesPageProps {
 export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPageProps) {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<MilestoneEvent | null>(null);
+  const [query, setQuery] = useState('');
   const today = useToday();
 
   /*
@@ -66,6 +75,16 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
     [events],
   );
 
+  // Notes as well as the title: the detail that makes an entry findable is
+  // often there — "on the living room rug" rather than "First steps".
+  const shown = useMemo(
+    () => milestones.filter((m) => matchesSearch(query, [m.title, m.notes])),
+    [milestones, query],
+  );
+
+  const searchable = milestones.length >= SEARCH_APPEARS_AT;
+  const filtered = searchable && query.trim() !== '';
+
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
@@ -75,7 +94,9 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
             <p className={styles.subtitle}>
               {milestones.length === 0
                 ? 'Nothing recorded yet'
-                : `${milestones.length} so far`}
+                : filtered
+                  ? `${shown.length} of ${milestones.length}`
+                  : `${milestones.length} so far`}
             </p>
           )}
         </div>
@@ -94,14 +115,32 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
         </div>
       </div>
 
+      {searchable && (
+        <div className={styles.search}>
+          <Search size={16} className={styles.searchIcon} aria-hidden />
+          <input
+            type="search"
+            className={styles.searchInput}
+            value={query}
+            placeholder="Search milestones"
+            aria-label="Search milestones"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      )}
+
       {milestones.length === 0 ? (
         <p className={styles.empty}>
           Nothing yet — first steps, first tooth, whatever you want to
           remember.
         </p>
+      ) : shown.length === 0 ? (
+        /* Distinct from the empty state above: one means nothing has happened
+           yet, the other that nothing matches what was typed. */
+        <p className={styles.empty}>No milestone matches “{query.trim()}”.</p>
       ) : (
         <ol className={styles.list}>
-          {milestones.map((milestone) => {
+          {shown.map((milestone) => {
             const at = milestone.timestamp.toDate();
             return (
               <li

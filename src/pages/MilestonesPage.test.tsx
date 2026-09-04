@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { MilestonesPage } from './MilestonesPage';
 import type { Baby, BabyEvent, MilestoneEvent, PeeEvent } from '../types/events';
@@ -103,5 +104,56 @@ describe('MilestonesPage', () => {
     const [, , startB] = mockUseRangeEvents.mock.calls.at(-1)!;
     // Same object, not merely the same instant: the effect compares identity.
     expect(startB).toBe(startA);
+  });
+
+  function many(count: number) {
+    return Array.from({ length: count }, (_, i) =>
+      milestone(`m${i}`, `Milestone ${i}`, new Date(2026, 4, 1 + i)),
+    );
+  }
+
+  /**
+   * Below the threshold the list is a couple of flicks of scrolling, and a
+   * search box is more typing than looking.
+   */
+  it('should not offer search until the list is long enough to need it', () => {
+    renderWith(many(11));
+    expect(screen.queryByLabelText(/search milestones/i)).not.toBeInTheDocument();
+  });
+
+  it('should offer search once the list is long', () => {
+    renderWith(many(12));
+    expect(screen.getByLabelText(/search milestones/i)).toBeInTheDocument();
+  });
+
+  it('should match a title regardless of case and accents', async () => {
+    const user = userEvent.setup();
+    renderWith([...many(11), milestone('x', 'Première dent', new Date(2026, 6, 1))]);
+
+    await user.type(screen.getByLabelText(/search milestones/i), 'premiere');
+
+    expect(screen.getByText('Première dent')).toBeInTheDocument();
+    expect(screen.queryByText('Milestone 0')).not.toBeInTheDocument();
+  });
+
+  /** The detail that makes an entry findable is often in the notes. */
+  it('should search the notes too', async () => {
+    const user = userEvent.setup();
+    const withNote = { ...milestone('x', 'First steps', new Date(2026, 6, 1)),
+      notes: 'on the living room rug' };
+    renderWith([...many(11), withNote]);
+
+    await user.type(screen.getByLabelText(/search milestones/i), 'rug');
+    expect(screen.getByText('First steps')).toBeInTheDocument();
+  });
+
+  it('should say when nothing matches, distinctly from having nothing', async () => {
+    const user = userEvent.setup();
+    renderWith(many(12));
+
+    await user.type(screen.getByLabelText(/search milestones/i), 'zzz');
+
+    expect(screen.getByText(/No milestone matches/)).toBeInTheDocument();
+    expect(screen.queryByText(/Nothing yet/)).not.toBeInTheDocument();
   });
 });
