@@ -98,6 +98,19 @@
   color: var(--color-primary);
 }
 
+/*
+ * Six tabs. Measured at 320px with the previous five, the row needed 272px of
+ * 314 available; "Steps" adds ~45px and takes it to ~317, just over. Dropping
+ * the side padding to 4px brings it back to ~291 while min-width holds every
+ * target at the 44px floor.
+ */
+@media (max-width: 380px) {
+  .navItem {
+    padding-left: var(--space-xs);
+    padding-right: var(--space-xs);
+  }
+}
+
 /* ─── Tablet ─── */
 @media (min-width: 768px) {
   .layout {

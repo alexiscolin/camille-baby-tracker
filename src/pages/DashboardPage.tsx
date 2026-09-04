@@ -8,7 +8,7 @@ import { buildChartData } from '../utils/chart-data';
 import { getDayKey, parseDayKey, formatBabyAge } from '../utils/date';
 import { computeSummary } from '../utils/summary';
 import { EVENT_CONFIG, MIN_RADAR_AXES } from '../utils/event-config';
-import { useVisibleEventTypes } from '../hooks/useVisibleEventTypes';
+import { useVisibleRateTypes } from '../hooks/useVisibleEventTypes';
 import {
   computeAverageSummary,
   computeDailyAverages,
@@ -93,7 +93,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
   const [chartType, setChartType] = useState<ChartType>('line');
 
   const today = useToday();
-  const visibleTypes = useVisibleEventTypes();
+  const rateTypes = useVisibleRateTypes();
 
   // Single subscription: use the widest range needed (max of timeline days and chart days)
   const chartDays = getRangeDays(chartRange);
@@ -194,7 +194,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
 
           {/* Today's summary row (desktop) */}
           <div className={styles.todaySummary}>
-            {visibleTypes.map((type) => {
+            {rateTypes.map((type) => {
               const config = EVENT_CONFIG[type];
               const Icon = config.icon;
               return (
@@ -222,7 +222,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
                     </span>
                   </h2>
                   <span className={styles.chartSubtitle}>
-                    Grand total: {chartData.reduce((s, d) => s + visibleTypes.reduce<number>((sum, type) => sum + d[type], 0), 0)} events
+                    Grand total: {chartData.reduce((s, d) => s + rateTypes.reduce<number>((sum, type) => sum + d[type], 0), 0)} events
                   </span>
                 </div>
                 <div className={styles.chartControls}>
@@ -249,7 +249,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
 
               {/* Averages row under chart */}
               <div className={styles.averagesRow}>
-                {visibleTypes.map((type) => {
+                {rateTypes.map((type) => {
                   const config = EVENT_CONFIG[type];
                   const Icon = config.icon;
                   return (
@@ -266,7 +266,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
             </div>
             {/* Radar (desktop only). Hidden with its column below three
                 tracked types: a radar of two axes is a line. */}
-            {visibleTypes.length >= MIN_RADAR_AXES && (
+            {rateTypes.length >= MIN_RADAR_AXES && (
               <div className={styles.radarCol}>
                 <Suspense fallback={null}>
                   <ActivityRadar today={todaySummary} average={avgSummary} />

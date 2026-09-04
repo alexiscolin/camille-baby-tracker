@@ -19,6 +19,12 @@
   --color-bath-bg: #cffafe;
   --color-meal: #22c55e;
   --color-meal-bg: #dcfce7;
+  /* Pink. The first value tried was #a855f7, a purple sitting one step from
+     --color-poop's #8b5cf6 — and those two icons share the timeline, at 18px,
+     where that is not a difference anyone can see. Pink is the one hue the
+     other six leave free. It is never a chart series, only an icon. */
+  --color-milestone: #ec4899;
+  --color-milestone-bg: #fce7f3;
 
   /**
    * Food groups — a categorical palette, one fixed hue per group in FOOD_GROUPS
@@ -269,6 +275,7 @@ a {
     --color-danger-strong: #fca5a5;
     --color-bath-bg: rgba(6, 182, 212, 0.15);
     --color-meal-bg: rgba(34, 197, 94, 0.15);
+    --color-milestone-bg: rgba(236, 72, 153, 0.15);
 
     /* Same seven hues, stepped for the dark surface — a selected set. Fat
        was left at the light-mode value by mistake (3.46:1, the rest sit

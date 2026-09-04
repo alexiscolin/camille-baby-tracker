@@ -1,7 +1,7 @@
 import type { Timestamp } from 'firebase/firestore';
 import type { MealEvent } from './food';
 
-export type EventType = 'feeding' | 'pee' | 'poop' | 'medication' | 'bath' | 'meal';
+export type EventType = 'feeding' | 'pee' | 'poop' | 'medication' | 'bath' | 'meal' | 'milestone';
 
 export type FeedingType = 'breast' | 'bottle';
 
@@ -48,8 +48,19 @@ export interface BathEvent extends BaseEvent {
   type: 'bath';
 }
 
+/**
+ * Something that happened once and will not happen again: first steps, first
+ * tooth, first word. The title is free text — a list of expected milestones
+ * would be a list of things to feel behind on. `notes` carries the detail.
+ */
+export interface MilestoneEvent extends BaseEvent {
+  type: 'milestone';
+  title: string;
+}
+
 export type BabyEvent =
-  | FeedingEvent | PeeEvent | PoopEvent | MedicationEvent | BathEvent | MealEvent;
+  | FeedingEvent | PeeEvent | PoopEvent | MedicationEvent | BathEvent | MealEvent
+  | MilestoneEvent;
 
 export type BabySex = 'male' | 'female';
 

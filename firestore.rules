@@ -49,6 +49,17 @@ service cloud.firestore {
     }
 
     // Helper: validate medication-specific fields
+    // Helper: validate milestone fields. The title is free text by design —
+    // a fixed vocabulary would be a list of things to feel behind on — so the
+    // only thing to enforce is that it exists and stays a reasonable length.
+    function hasValidMilestoneFields() {
+      let data = request.resource.data;
+      return data.type == 'milestone'
+        && data.title is string
+        && data.title.size() > 0
+        && data.title.size() <= 200;
+    }
+
     function hasValidMedicationFields() {
       let data = request.resource.data;
       return data.type == 'medication'
@@ -160,6 +171,7 @@ service cloud.firestore {
           || (data.type == 'medication' && hasValidMedicationFields())
           || (data.type == 'bath')
           || (data.type == 'meal' && hasValidMealFields())
+          || (data.type == 'milestone' && hasValidMilestoneFields())
         );
     }
 
@@ -185,6 +197,7 @@ service cloud.firestore {
         || (data.type == 'medication' && hasValidMedicationFields())
         || (data.type == 'bath')
         || (data.type == 'meal' && hasValidMealFields())
+        || (data.type == 'milestone' && hasValidMilestoneFields())
       );
       return immutableOk && timestampOk && notesOk && typeFieldsOk;
     }

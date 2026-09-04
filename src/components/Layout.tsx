@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Salad,
+  Star,
   BarChart3,
   TrendingUp,
   Settings,
@@ -47,6 +48,16 @@ export function Layout({ children, babyName }: LayoutProps) {
             aria-label="Food"
           >
             <Salad size={22} />
+
+          </NavLink>
+          <NavLink
+            to="/milestones"
+            className={({ isActive }) =>
+              `${styles.sidebarItem} ${isActive ? styles.sidebarActive : ''}`
+            }
+            aria-label="Milestones"
+          >
+            <Star size={22} />
 
           </NavLink>
           <NavLink
@@ -125,6 +136,15 @@ export function Layout({ children, babyName }: LayoutProps) {
         >
           <Salad size={22} />
           <span>Food</span>
+        </NavLink>
+        <NavLink
+          to="/milestones"
+          className={({ isActive }) =>
+            `${styles.navItem} ${isActive ? styles.active : ''}`
+          }
+        >
+          <Star size={22} />
+          <span>Steps</span>
         </NavLink>
         <NavLink
           to="/stats"

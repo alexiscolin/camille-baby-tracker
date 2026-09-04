@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EVENT_CONFIG, EVENT_TYPES, visibleEventTypes } from './event-config';
+import { EVENT_CONFIG, EVENT_TYPES, RATE_EVENT_TYPES, visibleEventTypes } from './event-config';
 
 describe('EVENT_CONFIG', () => {
   it('should include meal as an event type', () => {
@@ -29,8 +29,12 @@ describe('visibleEventTypes', () => {
   });
 
   it('should drop the hidden types and keep the rest in their declared order', () => {
-    expect(visibleEventTypes(['feeding'])).toEqual(['pee', 'poop', 'medication', 'bath', 'meal']);
-    expect(visibleEventTypes(['meal', 'pee'])).toEqual(['feeding', 'poop', 'medication', 'bath']);
+    // Derived, not spelled out: this assertion is about order and omission,
+    // and hard-coding the full list makes it fail every time a type is added.
+    expect(visibleEventTypes(['feeding'])).toEqual(EVENT_TYPES.filter((t) => t !== 'feeding'));
+    expect(visibleEventTypes(['meal', 'pee'])).toEqual(
+      EVENT_TYPES.filter((t) => t !== 'meal' && t !== 'pee'),
+    );
   });
 
   /**
@@ -50,5 +54,20 @@ describe('visibleEventTypes', () => {
    */
   it('should never return an empty list', () => {
     expect(visibleEventTypes(EVENT_TYPES)).toEqual(EVENT_TYPES);
+  });
+});
+
+describe('RATE_EVENT_TYPES', () => {
+  /**
+   * DailySummary is a Record<EventType, number>, so a new type would otherwise
+   * pick up a tile, a per-day average, a chart series and a radar axis by
+   * default. None of those mean anything for something that happens once.
+   */
+  it('should leave out the types that happen once rather than repeatedly', () => {
+    expect(RATE_EVENT_TYPES).not.toContain('milestone');
+  });
+
+  it('should keep every repeating type, in the declared order', () => {
+    expect(RATE_EVENT_TYPES).toEqual(EVENT_TYPES.filter((t) => t !== 'milestone'));
   });
 });

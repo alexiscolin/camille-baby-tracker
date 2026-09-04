@@ -23,6 +23,7 @@ const StatsPage = lazy(withChunkReload(() => import('./pages/StatsPage').then((m
 const GrowthPage = lazy(withChunkReload(() => import('./pages/GrowthPage').then((m) => ({ default: m.GrowthPage }))));
 const FoodPage = lazy(withChunkReload(() => import('./pages/FoodPage').then((m) => ({ default: m.FoodPage }))));
 const SettingsPage = lazy(withChunkReload(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))));
+const MilestonesPage = lazy(withChunkReload(() => import('./pages/MilestonesPage').then((m) => ({ default: m.MilestonesPage }))));
 
 /**
  * One boundary per route, not one around <Routes>.
@@ -80,6 +81,17 @@ function AppContent() {
             path="/food"
             element={suspended(
               <FoodPage
+                familyId={family.id}
+                babyId={babyId}
+                userId={user.uid}
+                baby={baby}
+              />,
+            )}
+          />
+          <Route
+            path="/milestones"
+            element={suspended(
+              <MilestonesPage
                 familyId={family.id}
                 babyId={babyId}
                 userId={user.uid}

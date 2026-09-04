@@ -1,0 +1,141 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-top: var(--space-2xs);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+  background: var(--color-primary-bg);
+  transition: all var(--transition-fast);
+}
+
+.addBtn:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.entry {
+  cursor: pointer;
+}
+
+.empty {
+  padding: var(--space-lg);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+/* ─── The list ─── */
+.list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* One continuous rail down the markers, so months apart still read as a
+   single thread rather than a stack of unrelated cards. */
+.entry {
+  position: relative;
+  display: flex;
+  gap: var(--space-md);
+  padding-bottom: var(--space-lg);
+}
+
+.entry:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: var(--size-icon-sm);
+  bottom: 0;
+  left: calc(var(--size-icon-sm) / 2);
+  width: var(--space-micro);
+  background: var(--color-border);
+}
+
+.marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
+  border-radius: var(--radius-full);
+  background: var(--color-milestone-bg);
+  color: var(--color-milestone);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  min-width: 0;
+  padding-top: var(--space-2xs);
+}
+
+.entryTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.when {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.note {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1024px) {
+  .title {
+    font-size: var(--font-size-3xl);
+  }
+
+  .subtitle {
+    font-size: var(--font-size-md);
+  }
+
+  .entryTitle {
+    font-size: var(--font-size-lg);
+  }
+}
