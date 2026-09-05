@@ -17,6 +17,7 @@ import {
 import type { RangeType, ChartType } from '../utils/chart-helpers';
 import { CacheIndicator } from '../components/CacheIndicator';
 import { QuickStats } from '../components/QuickStats';
+import { QUICK_STATS_LOOKBACK_DAYS } from '../components/QuickStatsCards';
 import { SummaryCard } from '../components/SummaryCard';
 import { CalendarStrip } from '../components/CalendarStrip';
 import { DaySection } from '../components/DaySection';
@@ -97,7 +98,9 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
 
   // Single subscription: use the widest range needed (max of timeline days and chart days)
   const chartDays = getRangeDays(chartRange);
-  const maxDays = Math.max(daysToLoad, chartDays);
+  // QuickStats decides which tiles are still relevant from the events it is
+  // handed, so the subscription has to reach back as far as its longest window.
+  const maxDays = Math.max(daysToLoad, chartDays, QUICK_STATS_LOOKBACK_DAYS);
   const rangeStart = useMemo(() => startOfDay(subDays(today, maxDays)), [today, maxDays]);
   const rangeEnd = useMemo(() => endOfDay(today), [today]);
   const { events: allEvents, loading, fromCache, hasPendingWrites } = useRangeEvents(familyId, babyId, rangeStart, rangeEnd);
