@@ -23,6 +23,8 @@ import {
   BarChart3,
   Calendar,
   Layers,
+  Salad,
+  Percent,
 } from 'lucide-react';
 import type { ChartDataPoint } from '../utils/chart-data';
 import type { ChartType, RangeType } from '../utils/chart-helpers';
@@ -36,6 +38,8 @@ import type {
   IntervalTrendPoint,
   DurationTrendPoint,
   HourDistribution,
+  MealSlotCount,
+  AcceptanceTrendPoint,
 } from '../utils/quick-stats';
 import styles from './StatsPage.module.css';
 
@@ -59,6 +63,11 @@ interface StatsChartsProps {
   intervalTrend: IntervalTrendPoint[];
   durationTrend: DurationTrendPoint[];
   hourDist: HourDistribution[];
+  /** Whether the type is still in use; see `isTypeActive`. */
+  feedingActive: boolean;
+  mealActive: boolean;
+  slotDist: MealSlotCount[];
+  acceptanceTrend: AcceptanceTrendPoint[];
 }
 
 export const StatsCharts = memo(function StatsCharts({
@@ -71,6 +80,10 @@ export const StatsCharts = memo(function StatsCharts({
   intervalTrend,
   durationTrend,
   hourDist,
+  feedingActive,
+  mealActive,
+  slotDist,
+  acceptanceTrend,
 }: StatsChartsProps) {
   const rateTypes = useVisibleRateTypes();
 
@@ -160,6 +173,10 @@ export const StatsCharts = memo(function StatsCharts({
 
       {/* Two-column grid for smaller charts */}
       <div className={styles.chartsGrid}>
+        {/* Feeding-shaped views. Kept in the file, drawn only while feeding is
+            still logged — see `feedingActive`. */}
+        {feedingActive && (
+          <>
         {/* Day/Night */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
@@ -253,9 +270,57 @@ export const StatsCharts = memo(function StatsCharts({
             </ResponsiveContainer>
           </div>
         </section>
+          </>
+        )}
+
+        {mealActive && (
+          <>
+            {/* Meal Times */}
+            <section className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <Salad size={20} className={styles.sectionIcon} />
+                <h2 className={styles.sectionTitle}>Meal Times</h2>
+                <span className={styles.sectionHint}>Which slots are being used</span>
+              </div>
+              <div className={styles.chartCard}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={slotDist} margin={MARGIN_TIGHT}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
+                    <XAxis dataKey="label" tick={AXIS_TICK_SM} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={AXIS_TICK_SM} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [value, 'Meals']} />
+                    <Bar dataKey="count" fill="var(--color-meal)" radius={[4, 4, 0, 0]} name="Meals" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+
+            {/* Acceptance */}
+            <section className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <Percent size={20} className={styles.sectionIcon} />
+                <h2 className={styles.sectionTitle}>Acceptance</h2>
+                <span className={styles.sectionHint}>Share finished or mostly eaten</span>
+              </div>
+              <div className={styles.chartCard}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={acceptanceTrend} margin={MARGIN_NARROW}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
+                    <XAxis dataKey="label" tick={AXIS_TICK_SM} tickLine={false} />
+                    <YAxis domain={[0, 100]} tick={AXIS_TICK_SM} tickLine={false} unit="%" axisLine={false} />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value}%`, 'Eaten']} />
+                    {/* Days with nothing logged stay a gap: not logged is not refused. */}
+                    <Line type="monotone" dataKey="percent" stroke="var(--color-meal)" strokeWidth={2.5} dot={{ r: 4, strokeWidth: 2 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+          </>
+        )}
       </div>
 
       {/* Feeding Hours (full width) */}
+      {feedingActive && (
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <Calendar size={20} className={styles.sectionIcon} />
@@ -279,6 +344,7 @@ export const StatsCharts = memo(function StatsCharts({
           </ResponsiveContainer>
         </div>
       </section>
+      )}
     </>
   );
 });

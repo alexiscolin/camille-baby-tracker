@@ -7,8 +7,18 @@ import {
   getAverageFeedingInterval,
   getDayNightSplit,
   getFeedingHourDistribution,
+  getTimeSinceLastEvent,
+  isTypeActive,
+  getNewFoodsCount,
+  getAcceptanceRate,
+  getLastMilestone,
+  getMealSlotDistribution,
+  buildAcceptanceTrend,
 } from './quick-stats';
-import type { FeedingEvent, PeeEvent, BabyEvent } from '../types/events';
+import type {
+  FeedingEvent, PeeEvent, BabyEvent, BathEvent, MilestoneEvent,
+} from '../types/events';
+import type { Acceptance, MealEvent } from '../types/food';
 
 function makeFeedingEvent(
   date: Date,
@@ -258,5 +268,219 @@ describe('getFeedingHourDistribution', () => {
     expect(dist[8].count).toBe(2);
     expect(dist[14].count).toBe(1);
     expect(dist[0].count).toBe(0);
+  });
+});
+
+// ─── Relevance-driven tiles ───
+
+function makeMealEvent(
+  date: Date,
+  items: { foodId: string; firstTry?: boolean; acceptance?: Acceptance }[] = [],
+): MealEvent {
+  return {
+    id: `m-${date.getTime()}-${Math.random()}`,
+    babyId: 'baby-1',
+    type: 'meal',
+    mealSlot: 'lunch',
+    items: items.map((i) => ({
+      foodId: i.foodId,
+      name: i.foodId,
+      quantity: 1,
+      unit: 'tsp',
+      ...(i.firstTry !== undefined ? { firstTry: i.firstTry } : {}),
+      ...(i.acceptance !== undefined ? { acceptance: i.acceptance } : {}),
+    })),
+    timestamp: Timestamp.fromDate(date),
+    createdBy: 'user-1',
+    createdAt: Timestamp.fromDate(new Date()),
+  };
+}
+
+function makeBathEvent(date: Date): BathEvent {
+  return {
+    id: `b-${date.getTime()}`,
+    babyId: 'baby-1',
+    type: 'bath',
+    timestamp: Timestamp.fromDate(date),
+    createdBy: 'user-1',
+    createdAt: Timestamp.fromDate(new Date()),
+  };
+}
+
+function makeMilestoneEvent(date: Date, title: string): MilestoneEvent {
+  return {
+    id: `ms-${date.getTime()}`,
+    babyId: 'baby-1',
+    type: 'milestone',
+    title,
+    timestamp: Timestamp.fromDate(date),
+    createdBy: 'user-1',
+    createdAt: Timestamp.fromDate(new Date()),
+  };
+}
+
+const NOW = new Date('2025-06-15T12:00:00');
+const daysAgo = (n: number) => new Date(NOW.getTime() - n * 24 * 60 * 60 * 1000);
+
+describe('isTypeActive', () => {
+  it('should be false when no event of that type exists', () => {
+    expect(isTypeActive([makeBathEvent(daysAgo(1))], 'meal', 7, NOW)).toBe(false);
+  });
+
+  it('should be true when an event falls inside the lookback window', () => {
+    expect(isTypeActive([makeBathEvent(daysAgo(10))], 'bath', 14, NOW)).toBe(true);
+  });
+
+  it('should be false when the only event is older than the lookback window', () => {
+    expect(isTypeActive([makeBathEvent(daysAgo(20))], 'bath', 14, NOW)).toBe(false);
+  });
+
+  it('should judge each type on its own window', () => {
+    const events: BabyEvent[] = [makeFeedingEvent(daysAgo(20)), makeMealEvent(daysAgo(1))];
+    expect(isTypeActive(events, 'feeding', 7, NOW)).toBe(false);
+    expect(isTypeActive(events, 'meal', 7, NOW)).toBe(true);
+  });
+});
+
+describe('getNewFoodsCount', () => {
+  it('should return 0 without meals', () => {
+    expect(getNewFoodsCount([], 7, NOW)).toBe(0);
+  });
+
+  it('should count only items flagged as a first try', () => {
+    const events: BabyEvent[] = [
+      makeMealEvent(daysAgo(1), [
+        { foodId: 'carrot', firstTry: true },
+        { foodId: 'rice' },
+      ]),
+    ];
+    expect(getNewFoodsCount(events, 7, NOW)).toBe(1);
+  });
+
+  it('should count a food once even if flagged twice', () => {
+    const events: BabyEvent[] = [
+      makeMealEvent(daysAgo(1), [{ foodId: 'carrot', firstTry: true }]),
+      makeMealEvent(daysAgo(2), [{ foodId: 'carrot', firstTry: true }]),
+    ];
+    expect(getNewFoodsCount(events, 7, NOW)).toBe(1);
+  });
+
+  it('should ignore meals older than the window', () => {
+    const events: BabyEvent[] = [
+      makeMealEvent(daysAgo(30), [{ foodId: 'carrot', firstTry: true }]),
+    ];
+    expect(getNewFoodsCount(events, 7, NOW)).toBe(0);
+  });
+});
+
+describe('getAcceptanceRate', () => {
+  it('should return null when no item carries an acceptance', () => {
+    const events: BabyEvent[] = [makeMealEvent(daysAgo(1), [{ foodId: 'carrot' }])];
+    expect(getAcceptanceRate(events, 7, NOW)).toBeNull();
+  });
+
+  it('should count "all" and "most" as eaten', () => {
+    const events: BabyEvent[] = [
+      makeMealEvent(daysAgo(1), [
+        { foodId: 'a', acceptance: 'all' },
+        { foodId: 'b', acceptance: 'most' },
+        { foodId: 'c', acceptance: 'refused' },
+        { foodId: 'd', acceptance: 'taste' },
+      ]),
+    ];
+    expect(getAcceptanceRate(events, 7, NOW)).toEqual({ percent: 50, sampled: 4 });
+  });
+
+  it('should ignore items with no acceptance recorded', () => {
+    const events: BabyEvent[] = [
+      makeMealEvent(daysAgo(1), [
+        { foodId: 'a', acceptance: 'all' },
+        { foodId: 'b' },
+      ]),
+    ];
+    expect(getAcceptanceRate(events, 7, NOW)).toEqual({ percent: 100, sampled: 1 });
+  });
+
+  it('should ignore meals older than the window', () => {
+    const events: BabyEvent[] = [
+      makeMealEvent(daysAgo(30), [{ foodId: 'a', acceptance: 'all' }]),
+    ];
+    expect(getAcceptanceRate(events, 7, NOW)).toBeNull();
+  });
+});
+
+describe('getLastMilestone', () => {
+  it('should return null without milestones', () => {
+    expect(getLastMilestone([], NOW)).toBeNull();
+  });
+
+  it('should return the most recent milestone with its title', () => {
+    const events: BabyEvent[] = [
+      makeMilestoneEvent(daysAgo(30), 'First tooth'),
+      makeMilestoneEvent(daysAgo(3), 'First steps'),
+    ];
+    expect(getLastMilestone(events, NOW)).toEqual({ title: 'First steps', label: '3d ago' });
+  });
+});
+
+describe('formatMinutes (via getTimeSinceLastEvent)', () => {
+  it('should switch to days beyond 48h rather than pile up hours', () => {
+    const result = getTimeSinceLastEvent([makeBathEvent(daysAgo(5))], 'bath', NOW);
+    expect(result!.label).toBe('5d ago');
+  });
+
+  it('should keep hours below 48h', () => {
+    const at = new Date(NOW.getTime() - 30 * 60 * 60 * 1000);
+    const result = getTimeSinceLastEvent([makeBathEvent(at)], 'bath', NOW);
+    expect(result!.label).toBe('30h ago');
+  });
+});
+
+describe('getMealSlotDistribution', () => {
+  it('should return every slot, zeroed, without meals', () => {
+    expect(getMealSlotDistribution([])).toEqual([
+      { slot: 'breakfast', label: 'Breakfast', count: 0 },
+      { slot: 'lunch', label: 'Lunch', count: 0 },
+      { slot: 'dinner', label: 'Dinner', count: 0 },
+      { slot: 'snack', label: 'Snack', count: 0 },
+    ]);
+  });
+
+  it('should count meals per slot', () => {
+    const events: BabyEvent[] = [
+      { ...makeMealEvent(daysAgo(1)), mealSlot: 'breakfast' },
+      { ...makeMealEvent(daysAgo(2)), mealSlot: 'dinner' },
+      { ...makeMealEvent(daysAgo(3)), mealSlot: 'dinner' },
+    ];
+    const rows = getMealSlotDistribution(events);
+    expect(rows.find((r) => r.slot === 'breakfast')!.count).toBe(1);
+    expect(rows.find((r) => r.slot === 'dinner')!.count).toBe(2);
+    expect(rows.find((r) => r.slot === 'lunch')!.count).toBe(0);
+  });
+});
+
+describe('buildAcceptanceTrend', () => {
+  const days = [
+    { date: '2025-06-14', label: 'Sat' },
+    { date: '2025-06-15', label: 'Sun' },
+  ];
+
+  it('should return null for days without a recorded acceptance', () => {
+    expect(buildAcceptanceTrend([], days)).toEqual([
+      { date: '2025-06-14', label: 'Sat', percent: null },
+      { date: '2025-06-15', label: 'Sun', percent: null },
+    ]);
+  });
+
+  it('should compute the eaten share per day', () => {
+    const events: BabyEvent[] = [
+      makeMealEvent(new Date('2025-06-15T09:00:00'), [
+        { foodId: 'a', acceptance: 'all' },
+        { foodId: 'b', acceptance: 'refused' },
+      ]),
+    ];
+    const rows = buildAcceptanceTrend(events, days);
+    expect(rows[0].percent).toBeNull();
+    expect(rows[1].percent).toBe(50);
   });
 });

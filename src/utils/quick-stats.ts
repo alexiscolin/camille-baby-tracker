@@ -1,6 +1,9 @@
-import { differenceInMinutes } from 'date-fns';
-import type { BabyEvent, FeedingEvent } from '../types/events';
+import { differenceInMinutes, subDays } from 'date-fns';
+import type { BabyEvent, EventType, FeedingEvent, MilestoneEvent } from '../types/events';
+import { MEAL_SLOTS, MEAL_SLOT_LABELS } from '../types/food';
+import type { MealEvent, MealSlot } from '../types/food';
 import { getNextSide } from './feeding-helpers';
+import { getDayKey } from './date';
 
 export interface TimeSinceLast {
   minutes: number;
@@ -38,7 +41,11 @@ export function getTimeSinceLastFeeding(events: BabyEvent[]): TimeSinceLast | nu
   };
 }
 
-export function getTimeSinceLastEvent(events: BabyEvent[], eventType: string): TimeSinceLast | null {
+export function getTimeSinceLastEvent(
+  events: BabyEvent[],
+  eventType: string,
+  now: Date = new Date(),
+): TimeSinceLast | null {
   const filtered = events
     .filter((e) => e.type === eventType)
     .sort((a, b) => b.timestamp.toDate().getTime() - a.timestamp.toDate().getTime());
@@ -46,19 +53,121 @@ export function getTimeSinceLastEvent(events: BabyEvent[], eventType: string): T
   if (filtered.length === 0) return null;
 
   const last = filtered[0];
-  const now = new Date();
   const mins = differenceInMinutes(now, last.timestamp.toDate());
 
   return { minutes: mins, label: formatMinutes(mins), type: eventType, sideHint: '' };
 }
 
+/**
+ * Past two days the hour count stops meaning anything — "312h ago" is a number
+ * you have to divide in your head. The cutoff sits at 48h so a feeding, which
+ * never goes that long, keeps reading in hours.
+ */
+const HOURS_BEFORE_DAYS = 48;
+
 function formatMinutes(mins: number): string {
   if (mins < 1) return 'just now';
   if (mins < 60) return `${mins}min ago`;
   const hours = Math.floor(mins / 60);
+  if (hours >= HOURS_BEFORE_DAYS) return `${Math.floor(hours / 24)}d ago`;
   const remainder = mins % 60;
   if (remainder === 0) return `${hours}h ago`;
   return `${hours}h${String(remainder).padStart(2, '0')} ago`;
+}
+
+/**
+ * Whether a type is still in use, and so whether the tiles and sections built
+ * on it are worth the screen space.
+ *
+ * The window is per-type rather than global: a feeding happens hourly, a bath
+ * weekly, a milestone every few months, and one cutoff cannot serve all three.
+ * Nothing is stored — the answer is read off the events already subscribed to,
+ * so a type that comes back into use brings its tiles back with it.
+ */
+export function isTypeActive(
+  events: BabyEvent[],
+  type: EventType,
+  lookbackDays: number,
+  now: Date = new Date(),
+): boolean {
+  const cutoff = subDays(now, lookbackDays);
+  return events.some((e) => e.type === type && e.timestamp.toDate() >= cutoff);
+}
+
+function mealsSince(events: BabyEvent[], days: number, now: Date): MealEvent[] {
+  const cutoff = subDays(now, days);
+  return events.filter(
+    (e): e is MealEvent => e.type === 'meal' && e.timestamp.toDate() >= cutoff,
+  );
+}
+
+/**
+ * Distinct foods tried for the first time — the pace of diversification.
+ * Counted by food rather than by item so a food logged as a first try twice,
+ * which the modal does not prevent, does not read as two new foods.
+ */
+export function getNewFoodsCount(
+  events: BabyEvent[],
+  days: number,
+  now: Date = new Date(),
+): number {
+  const seen = new Set<string>();
+  for (const meal of mealsSince(events, days, now)) {
+    for (const item of meal.items) {
+      if (item.firstTry) seen.add(item.foodId);
+    }
+  }
+  return seen.size;
+}
+
+export interface AcceptanceRate {
+  percent: number;
+  sampled: number;
+}
+
+/**
+ * Share of served items actually eaten, over the items where acceptance was
+ * recorded at all. The field is optional in the modal, so null — meaning "not
+ * enough logged to say" — is a real answer, and a truer one than 0%.
+ */
+export function getAcceptanceRate(
+  events: BabyEvent[],
+  days: number,
+  now: Date = new Date(),
+): AcceptanceRate | null {
+  let eaten = 0;
+  let sampled = 0;
+  for (const meal of mealsSince(events, days, now)) {
+    for (const item of meal.items) {
+      if (!item.acceptance) continue;
+      sampled++;
+      if (item.acceptance === 'all' || item.acceptance === 'most') eaten++;
+    }
+  }
+  if (sampled === 0) return null;
+  return { percent: Math.round((eaten / sampled) * 100), sampled };
+}
+
+export interface LastMilestone {
+  title: string;
+  label: string;
+}
+
+export function getLastMilestone(
+  events: BabyEvent[],
+  now: Date = new Date(),
+): LastMilestone | null {
+  const milestones = events
+    .filter((e): e is MilestoneEvent => e.type === 'milestone')
+    .sort((a, b) => b.timestamp.toDate().getTime() - a.timestamp.toDate().getTime());
+
+  if (milestones.length === 0) return null;
+
+  const last = milestones[0];
+  return {
+    title: last.title,
+    label: formatMinutes(differenceInMinutes(now, last.timestamp.toDate())),
+  };
 }
 
 export interface FeedingBalance {
@@ -222,7 +331,7 @@ export function buildFeedingDurationTrend(events: BabyEvent[], days: { date: str
   const grouped = new Map<string, number[]>();
   for (const f of feedings) {
     if (f.durationMinutes) {
-      const key = f.timestamp.toDate().toISOString().slice(0, 10);
+      const key = getDayKey(f.timestamp.toDate());
       const arr = grouped.get(key) || [];
       arr.push(f.durationMinutes);
       grouped.set(key, arr);
@@ -250,7 +359,7 @@ export function buildFeedingIntervalTrend(events: BabyEvent[], days: { date: str
   const grouped = new Map<string, Date[]>();
   for (const f of feedings) {
     const d = f.timestamp.toDate();
-    const key = d.toISOString().slice(0, 10);
+    const key = getDayKey(d);
     const arr = grouped.get(key) || [];
     arr.push(d);
     grouped.set(key, arr);
@@ -282,7 +391,7 @@ export function buildLRTrend(events: BabyEvent[], days: { date: string; label: s
 
   const grouped = new Map<string, { left: number; right: number; bottle: number }>();
   for (const f of feedings) {
-    const key = f.timestamp.toDate().toISOString().slice(0, 10);
+    const key = getDayKey(f.timestamp.toDate());
     const entry = grouped.get(key) || { left: 0, right: 0, bottle: 0 };
     if (f.feedingType === 'bottle') {
       entry.bottle++;
@@ -296,5 +405,71 @@ export function buildLRTrend(events: BabyEvent[], days: { date: string; label: s
   return days.map(({ date, label }) => {
     const entry = grouped.get(date) || { left: 0, right: 0, bottle: 0 };
     return { date, label, ...entry };
+  });
+}
+
+export interface MealSlotCount {
+  slot: MealSlot;
+  label: string;
+  count: number;
+}
+
+/**
+ * Meals per slot. The counterpart of the feeding hour histogram: a meal happens
+ * at a named moment of the day rather than at a clock hour, and the shape worth
+ * seeing is whether the four slots are actually being used.
+ */
+export function getMealSlotDistribution(events: BabyEvent[]): MealSlotCount[] {
+  const counts = new Map<MealSlot, number>(MEAL_SLOTS.map((slot) => [slot, 0]));
+
+  for (const event of events) {
+    if (event.type !== 'meal') continue;
+    const slot = (event as MealEvent).mealSlot;
+    counts.set(slot, (counts.get(slot) ?? 0) + 1);
+  }
+
+  return MEAL_SLOTS.map((slot) => ({
+    slot,
+    label: MEAL_SLOT_LABELS[slot],
+    count: counts.get(slot) ?? 0,
+  }));
+}
+
+export interface AcceptanceTrendPoint {
+  date: string;
+  label: string;
+  percent: number | null;
+}
+
+/**
+ * Daily eaten share. Null on a day where nothing carried an acceptance, so the
+ * line breaks rather than dropping to zero — a day that was not logged is not
+ * a day the baby refused everything.
+ */
+export function buildAcceptanceTrend(
+  events: BabyEvent[],
+  days: { date: string; label: string }[],
+): AcceptanceTrendPoint[] {
+  const grouped = new Map<string, { eaten: number; sampled: number }>();
+
+  for (const event of events) {
+    if (event.type !== 'meal') continue;
+    const key = getDayKey(event.timestamp.toDate());
+    for (const item of (event as MealEvent).items) {
+      if (!item.acceptance) continue;
+      const entry = grouped.get(key) ?? { eaten: 0, sampled: 0 };
+      entry.sampled++;
+      if (item.acceptance === 'all' || item.acceptance === 'most') entry.eaten++;
+      grouped.set(key, entry);
+    }
+  }
+
+  return days.map(({ date, label }) => {
+    const entry = grouped.get(date);
+    return {
+      date,
+      label,
+      percent: entry ? Math.round((entry.eaten / entry.sampled) * 100) : null,
+    };
   });
 }

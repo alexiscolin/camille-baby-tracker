@@ -39,7 +39,15 @@ export type FoodGroup = (typeof FOOD_GROUPS)[number];
 /** 1: 初期 5-6mo, 2: 中期 7-8mo, 3: 後期 9-11mo, 4: 完了期 12-18mo. */
 export type WeaningStage = 1 | 2 | 3 | 4;
 
-export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+export type MealSlot = (typeof MEAL_SLOTS)[number];
+
+export const MEAL_SLOT_LABELS: Record<MealSlot, string> = {
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+  snack: 'Snack',
+};
 export type Acceptance = 'all' | 'most' | 'half' | 'taste' | 'refused';
 /** tsp is 小さじ = 5 ml, the unit Japanese weaning guidance is written in. */
 export type FoodUnit = 'tsp' | 'g' | 'ml' | 'piece';

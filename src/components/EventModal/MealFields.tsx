@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { FoodTagInput } from '../FoodTagInput';
 import { SegmentedControl } from '../SegmentedControl';
 import { novelFoodIds } from '../../utils/food-status';
-import { SYSTEMIC_SYMPTOMS } from '../../types/food';
+import { MEAL_SLOTS, MEAL_SLOT_LABELS, SYSTEMIC_SYMPTOMS } from '../../types/food';
 import type {
   Acceptance,
   Food,
@@ -14,14 +14,6 @@ import type {
   ReactionSymptom,
 } from '../../types/food';
 import styles from '../EventModal.module.css';
-
-const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'] as const satisfies readonly MealSlot[];
-const SLOT_LABELS: Record<MealSlot, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  dinner: 'Dinner',
-  snack: 'Snack',
-};
 
 const UNITS = ['tsp', 'g', 'ml', 'piece'] as const satisfies readonly FoodUnit[];
 const UNIT_LABELS: Record<FoodUnit, string> = {
@@ -154,7 +146,7 @@ export function MealFields({
           options={MEAL_SLOTS}
           value={mealSlot}
           onChange={onMealSlotChange}
-          labels={SLOT_LABELS}
+          labels={MEAL_SLOT_LABELS}
         />
       </div>
 
