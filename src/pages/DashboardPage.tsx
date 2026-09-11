@@ -89,6 +89,8 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
   const [daysToLoad, setDaysToLoad] = useState(DAYS_PER_PAGE);
   const [editEvent, setEditEvent] = useState<BabyEvent | null>(null);
   const [addDate, setAddDate] = useState<Date | null>(null);
+  /** The entry a new one is being copied from, if any; see EventModal's `seed`. */
+  const [addSeed, setAddSeed] = useState<BabyEvent | null>(null);
   const [scrollToDay, setScrollToDay] = useState<string | null>(null);
   const [chartRange, setChartRange] = useState<RangeType>('7d');
   const [chartType, setChartType] = useState<ChartType>('line');
@@ -310,6 +312,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
                       const now = new Date();
                       const eventDate = new Date(date);
                       eventDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
+                      setAddSeed(null);
                       setAddDate(eventDate);
                     }}
                     showHourMarkers
@@ -337,18 +340,30 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
             userId={userId}
             babyBirthDate={baby?.birthDate.toDate()}
             onClose={() => setEditEvent(null)}
+            onDuplicate={(event) => {
+              setEditEvent(null);
+              setAddSeed(event);
+              setAddDate(new Date());
+            }}
           />
         )}
 
         {addDate && (
           <EventModal
+            /* Remounts when the seed changes: the form fills itself from the
+               seed at mount, so a reused instance would keep the old copy. */
+            key={addSeed?.id ?? 'blank'}
             mode="add"
             date={addDate}
+            seed={addSeed ?? undefined}
             familyId={familyId}
             babyId={babyId}
             userId={userId}
             babyBirthDate={baby?.birthDate.toDate()}
-            onClose={() => setAddDate(null)}
+            onClose={() => {
+              setAddDate(null);
+              setAddSeed(null);
+            }}
           />
         )}
       </Suspense>

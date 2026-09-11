@@ -260,6 +260,25 @@
   background: var(--color-medication-bg);
 }
 
+.duplicateBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: var(--space-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.duplicateBtn:hover {
+  background: var(--color-border-light);
+  color: var(--color-text);
+}
+
 .deleteConfirm {
   display: flex;
   align-items: center;

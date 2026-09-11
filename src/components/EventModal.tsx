@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Check, AlertCircle, Trash2, X } from 'lucide-react';
+import { Check, AlertCircle, Trash2, X, Copy } from 'lucide-react';
 import { Timestamp, deleteField, increment } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { addEvent, updateEvent, deleteEvent } from '../services/events';
@@ -35,13 +35,23 @@ type EventModalProps = {
   onClose: () => void;
   babyBirthDate?: Date;
 } & (
-  | { mode: 'edit'; event: BabyEvent }
+  /**
+   * `onDuplicate` hands the event back so the caller can reopen the form in
+   * add mode seeded from it. The modal cannot do that itself: the caller owns
+   * which modal is mounted, and a copy has to start from a fresh form.
+   */
+  | { mode: 'edit'; event: BabyEvent; onDuplicate?: (event: BabyEvent) => void }
   /**
    * `initialType` and `initialItems` let a caller open straight into a
    * pre-filled form — the food page logs a suggestion without making the
    * parent re-pick the type and re-type the food.
+   *
+   * `seed` does the same from a whole event, for duplicating an entry: every
+   * field below reads it exactly as edit mode reads the event being edited,
+   * but the save path stays an add, so this writes a new event rather than
+   * touching the one it was copied from.
    */
-  | { mode: 'add'; date: Date; initialType?: EventType; initialItems?: MealItem[] }
+  | { mode: 'add'; date: Date; initialType?: EventType; initialItems?: MealItem[]; seed?: BabyEvent }
 );
 
 function sanitizeText(text: string, maxLength: number): string {
@@ -70,10 +80,18 @@ export function EventModal(props: EventModalProps) {
   const { familyId, babyId, userId, onClose, mode, babyBirthDate } = props;
 
   const editEvent = mode === 'edit' ? props.event : null;
+  const onDuplicate = mode === 'edit' ? props.onDuplicate : undefined;
   const targetDate = mode === 'add' ? props.date : editEvent!.timestamp.toDate();
 
+  /**
+   * What the form is filled from: the event being edited, or the one being
+   * copied. Deliberately not used for the date, which always belongs to the
+   * new entry, nor for the reaction, which belongs to the meal that caused it.
+   */
+  const source = editEvent ?? (mode === 'add' ? props.seed ?? null : null);
+
   const [selectedType, setSelectedType] = useState<EventType | null>(
-    editEvent?.type ?? (mode === 'add' ? props.initialType ?? null : null),
+    source?.type ?? (mode === 'add' ? props.initialType ?? null : null),
   );
   const [time, setTime] = useState(getTimeString(targetDate));
   /**
@@ -84,49 +102,56 @@ export function EventModal(props: EventModalProps) {
    */
   const [day, setDay] = useState(() => format(targetDate, 'yyyy-MM-dd'));
   const [feedingType, setFeedingType] = useState<FeedingType>(
-    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).feedingType : 'breast',
+    source?.type === 'feeding' ? (source as FeedingEvent).feedingType : 'breast',
   );
   const [leftCount, setLeftCount] = useState(
-    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).leftCount : 1,
+    source?.type === 'feeding' ? (source as FeedingEvent).leftCount : 1,
   );
   const [rightCount, setRightCount] = useState(
-    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).rightCount : 0,
+    source?.type === 'feeding' ? (source as FeedingEvent).rightCount : 0,
   );
   const [endTime, setEndTime] = useState(() => {
-    if (editEvent?.type === 'feeding' && (editEvent as FeedingEvent).durationMinutes) {
-      return addMinutesToTime(getTimeString(targetDate), (editEvent as FeedingEvent).durationMinutes!);
+    if (source?.type === 'feeding' && (source as FeedingEvent).durationMinutes) {
+      return addMinutesToTime(getTimeString(targetDate), (source as FeedingEvent).durationMinutes!);
     }
     return '';
   });
   const [infection, setInfection] = useState(
-    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).infection ?? false : false,
+    source?.type === 'feeding' ? (source as FeedingEvent).infection ?? false : false,
   );
   const [engorgement, setEngorgement] = useState(
-    editEvent?.type === 'feeding' ? (editEvent as FeedingEvent).engorgement ?? false : false,
+    source?.type === 'feeding' ? (source as FeedingEvent).engorgement ?? false : false,
   );
   const [medicationName, setMedicationName] = useState(
-    editEvent?.type === 'medication' ? (editEvent as MedicationEvent).medicationName : '',
+    source?.type === 'medication' ? (source as MedicationEvent).medicationName : '',
   );
   const [dose, setDose] = useState(
-    editEvent?.type === 'medication' ? (editEvent as MedicationEvent).dose : '',
+    source?.type === 'medication' ? (source as MedicationEvent).dose : '',
   );
   const [stoolColor, setStoolColor] = useState<StoolColorId | undefined>(
-    editEvent?.type === 'poop' ? ((editEvent as PoopEvent).color as StoolColorId | undefined) : undefined,
+    source?.type === 'poop' ? ((source as PoopEvent).color as StoolColorId | undefined) : undefined,
   );
   const [mealSlot, setMealSlot] = useState<MealSlot>(
-    editEvent?.type === 'meal' ? (editEvent as MealEvent).mealSlot : 'lunch',
+    source?.type === 'meal' ? (source as MealEvent).mealSlot : 'lunch',
   );
-  const [mealItems, setMealItems] = useState<MealItem[]>(
-    editEvent?.type === 'meal'
-      ? (editEvent as MealEvent).items
-      : mode === 'add' ? props.initialItems ?? [] : [],
-  );
+  const [mealItems, setMealItems] = useState<MealItem[]>(() => {
+    if (source?.type !== 'meal') return mode === 'add' ? props.initialItems ?? [] : [];
+    const items = (source as MealEvent).items;
+    // On a copy the stored flag is about the original serving. Dropped so the
+    // "new food" hint is re-derived from the catalog, which by now has the food.
+    if (editEvent) return items;
+    return items.map((item) => {
+      const copy = { ...item };
+      delete copy.firstTry;
+      return copy;
+    });
+  });
   const [reaction, setReaction] = useState<Reaction | undefined>(
     editEvent?.type === 'meal' ? (editEvent as MealEvent).reaction : undefined,
   );
-  const [notes, setNotes] = useState(editEvent?.notes ?? '');
+  const [notes, setNotes] = useState(source?.notes ?? '');
   const [milestoneTitle, setMilestoneTitle] = useState(
-    editEvent?.type === 'milestone' ? editEvent.title : '',
+    source?.type === 'milestone' ? source.title : '',
   );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -767,6 +792,18 @@ export function EventModal(props: EventModalProps) {
             >
               {saving ? 'Saving...' : mode === 'edit' ? 'Update' : 'Save'}
             </button>
+
+            {/* A milestone happens once by definition — there is nothing to
+                repeat, so it is the one type that never offers a copy. */}
+            {onDuplicate && editEvent && editEvent.type !== 'milestone' && !confirmDelete && (
+              <button
+                className={styles.duplicateBtn}
+                onClick={() => onDuplicate(editEvent)}
+              >
+                <Copy size={16} />
+                <span>Duplicate</span>
+              </button>
+            )}
 
             {mode === 'edit' && (
               confirmDelete ? (
