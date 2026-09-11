@@ -4,7 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { EventModal } from './EventModal';
 import { VisibleEventTypesProvider } from './VisibleEventTypesProvider';
-import type { FeedingEvent, PeeEvent, PoopEvent, MedicationEvent } from '../types/events';
+import type {
+  FeedingEvent, PeeEvent, PoopEvent, MedicationEvent, MilestoneEvent,
+} from '../types/events';
+import type { MealEvent } from '../types/food';
+
+vi.mock('../hooks/useFoods', () => ({
+  useFoods: () => ({ foods: [], loading: false, fromCache: false, hasPendingWrites: false }),
+}));
 
 const mockAddEvent = vi.fn();
 const mockUpdateEvent = vi.fn();
@@ -595,5 +602,145 @@ describe('EventModal type picker', () => {
     await user.click(screen.getByRole('button', { name: /milestones/i }));
     const dateField = screen.getByLabelText(/^date$/i);
     expect(dateField).toHaveAttribute('type', 'date');
+  });
+});
+
+// ─── Duplicating an entry ───
+
+function makeMilestoneEvent(): MilestoneEvent {
+  return {
+    id: 'evt-5',
+    babyId: 'baby-1',
+    type: 'milestone',
+    title: 'First steps',
+    timestamp: Timestamp.fromDate(new Date(2026, 3, 1, 8, 0)),
+    createdBy: 'user-1',
+    createdAt: Timestamp.fromDate(new Date()),
+  };
+}
+
+function makeMealEvent(): MealEvent {
+  return {
+    id: 'evt-6',
+    babyId: 'baby-1',
+    type: 'meal',
+    mealSlot: 'dinner',
+    items: [
+      { foodId: 'carrot', name: 'Carrot', quantity: 2, unit: 'tsp', firstTry: true },
+      { foodId: 'rice', name: 'Rice', quantity: 1, unit: 'tsp' },
+    ],
+    reaction: {
+      symptoms: ['hives'],
+      severity: 'moderate',
+      suspectedFoodIds: ['carrot'],
+    },
+    notes: 'Ate slowly',
+    timestamp: Timestamp.fromDate(new Date(2026, 3, 1, 18, 0)),
+    createdBy: 'user-1',
+    createdAt: Timestamp.fromDate(new Date()),
+  };
+}
+
+describe('EventModal — duplicating an entry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAddEvent.mockResolvedValue('new-id');
+    mockUpdateEvent.mockResolvedValue(undefined);
+    mockDeleteEvent.mockResolvedValue(undefined);
+  });
+
+  describe('the button', () => {
+    it('should offer duplication on an event that repeats', () => {
+      render(
+        <EventModal {...baseProps} mode="edit" event={makeMedicationEvent()} onDuplicate={vi.fn()} />,
+      );
+      expect(screen.getByRole('button', { name: /duplicate/i })).toBeInTheDocument();
+    });
+
+    it('should hand the event back when tapped', async () => {
+      const user = userEvent.setup();
+      const onDuplicate = vi.fn();
+      const event = makeMedicationEvent();
+      render(<EventModal {...baseProps} mode="edit" event={event} onDuplicate={onDuplicate} />);
+
+      await user.click(screen.getByRole('button', { name: /duplicate/i }));
+      expect(onDuplicate).toHaveBeenCalledWith(event);
+    });
+
+    it('should not offer duplication of a milestone, which happens once', () => {
+      render(
+        <EventModal {...baseProps} mode="edit" event={makeMilestoneEvent()} onDuplicate={vi.fn()} />,
+      );
+      expect(screen.queryByRole('button', { name: /duplicate/i })).not.toBeInTheDocument();
+    });
+
+    it('should not offer duplication when the caller cannot handle it', () => {
+      render(<EventModal {...baseProps} mode="edit" event={makeMedicationEvent()} />);
+      expect(screen.queryByRole('button', { name: /duplicate/i })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('the seeded form', () => {
+    it('should carry the medication over', () => {
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} seed={makeMedicationEvent()} />,
+      );
+      expect(screen.getByDisplayValue('Vitamin D')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('1 drop')).toBeInTheDocument();
+    });
+
+    it('should carry the feeding details over', () => {
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} seed={makeFeedingEvent()} />,
+      );
+      expect(screen.getByLabelText('Right count')).toHaveTextContent('1');
+      expect(screen.getByLabelText('Left count')).toHaveTextContent('0');
+      expect(screen.getByLabelText(/infection/i)).toBeChecked();
+    });
+
+    it('should carry the meal items and its notes over', () => {
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} seed={makeMealEvent()} />,
+      );
+      // The chip's remove button names the food it holds, so it is the one
+      // unambiguous handle on "this item is in the form".
+      expect(screen.getByRole('button', { name: 'remove Carrot' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'remove Rice' })).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Ate slowly')).toBeInTheDocument();
+    });
+
+    it('should leave the reaction behind — it belongs to the meal that caused it', () => {
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} seed={makeMealEvent()} />,
+      );
+      expect(screen.queryByText(/hives/i)).not.toBeInTheDocument();
+    });
+
+    it('should date the copy now, not when the original happened', () => {
+      const now = new Date(2026, 5, 20, 14, 45);
+      render(
+        <EventModal {...baseProps} mode="add" date={now} seed={makeMedicationEvent()} />,
+      );
+      // The original is at 08:00; the copy takes the date it was opened with.
+      expect(screen.getByLabelText(/time/i)).toHaveValue('14:45');
+    });
+
+    it('should save a copy as a new event rather than editing the original', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} seed={makeMedicationEvent()} />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /^save$/i }));
+      expect(mockAddEvent).toHaveBeenCalled();
+      expect(mockUpdateEvent).not.toHaveBeenCalled();
+    });
+
+    it('should not offer to delete a copy that does not exist yet', () => {
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} seed={makeMedicationEvent()} />,
+      );
+      expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
+    });
   });
 });
