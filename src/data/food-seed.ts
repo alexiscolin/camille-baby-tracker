@@ -250,6 +250,21 @@ export const FOOD_SEED: readonly SeedFood[] = [
     },
   },
   {
+    id: 'okayu-8x',
+    name: 'Okayu, 8:1 rice porridge',
+    group: 'grain',
+    allergens: [],
+    gramsPerTsp: 5,
+    minStage: 1,
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), rice porridge (kayu), interpolated on rice fraction between the 1:10 (36 kcal) and 1:7 (47 kcal) weaning dilutions',
+    nutrients: {
+      energyKcal: 43, proteinG: 0.7, fatG: 0.1, carbsG: 9.3, fiberG: 0.1,
+      sugarsG: 0, ironMg: 0.1, calciumMg: 1, zincMg: 0.2, sodiumMg: 1,
+      potassiumMg: 14, vitaminAUgRae: 0, vitaminCMg: 0, vitaminDUg: 0,
+      vitaminB12Ug: 0, folateUg: 1,
+    },
+  },
+  {
     id: 'okayu-7x',
     name: 'Okayu, 7:1 rice porridge',
     group: 'grain',

@@ -140,3 +140,29 @@ describe('food seed table', () => {
     }
   });
 });
+
+/**
+ * The okayu dilutions are the one place in the table where the rows are
+ * arithmetically related: each step thickens the porridge, so each carries
+ * more rice per 100 g than the one before it. A ratio entered the wrong way
+ * round passes every generic check above and is invisible in review, but it
+ * breaks this ordering immediately.
+ */
+describe('okayu dilution series', () => {
+  const SERIES = ['omoyu', 'okayu-10x', 'okayu-8x', 'okayu-7x', 'okayu-5x', 'soft-rice', 'cooked-white-rice'];
+
+  it('should gain energy as the porridge thickens', () => {
+    const energies = SERIES.map((id) => {
+      const food = FOOD_SEED.find((f) => f.id === id);
+      expect(food, `${id} missing from the seed`).toBeDefined();
+      return { id, kcal: food!.nutrients.energyKcal };
+    });
+
+    for (let i = 1; i < energies.length; i++) {
+      expect(
+        energies[i].kcal,
+        `${energies[i].id} (${energies[i].kcal}) should exceed ${energies[i - 1].id} (${energies[i - 1].kcal})`,
+      ).toBeGreaterThan(energies[i - 1].kcal);
+    }
+  });
+});
