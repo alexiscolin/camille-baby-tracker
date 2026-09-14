@@ -89,6 +89,7 @@ export function EventModal(props: EventModalProps) {
    * new entry, nor for the reaction, which belongs to the meal that caused it.
    */
   const source = editEvent ?? (mode === 'add' ? props.seed ?? null : null);
+  const isCopy = mode === 'add' && !!props.seed;
 
   const [selectedType, setSelectedType] = useState<EventType | null>(
     source?.type ?? (mode === 'add' ? props.initialType ?? null : null),
@@ -233,7 +234,10 @@ export function EventModal(props: EventModalProps) {
     const [hours, minutes] = time.split(':').map(Number);
     if (isNaN(hours) || isNaN(minutes)) return null;
 
-    const base = selectedType === 'milestone' ? new Date(`${day}T00:00:00`) : targetDate;
+    // `day` is the date for every type, not just milestones: it starts as the
+    // day the form was opened with, so a plain add still lands on the timeline
+    // row it came from, and a form that exposes the field can move it.
+    const base = new Date(`${day}T00:00:00`);
     if (isNaN(base.getTime())) return null;
 
     const eventDate = new Date(base);
@@ -662,7 +666,11 @@ export function EventModal(props: EventModalProps) {
                 </div>
               )}
 
-              {selectedType === 'milestone' && (
+              {/* Shown when the day is not already settled by where the form
+                  was opened from: a milestone has no such day, and a copy came
+                  from an entry somewhere else in the timeline. Every other add
+                  arrives from the day row it belongs to. */}
+              {(selectedType === 'milestone' || isCopy) && (
                 <div className={styles.field}>
                   <label className={styles.label} htmlFor="event-day">Date</label>
                   <input
