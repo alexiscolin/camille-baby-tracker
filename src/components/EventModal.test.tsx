@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { EventModal } from './EventModal';
@@ -736,11 +736,74 @@ describe('EventModal — duplicating an entry', () => {
       expect(mockUpdateEvent).not.toHaveBeenCalled();
     });
 
+    /**
+     * A copy comes from an entry somewhere else in the timeline, so unlike a
+     * normal add there is no day already picked — and "same dinner as
+     * Tuesday, tonight" is the whole point of duplicating.
+     */
+    it('should offer a date, not just a time', () => {
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date()} seed={makeMedicationEvent()} />,
+      );
+      const dateField = screen.getByLabelText(/^date$/i);
+      expect(dateField).toHaveAttribute('type', 'date');
+    });
+
+    it('should save the copy on the day and at the time it was given', async () => {
+      const user = userEvent.setup();
+      render(
+        <EventModal {...baseProps} mode="add" date={new Date(2026, 4, 10, 12, 0)} seed={makeMedicationEvent()} />,
+      );
+
+      fireEvent.change(screen.getByLabelText(/^date$/i), { target: { value: '2026-05-02' } });
+      fireEvent.change(screen.getByLabelText(/time/i), { target: { value: '09:15' } });
+      await user.click(screen.getByRole('button', { name: /^save$/i }));
+
+      const saved = mockAddEvent.mock.calls[0][1] as { timestamp: Timestamp };
+      const at = saved.timestamp.toDate();
+      expect(at.getFullYear()).toBe(2026);
+      expect(at.getMonth()).toBe(4);
+      expect(at.getDate()).toBe(2);
+      expect(at.getHours()).toBe(9);
+      expect(at.getMinutes()).toBe(15);
+    });
+
     it('should not offer to delete a copy that does not exist yet', () => {
       render(
         <EventModal {...baseProps} mode="add" date={new Date()} seed={makeMedicationEvent()} />,
       );
       expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
     });
+  });
+});
+
+describe('EventModal — the day an entry lands on', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAddEvent.mockResolvedValue('new-id');
+  });
+
+  /**
+   * A plain add already knows its day — the timeline row it was opened from —
+   * so it offers a time only. This guards the refactor that made `day` the
+   * single source of truth for every type rather than for milestones alone.
+   */
+  it('should keep a plain add on the day it was opened from', async () => {
+    const user = userEvent.setup();
+    render(
+      <VisibleEventTypesProvider hidden={[]}>
+        <EventModal {...baseProps} mode="add" date={new Date(2026, 2, 14, 16, 30)} />
+      </VisibleEventTypesProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /pees/i }));
+    expect(screen.queryByLabelText(/^date$/i)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
+
+    const saved = mockAddEvent.mock.calls[0][1] as { timestamp: Timestamp };
+    const at = saved.timestamp.toDate();
+    expect(at.getFullYear()).toBe(2026);
+    expect(at.getMonth()).toBe(2);
+    expect(at.getDate()).toBe(14);
   });
 });
