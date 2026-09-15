@@ -77,4 +77,12 @@ describe('FoodTagInput', () => {
     render(<FoodTagInput items={items} onChange={vi.fn()} foods={foods} maxItems={12} />);
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
+
+  it('should show the Japanese name under a suggestion and find a food by it', async () => {
+    const user = userEvent.setup();
+    render(<FoodTagInput items={[]} onChange={vi.fn()} foods={[]} />);
+    await user.type(screen.getByRole('combobox'), 'にんじん');
+    const option = await screen.findByRole('option', { name: /Carrot, boiled/ });
+    expect(option).toHaveTextContent('にんじん');
+  });
 });

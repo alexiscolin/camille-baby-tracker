@@ -24,7 +24,7 @@ const fromSeed = (id: string, daysAgo: number, over: Partial<Food> = {}): Food =
 };
 
 const seed = (over: Partial<SeedFood>): SeedFood => ({
-  id: 's', name: 'S', group: 'vegetable', allergens: [], gramsPerTsp: 5,
+  id: 's', name: 'S', nameJa: 'エス', group: 'vegetable', allergens: [], gramsPerTsp: 5,
   minStage: 1, sourceRef: 'ref',
   nutrients: {
     energyKcal: 30, proteinG: 1, fatG: 0, carbsG: 6, fiberG: 1, sugarsG: 2,

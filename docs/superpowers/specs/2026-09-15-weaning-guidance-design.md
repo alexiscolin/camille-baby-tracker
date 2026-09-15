@@ -335,6 +335,12 @@ suggest?: false;
 
 `Food` (Firestore) is unchanged: readiness reads the seed.
 
+Every seed row also carries `nameJa: string` — the name on a Japanese label or
+shelf (にんじん, 10倍がゆ, 島豆腐). The UI stays in English; the Japanese name is
+shown in smaller type under the English one in the hero, the options list, the
+shopping list and the meal autocomplete, and the autocomplete matches it too.
+A catalog food gets the Japanese name of its seed row; manual foods have none.
+
 ### Allergens (消費者庁, 令和8年4月)
 
 - Mandatory (9): egg, milk, wheat, shrimp, crab, buckwheat, peanut, walnut, **cashew**.

@@ -179,6 +179,24 @@ const get = (id: string) => {
  * Placements, age floors, exclusions and notes corrected against Japanese
  * guidance. Evidence: docs/superpowers/specs/2026-09-15-weaning-guidance-research/seed-audit.md
  */
+describe('food seed Japanese names', () => {
+  // Hiragana, katakana or kanji: the name printed on a label in a Japanese shop.
+  const JAPANESE = /[\u3040-\u30ff\u3400-\u9fff]/;
+
+  it('should give every food a short Japanese name', () => {
+    for (const food of FOOD_SEED) {
+      expect(food.nameJa, food.id).toMatch(JAPANESE);
+      expect(food.nameJa.length, food.id).toBeLessThanOrEqual(24);
+    }
+  });
+
+  it('should name the staples the way a Japanese shop does', () => {
+    expect(get('carrot').nameJa).toBe('にんじん');
+    expect(get('okayu-10x').nameJa).toBe('10倍がゆ');
+    expect(get('shima-dofu').nameJa).toBe('島豆腐');
+  });
+});
+
 describe('food seed guidance fields', () => {
   it('should keep notes short and non-empty', () => {
     for (const food of FOOD_SEED) {

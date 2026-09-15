@@ -72,6 +72,7 @@ describe('FoodPage', () => {
     withFoods([]);
     render(<FoodPage {...props} />);
     expect(await screen.findByTestId('hero-food')).toHaveTextContent(/Okayu, 10:1/);
+    expect(screen.getByTestId('hero-food-ja')).toHaveTextContent('10倍がゆ');
   });
 
   it('should not put egg, wheat or dairy first one week into weaning', async () => {
@@ -84,12 +85,13 @@ describe('FoodPage', () => {
     expect(hero.textContent).not.toMatch(/egg|udon|yoghurt|peanut|bread|milk|tofu/i);
   });
 
-  it('should list foods for the paediatrician separately', async () => {
+  it('should list foods for the paediatrician separately, with their Japanese names', async () => {
     const user = userEvent.setup();
     withFoods([]);
     render(<FoodPage {...props} />);
     await user.click(await screen.findByRole('button', { name: /other options/i }));
     expect(screen.getByRole('heading', { name: /with your paediatrician/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Peanut butter.*ピーナッツペースト/ })).toBeInTheDocument();
   });
 
   it('should say which stage and day of solids the baby is on', async () => {

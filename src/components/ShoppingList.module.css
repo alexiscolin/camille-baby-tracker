@@ -60,6 +60,14 @@
   font-weight: 600;
   color: var(--color-text);
   min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.nameJa {
+  display: block;
+  font-size: var(--font-size-2xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
 
 .tag {

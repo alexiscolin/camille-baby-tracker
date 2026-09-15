@@ -44,7 +44,10 @@ export function ShoppingList({ list }: { list: List }) {
             {list[key].map((l) => (
               <li key={`${l.reason}-${l.foodId}`} className={styles.line}>
                 <div className={styles.row}>
-                  <span className={styles.name}>{l.name}</span>
+                  <span className={styles.name}>
+                    {l.name}
+                    {l.nameJa && <span className={styles.nameJa} lang="ja">{l.nameJa}</span>}
+                  </span>
                   {TAG[l.reason] && <span className={styles.tag}>{TAG[l.reason]}</span>}
                 </div>
                 <span className={styles.where}>{where(l.buy)}</span>

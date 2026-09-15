@@ -5,7 +5,7 @@ import type { ShoppingList as List } from '../utils/shopping-list';
 
 const list: List = {
   from: new Date('2026-09-16'), to: new Date('2026-09-22'), stage: 2, mealsPerDay: 2,
-  grain: [{ foodId: 'okayu-10x', name: 'Okayu', reason: 'staple', grams: 1120, packs: 5,
+  grain: [{ foodId: 'okayu-10x', name: 'Okayu', nameJa: '10倍がゆ', reason: 'staple', grams: 1120, packs: 5,
     buy: { kind: 'coop', product: 'CO-OP きらきらステップ 白かゆ (8倍がゆ)', packGrams: 260, leadWeeks: 1 } }],
   vegFruit: [{ foodId: 'beni-imo', name: 'Beni-imo', reason: 'new', grams: 20,
     buy: { kind: 'local', name: '紅いも', months: [9] } }],
@@ -16,6 +16,7 @@ const list: List = {
 describe('ShoppingList', () => {
   it('should show amounts, packs and where to buy', () => {
     render(<ShoppingList list={list} />);
+    expect(screen.getByText('10倍がゆ')).toBeInTheDocument();
     expect(screen.getByText(/白かゆ/)).toBeInTheDocument();
     expect(screen.getByText(/up to 1120 g · 5 packs/)).toBeInTheDocument();
     expect(screen.getByText(/紅いも \(local, in season\)/)).toBeInTheDocument();

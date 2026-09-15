@@ -114,6 +114,8 @@ export interface Food {
 export interface SeedFood {
   id: string;
   name: string;
+  /** The name on a Japanese label or shelf, shown under the English name. */
+  nameJa: string;
   group: FoodGroup;
   allergens: Allergen[];
   gramsPerTsp: number;

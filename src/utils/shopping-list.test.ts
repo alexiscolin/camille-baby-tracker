@@ -35,6 +35,7 @@ describe('buildShoppingList', () => {
     expect(list?.grain.map((l) => l.foodId)).toEqual(['okayu-10x']);
     expect(list?.grain[0]).toMatchObject({ reason: 'new', grams: 210, packs: 1 });
     expect(list?.grain[0].buy).toMatchObject({ kind: 'coop' });
+    expect(list?.grain[0].nameJa).toBe('10倍がゆ');
   });
 
   it('should size a stage-2 staple grain from the guide portion', () => {

@@ -55,6 +55,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'okayu-10x',
     name: 'Okayu, 10:1 rice porridge',
+    nameJa: '10倍がゆ',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -70,6 +71,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'carrot',
     name: 'Carrot, boiled',
+    nameJa: 'にんじん',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -85,6 +87,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kabocha',
     name: 'Kabocha, boiled',
+    nameJa: 'かぼちゃ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 6,
@@ -100,6 +103,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'spinach',
     name: 'Spinach, boiled and drained',
+    nameJa: 'ほうれん草',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -115,6 +119,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sweet-potato',
     name: 'Sweet potato (satsumaimo), steamed',
+    nameJa: 'さつまいも',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 7,
@@ -130,6 +135,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'silken-tofu',
     name: 'Silken tofu',
+    nameJa: '絹ごし豆腐',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -145,6 +151,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shirasu',
     name: 'Shirasu (kamaage, boiled whitebait)',
+    nameJa: '釜揚げしらす',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 3,
@@ -161,6 +168,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cod',
     name: 'Cod (madara), boiled',
+    nameJa: '真だら',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -176,6 +184,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'banana',
     name: 'Banana',
+    nameJa: 'バナナ',
     group: 'fruit',
     allergens: ['banana'],
     gramsPerTsp: 6,
@@ -191,6 +200,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'apple',
     name: 'Apple',
+    nameJa: 'りんご',
     group: 'fruit',
     allergens: ['apple'],
     gramsPerTsp: 5,
@@ -207,6 +217,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'egg-yolk',
     name: 'Egg yolk, boiled',
+    nameJa: '卵黄（固ゆで）',
     group: 'protein',
     allergens: ['egg'],
     gramsPerTsp: 6,
@@ -223,6 +234,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'plain-yoghurt',
     name: 'Plain yoghurt, whole milk, unsweetened',
+    nameJa: 'プレーンヨーグルト（無糖）',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -240,6 +252,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'omoyu',
     name: 'Omoyu (rice water, strained from 10:1 okayu)',
+    nameJa: '重湯',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -256,6 +269,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'okayu-8x',
     name: 'Okayu, 8:1 rice porridge',
+    nameJa: '8倍がゆ',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -272,6 +286,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'okayu-7x',
     name: 'Okayu, 7:1 rice porridge',
+    nameJa: '7倍がゆ',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -288,6 +303,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'okayu-5x',
     name: 'Okayu, 5:1 rice porridge (zengayu)',
+    nameJa: '5倍がゆ（全がゆ）',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -303,6 +319,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soft-rice',
     name: 'Soft rice (nanhan)',
+    nameJa: '軟飯',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -318,6 +335,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cooked-white-rice',
     name: 'White rice, cooked',
+    nameJa: 'ご飯',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -333,6 +351,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'brown-rice-cooked',
     name: 'Brown rice, cooked',
+    nameJa: '玄米ご飯',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -348,6 +367,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'rice-flour',
     name: 'Rice flour (komeko), dry',
+    nameJa: '米粉',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 3,
@@ -364,6 +384,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'udon-boiled',
     name: 'Udon, boiled',
+    nameJa: 'ゆでうどん',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 5,
@@ -379,6 +400,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'somen-boiled',
     name: 'Somen, boiled',
+    nameJa: 'そうめん',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 5,
@@ -395,6 +417,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'macaroni-boiled',
     name: 'Macaroni, boiled without salt',
+    nameJa: 'マカロニ',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 5,
@@ -410,6 +433,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'spaghetti-boiled',
     name: 'Spaghetti, boiled without salt',
+    nameJa: 'スパゲッティ',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 5,
@@ -425,6 +449,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shokupan',
     name: 'Shokupan (Japanese white bread)',
+    nameJa: '食パン',
     group: 'grain',
     allergens: ['wheat', 'milk'],
     gramsPerTsp: 3,
@@ -441,6 +466,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'panko',
     name: 'Panko (dried breadcrumbs)',
+    nameJa: 'パン粉',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 2,
@@ -456,6 +482,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'wheat-flour-soft',
     name: 'Wheat flour, soft (hakurikiko), dry',
+    nameJa: '薄力粉',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 3,
@@ -471,6 +498,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'oatmeal-cooked',
     name: 'Oatmeal, cooked with water',
+    nameJa: 'オートミール（調理済み）',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -486,6 +514,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'rolled-oats-dry',
     name: 'Rolled oats (oatmeal), dry',
+    nameJa: 'オートミール',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 2,
@@ -501,6 +530,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cornflakes',
     name: 'Cornflakes, unsweetened',
+    nameJa: 'コーンフレーク（無糖）',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 2,
@@ -516,6 +546,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'barley-boiled',
     name: 'Pressed barley (oshimugi), boiled',
+    nameJa: '押し麦',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -531,6 +562,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'quinoa-cooked',
     name: 'Quinoa, cooked',
+    nameJa: 'キヌア',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -546,6 +578,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'couscous-cooked',
     name: 'Couscous, cooked',
+    nameJa: 'クスクス',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 5,
@@ -561,6 +594,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'millet-cooked',
     name: 'Millet (awa), cooked',
+    nameJa: 'あわ',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -576,6 +610,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soba-boiled',
     name: 'Soba (buckwheat noodles), boiled',
+    nameJa: 'そば',
     group: 'grain',
     allergens: ['buckwheat', 'wheat'],
     gramsPerTsp: 5,
@@ -591,6 +626,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'katakuriko',
     name: 'Katakuriko (potato starch), dry',
+    nameJa: '片栗粉',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 3,
@@ -607,6 +643,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cornstarch',
     name: 'Cornstarch, dry',
+    nameJa: 'コーンスターチ',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 3,
@@ -623,6 +660,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'harusame-boiled',
     name: 'Harusame (mung bean starch noodles), boiled',
+    nameJa: '緑豆はるさめ',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -638,6 +676,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'yaki-fu',
     name: 'Yaki-fu (baked wheat gluten), dry',
+    nameJa: '焼き麩',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 1,
@@ -653,6 +692,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chukamen-boiled',
     name: 'Chukamen (ramen noodles), boiled',
+    nameJa: '中華めん',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 5,
@@ -670,6 +710,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'daikon-boiled',
     name: 'Daikon radish, peeled and boiled',
+    nameJa: '大根',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -685,6 +726,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'daikon-leaves-boiled',
     name: 'Daikon leaves, boiled',
+    nameJa: '大根の葉',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -700,6 +742,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'turnip-boiled',
     name: 'Turnip (kabu), peeled and boiled',
+    nameJa: 'かぶ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -715,6 +758,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'turnip-greens-boiled',
     name: 'Turnip (kabu) greens, boiled',
+    nameJa: 'かぶの葉',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -730,6 +774,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'komatsuna-boiled',
     name: 'Komatsuna, boiled',
+    nameJa: '小松菜',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -745,6 +790,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'broccoli-boiled',
     name: 'Broccoli florets, boiled',
+    nameJa: 'ブロッコリー',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -760,6 +806,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cauliflower-boiled',
     name: 'Cauliflower, boiled',
+    nameJa: 'カリフラワー',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -775,6 +822,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cabbage-boiled',
     name: 'Cabbage, boiled',
+    nameJa: 'キャベツ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -790,6 +838,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'hakusai-boiled',
     name: 'Hakusai (Chinese cabbage), boiled',
+    nameJa: '白菜',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -805,6 +854,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chingensai-boiled',
     name: 'Chingensai (bok choy), boiled',
+    nameJa: 'チンゲン菜',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -820,6 +870,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mizuna-boiled',
     name: 'Mizuna, boiled',
+    nameJa: '水菜',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -835,6 +886,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shungiku-boiled',
     name: 'Shungiku (garland chrysanthemum), boiled',
+    nameJa: '春菊',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -850,6 +902,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'nanohana-boiled',
     name: 'Nanohana (rape blossoms), boiled',
+    nameJa: '菜の花',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -865,6 +918,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'lettuce-raw',
     name: 'Lettuce, raw',
+    nameJa: 'レタス',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 2,
@@ -880,6 +934,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kale-boiled',
     name: 'Kale, boiled and drained',
+    nameJa: 'ケール',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -895,6 +950,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'nira-boiled',
     name: 'Nira (garlic chives), boiled',
+    nameJa: 'にら',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -910,6 +966,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mitsuba-boiled',
     name: 'Mitsuba (Japanese parsley), boiled',
+    nameJa: '三つ葉',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -925,6 +982,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'moyashi-boiled',
     name: 'Moyashi (mung bean sprouts), boiled',
+    nameJa: 'もやし',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -942,6 +1000,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'potato-boiled',
     name: 'Potato, peeled and boiled',
+    nameJa: 'じゃがいも',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 6,
@@ -957,6 +1016,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'satoimo-boiled',
     name: 'Satoimo (taro), boiled',
+    nameJa: '里いも',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 6,
@@ -972,6 +1032,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'nagaimo-boiled',
     name: 'Nagaimo (Japanese yam), boiled',
+    nameJa: '長いも',
     group: 'vegetable',
     allergens: ['yam'],
     gramsPerTsp: 6,
@@ -988,6 +1049,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'onion-boiled',
     name: 'Onion, boiled',
+    nameJa: '玉ねぎ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1003,6 +1065,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'naganegi-boiled',
     name: 'Naganegi (Japanese leek), boiled',
+    nameJa: '長ねぎ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1018,6 +1081,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'tomato-raw',
     name: 'Tomato, peeled and deseeded',
+    nameJa: 'トマト',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1033,6 +1097,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cherry-tomato',
     name: 'Cherry tomato, peeled',
+    nameJa: 'ミニトマト',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1049,6 +1114,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cucumber-raw',
     name: 'Cucumber, peeled',
+    nameJa: 'きゅうり',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1065,6 +1131,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'nasu-boiled',
     name: 'Nasu (aubergine), peeled and boiled',
+    nameJa: 'なす',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1080,6 +1147,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'zucchini-boiled',
     name: 'Courgette (zucchini), boiled',
+    nameJa: 'ズッキーニ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1095,6 +1163,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'green-beans-boiled',
     name: 'Green beans (sayaingen), boiled',
+    nameJa: 'さやいんげん',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1110,6 +1179,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'snow-peas-boiled',
     name: 'Snow peas (sayaendo), boiled',
+    nameJa: 'さやえんどう',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1125,6 +1195,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'green-peas-boiled',
     name: 'Green peas, boiled',
+    nameJa: 'グリンピース',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1141,6 +1212,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sweetcorn-boiled',
     name: 'Sweetcorn kernels, boiled',
+    nameJa: 'とうもろこし',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1157,6 +1229,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'renkon-boiled',
     name: 'Renkon (lotus root), boiled',
+    nameJa: 'れんこん',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1172,6 +1245,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'gobo-boiled',
     name: 'Gobo (burdock root), boiled',
+    nameJa: 'ごぼう',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1187,6 +1261,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'okra-boiled',
     name: 'Okra, boiled',
+    nameJa: 'オクラ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1202,6 +1277,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'bell-pepper-red',
     name: 'Red bell pepper, peeled and boiled',
+    nameJa: '赤パプリカ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1217,6 +1293,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'bell-pepper-green',
     name: 'Green bell pepper (piman), boiled',
+    nameJa: 'ピーマン',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1234,6 +1311,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shiitake-boiled',
     name: 'Shiitake mushroom, fresh, boiled',
+    nameJa: 'しいたけ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1249,6 +1327,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shimeji-boiled',
     name: 'Buna-shimeji mushroom, boiled',
+    nameJa: 'ぶなしめじ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1264,6 +1343,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'enoki-boiled',
     name: 'Enoki mushroom, boiled',
+    nameJa: 'えのきたけ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1279,6 +1359,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'maitake-boiled',
     name: 'Maitake mushroom, boiled',
+    nameJa: 'まいたけ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1294,6 +1375,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'eringi-boiled',
     name: 'Eringi (king oyster mushroom), boiled',
+    nameJa: 'エリンギ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1310,6 +1392,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'matsutake',
     name: 'Matsutake mushroom, raw',
+    nameJa: 'まつたけ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1326,6 +1409,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'button-mushroom-boiled',
     name: 'White button mushroom, boiled',
+    nameJa: 'マッシュルーム',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1341,6 +1425,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'asparagus-boiled',
     name: 'Green asparagus, boiled',
+    nameJa: 'アスパラガス',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1356,6 +1441,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'celery-boiled',
     name: 'Celery, peeled and boiled',
+    nameJa: 'セロリ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1371,6 +1457,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'togan-boiled',
     name: 'Togan (winter melon), boiled',
+    nameJa: '冬瓜（シブイ）',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1386,6 +1473,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'beetroot-boiled',
     name: 'Beetroot, boiled',
+    nameJa: 'ビーツ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1401,6 +1489,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'takenoko-boiled',
     name: 'Takenoko (bamboo shoot), boiled',
+    nameJa: 'たけのこ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1416,6 +1505,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soramame-boiled',
     name: 'Soramame (broad beans), boiled',
+    nameJa: 'そら豆',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1432,6 +1522,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'snap-peas',
     name: 'Snap peas, boiled',
+    nameJa: 'スナップえんどう',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1447,6 +1538,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'tomato-puree',
     name: 'Tomato puree, unsalted',
+    nameJa: 'トマトピューレ（食塩無添加）',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1462,6 +1554,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cream-corn-canned',
     name: 'Cream-style sweetcorn, canned',
+    nameJa: 'クリームコーン缶',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -1477,6 +1570,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kiriboshi-daikon',
     name: 'Kiriboshi daikon (dried daikon strips), dry',
+    nameJa: '切り干し大根',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 2,
@@ -1492,6 +1586,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'carrot-raw',
     name: 'Carrot, raw, grated',
+    nameJa: 'にんじん（生）',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1507,6 +1602,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kabocha-japanese-boiled',
     name: 'Japanese kabocha (nihon kabocha), boiled',
+    nameJa: '日本かぼちゃ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 6,
@@ -1522,6 +1618,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'butternut-squash-baked',
     name: 'Butternut squash, baked',
+    nameJa: 'バターナッツかぼちゃ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 6,
@@ -1537,6 +1634,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'moroheiya-boiled',
     name: 'Moroheiya (molokhia), boiled',
+    nameJa: 'モロヘイヤ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1552,6 +1650,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'pea-sprouts-boiled',
     name: 'Tomyo (pea sprouts), boiled',
+    nameJa: '豆苗',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1567,6 +1666,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soybean-sprouts-boiled',
     name: 'Daizu moyashi (soybean sprouts), boiled',
+    nameJa: '大豆もやし',
     group: 'vegetable',
     allergens: ['soy'],
     gramsPerTsp: 4,
@@ -1582,6 +1682,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'watercress-boiled',
     name: 'Watercress (kureson), boiled',
+    nameJa: 'クレソン',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1597,6 +1698,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'leaf-onion-boiled',
     name: 'Ha-negi (green onion leaves), boiled',
+    nameJa: '葉ねぎ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -1614,6 +1716,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'pear-western',
     name: 'Western pear, peeled',
+    nameJa: '洋なし',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1630,6 +1733,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'nashi',
     name: 'Nashi (Japanese pear), peeled',
+    nameJa: '梨',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1646,6 +1750,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'strawberry',
     name: 'Strawberry',
+    nameJa: 'いちご',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1661,6 +1766,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mikan',
     name: 'Mikan (satsuma mandarin), peeled and de-membraned',
+    nameJa: 'みかん',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1676,6 +1782,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'orange-navel',
     name: 'Navel orange, peeled and de-membraned',
+    nameJa: 'ネーブルオレンジ',
     group: 'fruit',
     allergens: ['orange'],
     gramsPerTsp: 5,
@@ -1691,6 +1798,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'melon',
     name: 'Musk melon, flesh',
+    nameJa: 'メロン',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1706,6 +1814,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'watermelon',
     name: 'Watermelon, flesh, deseeded',
+    nameJa: 'すいか',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1721,6 +1830,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'peach',
     name: 'Peach, peeled',
+    nameJa: 'もも',
     group: 'fruit',
     allergens: ['peach'],
     gramsPerTsp: 5,
@@ -1736,6 +1846,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'grape',
     name: 'Grape, peeled and deseeded',
+    nameJa: 'ぶどう',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1752,6 +1863,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kiwi-green',
     name: 'Green kiwifruit',
+    nameJa: 'キウイフルーツ',
     group: 'fruit',
     allergens: ['kiwi'],
     gramsPerTsp: 5,
@@ -1767,6 +1879,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'persimmon',
     name: 'Persimmon (kaki), peeled',
+    nameJa: '柿',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1782,6 +1895,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'blueberry',
     name: 'Blueberry',
+    nameJa: 'ブルーベリー',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1798,6 +1912,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'prune-dried',
     name: 'Prune (dried plum), stoned',
+    nameJa: 'プルーン',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1813,6 +1928,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mango',
     name: 'Mango, peeled',
+    nameJa: 'マンゴー',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1828,6 +1944,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'papaya',
     name: 'Papaya, ripe, peeled',
+    nameJa: 'パパイヤ',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1843,6 +1960,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'pineapple',
     name: 'Pineapple, peeled',
+    nameJa: 'パインアップル',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1858,6 +1976,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'avocado',
     name: 'Avocado, ripe',
+    nameJa: 'アボカド',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1873,6 +1992,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'plum-sumomo',
     name: 'Sumomo (Japanese plum), peeled',
+    nameJa: 'すもも',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1888,6 +2008,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'apricot',
     name: 'Apricot (anzu), fresh',
+    nameJa: 'あんず',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1903,6 +2024,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cherry',
     name: 'Cherry, stoned and halved',
+    nameJa: 'さくらんぼ',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1919,6 +2041,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'fig',
     name: 'Fig (ichijiku), peeled',
+    nameJa: 'いちじく',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1934,6 +2057,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'grapefruit',
     name: 'Grapefruit, de-membraned',
+    nameJa: 'グレープフルーツ',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1949,6 +2073,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'lemon-juice',
     name: 'Lemon juice',
+    nameJa: 'レモン果汁',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1965,6 +2090,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'raspberry',
     name: 'Raspberry',
+    nameJa: 'ラズベリー',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -1980,6 +2106,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'apricot-dried',
     name: 'Dried apricot',
+    nameJa: '干しあんず',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 3,
@@ -1995,6 +2122,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'raisin',
     name: 'Raisin',
+    nameJa: 'レーズン',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 3,
@@ -2010,6 +2138,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'loquat',
     name: 'Loquat (biwa), peeled and stoned',
+    nameJa: 'びわ',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -2025,6 +2154,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'persimmon-dried',
     name: 'Dried persimmon (hoshigaki)',
+    nameJa: '干し柿',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 3,
@@ -2040,6 +2170,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mikan-canned',
     name: 'Mikan segments, canned in light syrup, drained',
+    nameJa: 'みかん缶',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -2055,6 +2186,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'peach-canned',
     name: 'Peach halves, canned in light syrup, drained',
+    nameJa: '黄桃缶',
     group: 'fruit',
     allergens: ['peach'],
     gramsPerTsp: 5,
@@ -2070,6 +2202,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'apple-juice',
     name: 'Apple juice, unsweetened',
+    nameJa: 'りんごジュース（果汁100%）',
     group: 'fruit',
     allergens: ['apple'],
     gramsPerTsp: 5,
@@ -2085,6 +2218,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'orange-juice',
     name: 'Orange juice, unsweetened',
+    nameJa: 'オレンジジュース（果汁100%）',
     group: 'fruit',
     allergens: ['orange'],
     gramsPerTsp: 5,
@@ -2102,6 +2236,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'flounder-boiled',
     name: 'Flounder (karei), boiled',
+    nameJa: 'かれい',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2117,6 +2252,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sea-bream-boiled',
     name: 'Sea bream (madai), farmed, boiled',
+    nameJa: '真鯛',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2132,6 +2268,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'salmon-boiled',
     name: 'Salmon (shirozake), boiled',
+    nameJa: '鮭（白鮭）',
     group: 'protein',
     allergens: ['salmon'],
     gramsPerTsp: 5,
@@ -2147,6 +2284,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'tuna-boiled',
     name: 'Tuna (kihada), boiled',
+    nameJa: 'まぐろ（きはだ）',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2162,6 +2300,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mackerel-boiled',
     name: 'Mackerel (masaba), boiled',
+    nameJa: 'さば',
     group: 'protein',
     allergens: ['mackerel'],
     gramsPerTsp: 5,
@@ -2177,6 +2316,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sardine-boiled',
     name: 'Sardine (maiwashi), boiled',
+    nameJa: 'いわし',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2192,6 +2332,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'saury-grilled',
     name: 'Saury (sanma), grilled',
+    nameJa: 'さんま',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2207,6 +2348,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'aji-boiled',
     name: 'Aji (Japanese horse mackerel), boiled',
+    nameJa: 'あじ',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2222,6 +2364,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'yellowtail-boiled',
     name: 'Yellowtail (buri), boiled',
+    nameJa: 'ぶり',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2237,6 +2380,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'katsuo-boiled',
     name: 'Bonito (katsuo), spring catch, boiled',
+    nameJa: 'かつお',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2252,6 +2396,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shirasuboshi',
     name: 'Shirasuboshi (semi-dried whitebait), desalted',
+    nameJa: 'しらす干し',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 2,
@@ -2268,6 +2413,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shrimp-boiled',
     name: 'Shrimp, boiled and finely chopped',
+    nameJa: 'えび',
     group: 'protein',
     allergens: ['shrimp'],
     gramsPerTsp: 4,
@@ -2284,6 +2430,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'crab-boiled',
     name: 'Snow crab (zuwaigani), boiled',
+    nameJa: 'ずわいがに',
     group: 'protein',
     allergens: ['crab'],
     gramsPerTsp: 4,
@@ -2300,6 +2447,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'squid-boiled',
     name: 'Squid (surume-ika), boiled',
+    nameJa: 'いか',
     group: 'protein',
     allergens: ['squid'],
     gramsPerTsp: 4,
@@ -2316,6 +2464,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'scallop-boiled',
     name: 'Scallop adductor muscle, boiled',
+    nameJa: 'ほたて貝柱',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 4,
@@ -2332,6 +2481,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'abalone-boiled',
     name: 'Abalone (awabi), boiled',
+    nameJa: 'あわび',
     group: 'protein',
     allergens: ['abalone'],
     gramsPerTsp: 4,
@@ -2348,6 +2498,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'ikura',
     name: 'Ikura (salmon roe)',
+    nameJa: 'いくら',
     group: 'protein',
     allergens: ['salmon_roe'],
     gramsPerTsp: 5,
@@ -2366,6 +2517,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chicken-sasami-boiled',
     name: 'Chicken sasami (tenderloin), boiled',
+    nameJa: '鶏ささみ',
     group: 'protein',
     allergens: ['chicken'],
     gramsPerTsp: 4,
@@ -2381,6 +2533,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chicken-breast-boiled',
     name: 'Chicken breast, skinless, boiled',
+    nameJa: '鶏むね肉（皮なし）',
     group: 'protein',
     allergens: ['chicken'],
     gramsPerTsp: 4,
@@ -2396,6 +2549,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chicken-thigh-boiled',
     name: 'Chicken thigh, skinless, boiled',
+    nameJa: '鶏もも肉（皮なし）',
     group: 'protein',
     allergens: ['chicken'],
     gramsPerTsp: 4,
@@ -2411,6 +2565,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chicken-mince-cooked',
     name: 'Chicken mince, cooked',
+    nameJa: '鶏ひき肉',
     group: 'protein',
     allergens: ['chicken'],
     gramsPerTsp: 4,
@@ -2426,6 +2581,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chicken-liver-boiled',
     name: 'Chicken liver, boiled',
+    nameJa: '鶏レバー',
     group: 'protein',
     allergens: ['chicken'],
     gramsPerTsp: 4,
@@ -2441,6 +2597,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'pork-loin-boiled',
     name: 'Pork loin, lean, boiled',
+    nameJa: '豚ロース（赤身）',
     group: 'protein',
     allergens: ['pork'],
     gramsPerTsp: 4,
@@ -2456,6 +2613,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'pork-fillet-boiled',
     name: 'Pork fillet (hire), boiled',
+    nameJa: '豚ヒレ肉',
     group: 'protein',
     allergens: ['pork'],
     gramsPerTsp: 4,
@@ -2471,6 +2629,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'pork-mince-cooked',
     name: 'Pork mince, cooked',
+    nameJa: '豚ひき肉',
     group: 'protein',
     allergens: ['pork'],
     gramsPerTsp: 4,
@@ -2486,6 +2645,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'pork-liver-boiled',
     name: 'Pork liver, boiled',
+    nameJa: '豚レバー',
     group: 'protein',
     allergens: ['pork'],
     gramsPerTsp: 4,
@@ -2501,6 +2661,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'ham-roast',
     name: 'Roast ham (loin ham)',
+    nameJa: 'ロースハム',
     group: 'protein',
     allergens: ['pork'],
     gramsPerTsp: 4,
@@ -2517,6 +2678,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'beef-thigh-lean-boiled',
     name: 'Beef thigh, lean, boiled',
+    nameJa: '牛もも肉（赤身）',
     group: 'protein',
     allergens: ['beef'],
     gramsPerTsp: 4,
@@ -2532,6 +2694,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'beef-mince-cooked',
     name: 'Beef mince, cooked',
+    nameJa: '牛ひき肉',
     group: 'protein',
     allergens: ['beef'],
     gramsPerTsp: 4,
@@ -2547,6 +2710,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'beef-liver-boiled',
     name: 'Beef liver, boiled',
+    nameJa: '牛レバー',
     group: 'protein',
     allergens: ['beef'],
     gramsPerTsp: 4,
@@ -2562,6 +2726,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'egg-whole-boiled',
     name: 'Whole egg, hard-boiled',
+    nameJa: 'ゆで卵（全卵）',
     group: 'protein',
     allergens: ['egg'],
     gramsPerTsp: 5,
@@ -2577,6 +2742,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'egg-white-boiled',
     name: 'Egg white, boiled',
+    nameJa: '卵白（ゆで）',
     group: 'protein',
     allergens: ['egg'],
     gramsPerTsp: 5,
@@ -2592,6 +2758,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'quail-egg-boiled',
     name: 'Quail egg, boiled',
+    nameJa: 'うずらの卵',
     group: 'protein',
     allergens: ['egg'],
     gramsPerTsp: 5,
@@ -2610,6 +2777,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'firm-tofu',
     name: 'Firm tofu (momen)',
+    nameJa: '木綿豆腐',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -2625,6 +2793,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'yaki-dofu',
     name: 'Yaki-dofu (grilled tofu)',
+    nameJa: '焼き豆腐',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -2640,6 +2809,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'atsuage',
     name: 'Atsuage (thick fried tofu)',
+    nameJa: '厚揚げ',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -2655,6 +2825,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'aburaage',
     name: 'Aburaage (thin fried tofu)',
+    nameJa: '油揚げ',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 2,
@@ -2670,6 +2841,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'koya-dofu',
     name: 'Koya-dofu (freeze-dried tofu), dry',
+    nameJa: '高野豆腐',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 2,
@@ -2685,6 +2857,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'natto',
     name: 'Natto (fermented soybeans)',
+    nameJa: '納豆',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -2701,6 +2874,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kinako',
     name: 'Kinako (roasted soybean flour)',
+    nameJa: 'きな粉',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 2,
@@ -2717,6 +2891,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'edamame-boiled',
     name: 'Edamame, boiled and skinned',
+    nameJa: '枝豆',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -2733,6 +2908,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soymilk-unsweetened',
     name: 'Soy milk, unsweetened',
+    nameJa: '無調整豆乳',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -2748,6 +2924,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'okara',
     name: 'Okara (soy pulp), fresh',
+    nameJa: 'おから',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 4,
@@ -2763,6 +2940,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'yuba-fresh',
     name: 'Yuba (tofu skin), fresh',
+    nameJa: '生湯葉',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 4,
@@ -2778,6 +2956,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soybeans-boiled',
     name: 'Soybeans, boiled',
+    nameJa: 'ゆで大豆',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -2796,6 +2975,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'lentils-boiled',
     name: 'Lentils, boiled',
+    nameJa: 'レンズ豆',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2812,6 +2992,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chickpeas-boiled',
     name: 'Chickpeas, boiled',
+    nameJa: 'ひよこ豆',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2828,6 +3009,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kidney-beans-boiled',
     name: 'Kidney beans (ingen-mame), boiled',
+    nameJa: 'いんげん豆',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2844,6 +3026,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'azuki-boiled',
     name: 'Azuki beans, boiled without sugar',
+    nameJa: 'ゆであずき（無糖）',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -2860,6 +3043,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'peanut-paste',
     name: 'Peanut butter, smooth, unsweetened',
+    nameJa: 'ピーナッツペースト（無糖）',
     group: 'protein',
     allergens: ['peanut'],
     gramsPerTsp: 5,
@@ -2876,6 +3060,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'walnut-ground',
     name: 'Walnut, roasted and ground',
+    nameJa: 'くるみ（粉末）',
     group: 'protein',
     allergens: ['walnut'],
     gramsPerTsp: 3,
@@ -2892,6 +3077,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'almond-ground',
     name: 'Almond, roasted and ground',
+    nameJa: 'アーモンドパウダー',
     group: 'protein',
     allergens: ['almond'],
     gramsPerTsp: 3,
@@ -2908,6 +3094,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cashew-ground',
     name: 'Cashew, roasted and ground',
+    nameJa: 'カシューナッツ（粉末）',
     group: 'protein',
     allergens: ['cashew'],
     gramsPerTsp: 3,
@@ -2924,6 +3111,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sesame-ground',
     name: 'Sesame seeds, roasted and ground (surigoma)',
+    nameJa: 'すりごま',
     group: 'protein',
     allergens: ['sesame'],
     gramsPerTsp: 3,
@@ -2941,6 +3129,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'tuna-canned-water',
     name: 'Tuna, canned in water, drained',
+    nameJa: 'ツナ水煮缶',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 4,
@@ -2956,6 +3145,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'salmon-canned',
     name: 'Salmon, canned in water, drained',
+    nameJa: '鮭水煮缶',
     group: 'protein',
     allergens: ['salmon'],
     gramsPerTsp: 4,
@@ -2971,6 +3161,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mackerel-canned',
     name: 'Mackerel, canned in water, drained',
+    nameJa: 'さば水煮缶',
     group: 'protein',
     allergens: ['mackerel'],
     gramsPerTsp: 4,
@@ -2986,6 +3177,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'katsuobushi',
     name: 'Katsuobushi (dried bonito flakes)',
+    nameJa: 'かつお節',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 1,
@@ -3001,6 +3193,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kamaboko',
     name: 'Kamaboko (steamed fish cake)',
+    nameJa: 'かまぼこ',
     group: 'protein',
     allergens: ['egg'],
     gramsPerTsp: 4,
@@ -3017,6 +3210,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'chikuwa',
     name: 'Chikuwa (grilled fish paste tube)',
+    nameJa: 'ちくわ',
     group: 'protein',
     allergens: ['egg'],
     gramsPerTsp: 4,
@@ -3033,6 +3227,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shishamo-grilled',
     name: 'Shishamo (willow smelt), grilled',
+    nameJa: 'ししゃも',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 4,
@@ -3048,6 +3243,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'unagi-kabayaki',
     name: 'Unagi kabayaki (grilled eel)',
+    nameJa: 'うなぎの蒲焼き',
     group: 'protein',
     allergens: ['soy', 'wheat'],
     gramsPerTsp: 4,
@@ -3066,6 +3262,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'milk-whole',
     name: 'Cow milk, whole',
+    nameJa: '牛乳',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3082,6 +3279,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'milk-low-fat',
     name: 'Cow milk, low fat',
+    nameJa: '低脂肪牛乳',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3097,6 +3295,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'goat-milk',
     name: 'Goat milk',
+    nameJa: 'やぎ乳',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3112,6 +3311,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'formula-powder',
     name: 'Infant formula, powder',
+    nameJa: '育児用ミルク（粉）',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 2,
@@ -3128,6 +3328,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'formula-prepared',
     name: 'Infant formula, made up at 13%',
+    nameJa: '育児用ミルク（調乳済み）',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3144,6 +3345,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'skim-milk-powder',
     name: 'Skimmed milk powder',
+    nameJa: 'スキムミルク',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 2,
@@ -3160,6 +3362,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'evaporated-milk',
     name: 'Evaporated milk, unsweetened',
+    nameJa: 'エバミルク',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3175,6 +3378,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cottage-cheese',
     name: 'Cottage cheese',
+    nameJa: 'カッテージチーズ',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3190,6 +3394,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'cream-cheese',
     name: 'Cream cheese',
+    nameJa: 'クリームチーズ',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3205,6 +3410,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'processed-cheese',
     name: 'Processed cheese',
+    nameJa: 'プロセスチーズ',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3221,6 +3427,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mozzarella',
     name: 'Mozzarella cheese',
+    nameJa: 'モッツァレラチーズ',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3237,6 +3444,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'parmesan-grated',
     name: 'Parmesan, grated',
+    nameJa: '粉チーズ',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 2,
@@ -3252,6 +3460,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'yoghurt-low-fat',
     name: 'Plain yoghurt, low fat, unsweetened',
+    nameJa: '低脂肪ヨーグルト（無糖）',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3267,6 +3476,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'greek-yoghurt',
     name: 'Greek yoghurt, whole milk, unsweetened',
+    nameJa: 'ギリシャヨーグルト（無糖）',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3282,6 +3492,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'drinking-yoghurt',
     name: 'Drinking yoghurt, sweetened',
+    nameJa: '飲むヨーグルト',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3297,6 +3508,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'butter-unsalted',
     name: 'Butter, unsalted',
+    nameJa: '無塩バター',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 4,
@@ -3312,6 +3524,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'butter-salted',
     name: 'Butter, salted',
+    nameJa: '有塩バター',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 4,
@@ -3327,6 +3540,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'fresh-cream',
     name: 'Fresh cream, dairy fat',
+    nameJa: '生クリーム',
     group: 'dairy',
     allergens: ['milk'],
     gramsPerTsp: 5,
@@ -3344,6 +3558,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'rapeseed-oil',
     name: 'Rapeseed (canola) oil',
+    nameJa: 'なたね油',
     group: 'fat',
     allergens: [],
     gramsPerTsp: 4,
@@ -3360,6 +3575,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'olive-oil',
     name: 'Olive oil',
+    nameJa: 'オリーブオイル',
     group: 'fat',
     allergens: [],
     gramsPerTsp: 4,
@@ -3376,6 +3592,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sesame-oil',
     name: 'Sesame oil',
+    nameJa: 'ごま油',
     group: 'fat',
     allergens: ['sesame'],
     gramsPerTsp: 4,
@@ -3392,6 +3609,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soybean-oil',
     name: 'Soybean oil',
+    nameJa: '大豆油',
     group: 'fat',
     allergens: [],
     gramsPerTsp: 4,
@@ -3408,6 +3626,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'rice-bran-oil',
     name: 'Rice bran oil',
+    nameJa: '米油',
     group: 'fat',
     allergens: [],
     gramsPerTsp: 4,
@@ -3424,6 +3643,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'blended-salad-oil',
     name: 'Blended salad oil',
+    nameJa: 'サラダ油',
     group: 'fat',
     allergens: [],
     gramsPerTsp: 4,
@@ -3440,6 +3660,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'perilla-oil',
     name: 'Perilla (egoma) oil',
+    nameJa: 'えごま油',
     group: 'fat',
     allergens: [],
     gramsPerTsp: 4,
@@ -3456,6 +3677,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sesame-paste',
     name: 'Sesame paste (neri goma)',
+    nameJa: '練りごま',
     group: 'fat',
     allergens: ['sesame'],
     gramsPerTsp: 4,
@@ -3471,6 +3693,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mayonnaise',
     name: 'Mayonnaise, whole egg type',
+    nameJa: 'マヨネーズ',
     group: 'fat',
     allergens: ['egg'],
     gramsPerTsp: 4,
@@ -3488,6 +3711,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'margarine',
     name: 'Margarine, soft',
+    nameJa: 'マーガリン',
     group: 'fat',
     allergens: ['milk'],
     gramsPerTsp: 4,
@@ -3506,6 +3730,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kombu-dashi',
     name: 'Kombu dashi (cold brew)',
+    nameJa: '昆布だし',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3523,6 +3748,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'katsuo-dashi',
     name: 'Katsuo dashi (bonito stock)',
+    nameJa: 'かつおだし',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3539,6 +3765,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'awase-dashi',
     name: 'Awase dashi (katsuo and kombu stock)',
+    nameJa: '合わせだし',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3556,6 +3783,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'niboshi-dashi',
     name: 'Niboshi dashi (dried sardine stock)',
+    nameJa: '煮干しだし',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3572,6 +3800,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shiitake-dashi',
     name: 'Dried shiitake dashi',
+    nameJa: '干ししいたけだし',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3588,6 +3817,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'dashi-granules',
     name: 'Instant dashi granules (washu)',
+    nameJa: '顆粒だし',
     group: 'other',
     allergens: ['milk', 'wheat'],
     gramsPerTsp: 2,
@@ -3604,6 +3834,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'wakame-desalted',
     name: 'Wakame, salted and desalted',
+    nameJa: '塩蔵わかめ（塩抜き）',
     group: 'other',
     allergens: [],
     gramsPerTsp: 4,
@@ -3620,6 +3851,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'wakame-dried-cut',
     name: 'Cut wakame, dried',
+    nameJa: 'カットわかめ',
     group: 'other',
     allergens: [],
     gramsPerTsp: 1,
@@ -3636,6 +3868,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'hijiki-boiled',
     name: 'Hijiki, rehydrated and boiled',
+    nameJa: 'ひじき（ゆで）',
     group: 'other',
     allergens: [],
     gramsPerTsp: 4,
@@ -3652,6 +3885,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mekabu',
     name: 'Mekabu (wakame sporophyll), boiled',
+    nameJa: 'めかぶ',
     group: 'other',
     allergens: [],
     gramsPerTsp: 4,
@@ -3667,6 +3901,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'aosa-dried',
     name: 'Aosa (sea lettuce), dried',
+    nameJa: 'あおさ',
     group: 'other',
     allergens: [],
     gramsPerTsp: 1,
@@ -3682,6 +3917,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'nori-tsukudani',
     name: 'Nori tsukudani (simmered laver paste)',
+    nameJa: 'のりの佃煮',
     group: 'other',
     allergens: ['soy', 'wheat'],
     gramsPerTsp: 5,
@@ -3697,6 +3933,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'miso-white-sweet',
     name: 'White miso (ama-miso)',
+    nameJa: '白みそ',
     group: 'other',
     allergens: ['soy'],
     gramsPerTsp: 6,
@@ -3713,6 +3950,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'miso-red',
     name: 'Red miso (aka-miso)',
+    nameJa: '赤みそ',
     group: 'other',
     allergens: ['soy'],
     gramsPerTsp: 6,
@@ -3729,6 +3967,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soy-sauce-koikuchi',
     name: 'Soy sauce, koikuchi',
+    nameJa: '濃口しょうゆ',
     group: 'other',
     allergens: ['soy', 'wheat'],
     gramsPerTsp: 6,
@@ -3745,6 +3984,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'soy-sauce-usukuchi',
     name: 'Soy sauce, usukuchi (light colour)',
+    nameJa: '薄口しょうゆ',
     group: 'other',
     allergens: ['soy', 'wheat'],
     gramsPerTsp: 6,
@@ -3763,6 +4003,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'ketchup',
     name: 'Tomato ketchup',
+    nameJa: 'トマトケチャップ',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3779,6 +4020,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sugar-white',
     name: 'White sugar (johakuto)',
+    nameJa: '上白糖',
     group: 'other',
     allergens: [],
     gramsPerTsp: 3,
@@ -3795,6 +4037,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'honey',
     name: 'Honey',
+    nameJa: 'はちみつ',
     group: 'other',
     allergens: [],
     gramsPerTsp: 7,
@@ -3812,6 +4055,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'salt',
     name: 'Table salt',
+    nameJa: '食塩',
     group: 'other',
     allergens: [],
     gramsPerTsp: 6,
@@ -3828,6 +4072,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'water',
     name: 'Water (boiled and cooled)',
+    nameJa: '湯冷まし',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3844,6 +4089,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'barley-tea',
     name: 'Mugicha (barley tea), brewed',
+    nameJa: '麦茶',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3860,6 +4106,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'rooibos-tea',
     name: 'Rooibos tea, brewed',
+    nameJa: 'ルイボスティー',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3876,6 +4123,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'hojicha',
     name: 'Hojicha (roasted green tea), brewed',
+    nameJa: 'ほうじ茶',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3892,6 +4140,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sencha',
     name: 'Sencha (green tea), brewed',
+    nameJa: '煎茶',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3909,6 +4158,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'oral-rehydration-solution',
     name: 'Oral rehydration solution, infant type',
+    nameJa: '経口補水液（乳児用）',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3925,6 +4175,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'vegetable-juice',
     name: 'Mixed vegetable juice, unsalted',
+    nameJa: '野菜ジュース（食塩無添加）',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3940,6 +4191,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kanten-powder',
     name: 'Kanten (agar) powder, dry',
+    nameJa: '粉寒天',
     group: 'other',
     allergens: [],
     gramsPerTsp: 2,
@@ -3955,6 +4207,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'konnyaku',
     name: 'Konnyaku (konjac), boiled',
+    nameJa: 'こんにゃく',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -3971,6 +4224,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'curry-powder',
     name: 'Curry powder',
+    nameJa: 'カレー粉',
     group: 'other',
     allergens: [],
     gramsPerTsp: 2,
@@ -3987,6 +4241,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'amazake',
     name: 'Amazake (rice koji type, non-alcoholic)',
+    nameJa: '甘酒（米麹）',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,
@@ -4004,6 +4259,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'french-bread',
     name: 'French bread',
+    nameJa: 'フランスパン',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 3,
@@ -4020,6 +4276,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'roll-bread',
     name: 'Roll bread (butter roll)',
+    nameJa: 'ロールパン',
     group: 'grain',
     allergens: ['wheat', 'milk', 'egg'],
     gramsPerTsp: 3,
@@ -4036,6 +4293,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'udon-dried',
     name: 'Dried udon, uncooked',
+    nameJa: '干しうどん',
     group: 'grain',
     allergens: ['wheat'],
     gramsPerTsp: 3,
@@ -4052,6 +4310,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'corn-grits-cooked',
     name: 'Corn grits, cooked',
+    nameJa: 'コーングリッツ',
     group: 'grain',
     allergens: [],
     gramsPerTsp: 5,
@@ -4067,6 +4326,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'tamago-bolo',
     name: 'Tamago bolo (baby biscuit)',
+    nameJa: '卵ボーロ',
     group: 'grain',
     allergens: ['egg'],
     gramsPerTsp: 3,
@@ -4083,6 +4343,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'senbei-shoyu',
     name: 'Shoyu senbei (rice cracker)',
+    nameJa: 'しょうゆせんべい',
     group: 'grain',
     allergens: ['soy', 'wheat'],
     gramsPerTsp: 3,
@@ -4099,6 +4360,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'yuzu-juice',
     name: 'Yuzu juice',
+    nameJa: 'ゆず果汁',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -4115,6 +4377,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'fig-dried',
     name: 'Dried fig',
+    nameJa: '干しいちじく',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 3,
@@ -4130,6 +4393,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'banana-dried',
     name: 'Dried banana',
+    nameJa: '乾燥バナナ',
     group: 'fruit',
     allergens: ['banana'],
     gramsPerTsp: 3,
@@ -4145,6 +4409,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'pomegranate',
     name: 'Pomegranate arils',
+    nameJa: 'ざくろ',
     group: 'fruit',
     allergens: [],
     gramsPerTsp: 5,
@@ -4161,6 +4426,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kiwi-gold',
     name: 'Golden kiwifruit',
+    nameJa: 'ゴールドキウイ',
     group: 'fruit',
     allergens: ['kiwi'],
     gramsPerTsp: 5,
@@ -4178,6 +4444,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'tomato-canned-whole',
     name: 'Canned whole tomatoes, no added salt',
+    nameJa: 'トマト水煮缶（食塩無添加）',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -4193,6 +4460,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'red-cabbage-boiled',
     name: 'Red cabbage, boiled',
+    nameJa: '紫キャベツ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -4208,6 +4476,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'young-corn-boiled',
     name: 'Young corn (baby corn), boiled',
+    nameJa: 'ヤングコーン',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -4223,6 +4492,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shiitake-dried',
     name: 'Dried shiitake, dry',
+    nameJa: '干ししいたけ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 1,
@@ -4238,6 +4508,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kaiware-daikon',
     name: 'Kaiware daikon (radish sprouts)',
+    nameJa: 'かいわれ大根',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 3,
@@ -4253,6 +4524,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shiso-leaf',
     name: 'Shiso (perilla) leaf',
+    nameJa: '大葉',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 1,
@@ -4268,6 +4540,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'parsley-raw',
     name: 'Parsley, raw',
+    nameJa: 'パセリ',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 1,
@@ -4283,6 +4556,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'seri-boiled',
     name: 'Seri (Japanese parsley), boiled',
+    nameJa: 'せり',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 4,
@@ -4298,6 +4572,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'fuki-boiled',
     name: 'Fuki (butterbur stalk), boiled',
+    nameJa: 'ふき',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 5,
@@ -4313,6 +4588,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'sawara-boiled',
     name: 'Sawara (Spanish mackerel), boiled',
+    nameJa: 'さわら',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -4328,6 +4604,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'swordfish-boiled',
     name: 'Swordfish (mekajiki), boiled',
+    nameJa: 'めかじき',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -4343,6 +4620,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'octopus-boiled',
     name: 'Octopus, boiled',
+    nameJa: 'たこ',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 4,
@@ -4359,6 +4637,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'oyster-cooked',
     name: 'Oyster, farmed, well cooked',
+    nameJa: 'かき（加熱）',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 4,
@@ -4375,6 +4654,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'tarako',
     name: 'Tarako (salted cod roe), cooked',
+    nameJa: 'たらこ',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 5,
@@ -4391,6 +4671,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'hanpen',
     name: 'Hanpen (whipped fish cake)',
+    nameJa: 'はんぺん',
     group: 'protein',
     allergens: ['egg', 'yam'],
     gramsPerTsp: 4,
@@ -4407,6 +4688,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'wiener-sausage',
     name: 'Wiener sausage',
+    nameJa: 'ウインナー',
     group: 'protein',
     allergens: ['pork'],
     gramsPerTsp: 4,
@@ -4423,6 +4705,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'hikiwari-natto',
     name: 'Hikiwari natto (minced fermented soybeans)',
+    nameJa: 'ひきわり納豆',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -4439,6 +4722,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'gelatin-powder',
     name: 'Gelatin, powdered',
+    nameJa: '粉ゼラチン',
     group: 'protein',
     allergens: ['gelatin'],
     gramsPerTsp: 3,
@@ -4459,6 +4743,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'yaki-nori',
     name: 'Yaki-nori (roasted laver), crumbled',
+    nameJa: '焼きのり',
     group: 'other',
     allergens: [],
     gramsPerTsp: 1,
@@ -4475,6 +4760,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'aonori-dried',
     name: 'Aonori (green laver), dried flakes',
+    nameJa: '青のり',
     group: 'other',
     allergens: [],
     gramsPerTsp: 1,
@@ -4491,6 +4777,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'niboshi-powder',
     name: 'Niboshi (dried sardine), ground',
+    nameJa: '煮干し粉',
     group: 'protein',
     allergens: [],
     gramsPerTsp: 2,
@@ -4506,6 +4793,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'dried-shrimp',
     name: 'Hoshi-ebi (dried shrimp), ground',
+    nameJa: '干しえび',
     group: 'protein',
     allergens: ['shrimp'],
     gramsPerTsp: 2,
@@ -4521,6 +4809,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'hijiki-dried',
     name: 'Hijiki, dried',
+    nameJa: '乾燥ひじき',
     group: 'other',
     allergens: [],
     gramsPerTsp: 1,
@@ -4537,6 +4826,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'kizami-kombu',
     name: 'Kizami kombu (shredded kelp), dried',
+    nameJa: '刻み昆布',
     group: 'other',
     allergens: [],
     gramsPerTsp: 2,
@@ -4553,6 +4843,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'shima-dofu',
     name: 'Shima-dofu (Okinawan tofu)',
+    nameJa: '島豆腐',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -4569,6 +4860,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'yushi-dofu',
     name: 'Yushi-dofu (soft Okinawan tofu)',
+    nameJa: 'ゆし豆腐',
     group: 'protein',
     allergens: ['soy'],
     gramsPerTsp: 5,
@@ -4585,6 +4877,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'beni-imo',
     name: 'Beni-imo (Okinawan purple sweet potato), steamed',
+    nameJa: '紅いも',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 7,
@@ -4601,6 +4894,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'ta-imo',
     name: 'Ta-imo (Okinawan taro), boiled',
+    nameJa: '田芋',
     group: 'vegetable',
     allergens: [],
     gramsPerTsp: 6,
@@ -4617,6 +4911,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
   {
     id: 'mozuku-desalted',
     name: 'Okinawa mozuku, salted then desalted',
+    nameJa: 'もずく（塩抜き）',
     group: 'other',
     allergens: [],
     gramsPerTsp: 5,

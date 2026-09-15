@@ -47,10 +47,22 @@
 }
 
 .option {
+  display: flex;
+  flex-direction: column;
   padding: var(--space-sm) var(--space-md);
   font-size: var(--font-size-sm);
   color: var(--color-text);
   cursor: pointer;
+}
+
+.optionName {
+  overflow-wrap: anywhere;
+}
+
+/* The label name in a Japanese shop, quieter than the English name. */
+.optionNameJa {
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
 }
 
 .optionHighlighted {

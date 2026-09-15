@@ -212,7 +212,10 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
               </p>
             )}
             <div className={styles.heroRow}>
-              <p className={styles.heroName} data-testid="hero-food">{hero.seed.name}</p>
+              <div className={styles.heroNames}>
+                <p className={styles.heroName} data-testid="hero-food">{hero.seed.name}</p>
+                <p className={styles.heroNameJa} data-testid="hero-food-ja" lang="ja">{hero.seed.nameJa}</p>
+              </div>
               <button type="button" className={styles.logBtn} onClick={() => setLogTarget(hero.seed)}>
                 Log it
               </button>
@@ -385,7 +388,9 @@ function OptionRow({ candidate, onSelect }: OptionRowProps) {
         className={`${styles.option} ${READINESS_CLASS[readiness]}`}
         onClick={() => onSelect(seed)}
       >
-        <span className={styles.optionName}>{seed.name}</span>
+        <span className={styles.optionName}>
+          {seed.name} <span className={styles.optionNameJa} lang="ja">{seed.nameJa}</span>
+        </span>
         <span className={styles.optionReason}>
           {heldBy ? `Held back — ${reasons[0]}` : reasons[0] ?? 'Allowed at the current stage.'}
         </span>

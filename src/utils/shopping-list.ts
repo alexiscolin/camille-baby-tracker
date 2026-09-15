@@ -14,6 +14,7 @@ type ProteinKind = 'fish' | 'meat' | 'tofu' | 'egg' | 'dairy';
 export interface ShoppingLine {
   foodId: string;
   name: string;
+  nameJa?: string;
   reason: 'staple' | 'new' | 'maintenance';
   /** For the whole week, rounded up to 10 g. */
   grams?: number;
@@ -102,9 +103,11 @@ export function buildShoppingList(input: {
     const buy = pickBuyHint(food.id, month);
     const grams = amount.grams !== undefined ? roundUp10(amount.grams) : undefined;
     const packs = buy.kind === 'coop' && buy.packGrams && grams ? Math.ceil(grams / buy.packGrams) : undefined;
-    const note = seedById.get(food.id)?.note;
+    const seedRow = seedById.get(food.id);
+    const note = seedRow?.note;
     return {
       foodId: food.id, name: food.name, reason, buy,
+      ...(seedRow ? { nameJa: seedRow.nameJa } : {}),
       ...(grams !== undefined ? { grams } : {}),
       ...(amount.eggs !== undefined ? { eggs: amount.eggs } : {}),
       ...(packs !== undefined ? { packs } : {}),
