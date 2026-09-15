@@ -106,6 +106,15 @@
   color: var(--color-text-secondary);
 }
 
+.heroNames {
+  min-width: 0;
+}
+
+.heroNameJa {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
 .logBtn {
   flex-shrink: 0;
   padding: var(--space-sm) var(--space-md);
@@ -125,6 +134,23 @@
   list-style: disc;
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
+}
+
+/* ─── Shopping ─── */
+.shoppingToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+  min-height: 44px;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: left;
+}
+
+.shoppingChevron {
+  margin-left: auto;
 }
 
 /* ─── Disclosure ─── */
@@ -176,6 +202,12 @@
   color: var(--color-text-muted);
 }
 
+.optionNameJa {
+  font-size: var(--font-size-2xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
 /* Held back: greyed, still tappable, reason always visible. */
 .held .optionName {
   color: var(--color-text-muted);
@@ -183,6 +215,39 @@
 }
 
 .held .optionReason {
+  color: var(--color-feeding);
+}
+
+/* Later and paediatrician rows: quieter than "now", reason still in full. */
+.later .optionName,
+.doctor .optionName {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.doctor .optionReason {
+  color: var(--color-primary);
+}
+
+.optionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.optionsHeading {
+  padding-top: var(--space-xs);
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* A preparation or safety caveat from the seed (cook, quarter, desalt). */
+.caution,
+.optionNote {
+  font-size: var(--font-size-2xs);
   color: var(--color-feeding);
 }
 

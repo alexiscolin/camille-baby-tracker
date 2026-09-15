@@ -4,8 +4,8 @@ import type { Food, SeedFood } from '../types/food';
 
 const catalogFood = (id: string, name: string, usageCount: number) =>
   ({ id, name, group: 'vegetable', usageCount }) as Food;
-const seedFood = (id: string, name: string) =>
-  ({ id, name, group: 'protein' }) as SeedFood;
+const seedFood = (id: string, name: string, nameJa = '') =>
+  ({ id, name, nameJa, group: 'protein' }) as SeedFood;
 
 const foods = [
   catalogFood('shirasu', 'Shirasu', 12),
@@ -56,5 +56,18 @@ describe('rankSuggestions', () => {
 
   it('should honour the limit', () => {
     expect(rankSuggestions('', foods, seed, 2)).toHaveLength(2);
+  });
+
+  it('should find a food by its Japanese name', () => {
+    const jaSeed = [seedFood('carrot', 'Carrot, boiled', 'にんじん'), seedFood('kabocha-seed', 'Kabocha', 'かぼちゃ')];
+    const result = rankSuggestions('にんじん', [], jaSeed);
+    expect(result.map((r) => r.id)).toEqual(['carrot']);
+    expect(result[0].nameJa).toBe('にんじん');
+  });
+
+  it('should give a catalog food the Japanese name of its seed row', () => {
+    const result = rankSuggestions('', [catalogFood('carrot', 'Carrot, boiled', 3)],
+      [seedFood('carrot', 'Carrot, boiled', 'にんじん')]);
+    expect(result[0].nameJa).toBe('にんじん');
   });
 });

@@ -5,6 +5,7 @@ import type { SeedFood } from '../types/food';
 const seed: SeedFood = {
   id: 'kabocha',
   name: 'Kabocha squash',
+  nameJa: 'かぼちゃ',
   group: 'vegetable',
   allergens: [],
   gramsPerTsp: 5,

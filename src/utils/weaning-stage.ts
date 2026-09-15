@@ -2,10 +2,10 @@ import { differenceInMonths } from 'date-fns';
 import type { WeaningStage } from '../types/food';
 
 export const STAGE_LABELS: Record<WeaningStage, string> = {
-  1: 'Stage 1 · 5-6 months',
-  2: 'Stage 2 · 7-8 months',
-  3: 'Stage 3 · 9-11 months',
-  4: 'Stage 4 · 12-18 months',
+  1: 'Stage 1 · 初期 · 5-6 months',
+  2: 'Stage 2 · 中期 · 7-8 months',
+  3: 'Stage 3 · 後期 · 9-11 months',
+  4: 'Stage 4 · 完了期 · 12-18 months',
 };
 
 /** Returns null before weaning normally starts at 5 months. */

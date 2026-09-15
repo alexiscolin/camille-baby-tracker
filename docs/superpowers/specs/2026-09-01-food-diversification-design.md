@@ -284,6 +284,9 @@ precisely on the major allergens.
 
 ## 8. Try next
 
+> Superseded by `2026-09-15-weaning-guidance-design.md` §3–5: suggestions now
+> follow weaning progress and Japanese guidance, not an allergen-first score.
+
 A pure function over the seed table and the family's `foods` collection. No new
 state, no new writes.
 

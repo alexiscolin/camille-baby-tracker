@@ -26,6 +26,9 @@ interface Baby {
   firstName: string;
   birthDate: Timestamp;
   sex?: BabySex;
+  hiddenEventTypes?: EventType[];   // event types the family stopped tracking
+  weaningStartedAt?: Timestamp;     // absent = first logged solid food
+  eczema?: boolean;                 // allergens introduced with a doctor
   createdAt: Timestamp;
 }
 ```

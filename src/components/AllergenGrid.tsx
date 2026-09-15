@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { ALLERGEN_LABELS } from '../utils/allergens';
 import { statusLabel } from '../utils/food-status';
-import { MAINTENANCE_GAP_DAYS } from '../utils/next-foods';
+import { MAINTENANCE_GAP_DAYS } from '../utils/weaning-rules';
 import type { Allergen } from '../utils/allergens';
 import type { AllergenStatus } from '../utils/next-foods';
 import type { FoodStatus } from '../types/food';
@@ -119,7 +119,7 @@ export function AllergenSheet({ status, foodCount, onClose, onSetStatus }: Aller
 
         {status.mandatory && (
           <p className={styles.sheetNote}>
-            One of the 8 allergens Japan requires to be labelled (特定原材料).
+            One of the 9 allergens Japan requires to be labelled (特定原材料).
           </p>
         )}
 

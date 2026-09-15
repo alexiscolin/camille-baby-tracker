@@ -124,8 +124,9 @@ describe('food seed table', () => {
     }
   });
 
-  it('should offer at least 20 stage-1 foods', () => {
-    expect(FOOD_SEED.filter((f) => f.minStage === 1).length).toBeGreaterThanOrEqual(20);
+  it('should offer at least 20 suggestible stage-1 foods', () => {
+    expect(FOOD_SEED.filter((f) => f.minStage === 1 && f.suggest !== false).length)
+      .toBeGreaterThanOrEqual(20);
   });
 
   it('should carry the allergen implied by its name', () => {
@@ -164,5 +165,151 @@ describe('okayu dilution series', () => {
         `${energies[i].id} (${energies[i].kcal}) should exceed ${energies[i - 1].id} (${energies[i - 1].kcal})`,
       ).toBeGreaterThan(energies[i - 1].kcal);
     }
+  });
+});
+
+const byId = new Map(FOOD_SEED.map((f) => [f.id, f]));
+const get = (id: string) => {
+  const food = byId.get(id);
+  if (!food) throw new Error(`${id} missing from the seed`);
+  return food;
+};
+
+/**
+ * Placements, age floors, exclusions and notes corrected against Japanese
+ * guidance. Evidence: docs/superpowers/specs/2026-09-15-weaning-guidance-research/seed-audit.md
+ */
+describe('food seed Japanese names', () => {
+  // Hiragana, katakana or kanji: the name printed on a label in a Japanese shop.
+  const JAPANESE = /[\u3040-\u30ff\u3400-\u9fff]/;
+
+  it('should give every food a short Japanese name', () => {
+    for (const food of FOOD_SEED) {
+      expect(food.nameJa, food.id).toMatch(JAPANESE);
+      expect(food.nameJa.length, food.id).toBeLessThanOrEqual(24);
+    }
+  });
+
+  it('should name the staples the way a Japanese shop does', () => {
+    expect(get('carrot').nameJa).toBe('にんじん');
+    expect(get('okayu-10x').nameJa).toBe('10倍がゆ');
+    expect(get('shima-dofu').nameJa).toBe('島豆腐');
+  });
+});
+
+describe('food seed guidance fields', () => {
+  it('should keep notes short and non-empty', () => {
+    for (const food of FOOD_SEED) {
+      if (food.note === undefined) continue;
+      expect(food.note.trim(), food.id).not.toBe('');
+      expect(food.note.length, food.id).toBeLessThanOrEqual(120);
+    }
+  });
+
+  it('should keep minAgeMonths a whole number of months between 1 and 72', () => {
+    for (const food of FOOD_SEED) {
+      if (food.minAgeMonths === undefined) continue;
+      expect(Number.isInteger(food.minAgeMonths), food.id).toBe(true);
+      expect(food.minAgeMonths, food.id).toBeGreaterThanOrEqual(1);
+      expect(food.minAgeMonths, food.id).toBeLessThanOrEqual(72);
+    }
+  });
+
+  it.each([
+    ['chicken-sasami-boiled', 2], ['firm-tofu', 2], ['katsuobushi', 2], ['chicken-liver-boiled', 3],
+    ['aji-boiled', 3], ['sawara-boiled', 3], ['beef-liver-boiled', 3], ['pork-liver-boiled', 3],
+    ['cream-cheese', 3], ['kanten-powder', 3], ['avocado', 3], ['blueberry', 3],
+    ['prune-dried', 3], ['mikan-canned', 3], ['peach-canned', 3],
+    ['apple-juice', 4], ['orange-juice', 4], ['peanut-paste', 4],
+    ['cooked-white-rice', 4], ['dashi-granules', 4], ['mango', 4], ['papaya', 4],
+    ['barley-boiled', 4], ['millet-cooked', 4], ['quinoa-cooked', 4],
+    ['button-mushroom-boiled', 4], ['shiitake-dried', 4], ['atsuage', 4], ['okara', 4],
+    ['vegetable-juice', 4], ['almond-ground', 4], ['cashew-ground', 4], ['walnut-ground', 4],
+    ['egg-white-boiled', 2], ['katsuo-boiled', 2], ['chicken-mince-cooked', 2],
+    ['saury-grilled', 3],
+    ['soy-sauce-koikuchi', 3], ['soy-sauce-usukuchi', 3], ['miso-red', 3],
+    ['miso-white-sweet', 3], ['salt', 3], ['sugar-white', 2],
+  ] as const)('should place %s at stage %i', (id, stage) => {
+    expect(get(id).minStage).toBe(stage);
+  });
+
+  it.each([
+    ['honey', 12],
+    ['sencha', 19], ['eringi-boiled', 19], ['tarako', 19], ['unagi-kabayaki', 19],
+    ['shrimp-boiled', 24], ['crab-boiled', 24], ['oyster-cooked', 24], ['scallop-boiled', 24],
+    ['konnyaku', 19],
+    ['squid-boiled', 36], ['octopus-boiled', 36], ['ikura', 36],
+    ['abalone-boiled', 72],
+  ] as const)('should not suggest %s before %i months', (id, months) => {
+    expect(get(id).minAgeMonths).toBe(months);
+  });
+
+  it('should never suggest drinks, seasonings, oils or porridge textures', () => {
+    const unsuggested = [
+      'water', 'barley-tea', 'rooibos-tea', 'hojicha', 'sencha', 'oral-rehydration-solution',
+      'formula-powder', 'formula-prepared', 'omoyu', 'okayu-8x', 'okayu-7x',
+      'rice-flour', 'cornstarch', 'katakuriko',
+      'kombu-dashi', 'awase-dashi', 'niboshi-dashi', 'shiitake-dashi', 'dashi-granules',
+      'wheat-flour-soft', 'panko', 'gelatin-powder', 'kanten-powder', 'skim-milk-powder',
+      'salt', 'sugar-white', 'soy-sauce-koikuchi', 'soy-sauce-usukuchi', 'miso-red', 'miso-white-sweet',
+      'ketchup', 'curry-powder', 'lemon-juice', 'yuzu-juice', 'honey', 'kizami-kombu', 'matsutake',
+    ];
+    for (const id of unsuggested) expect(get(id).suggest, id).toBe(false);
+    for (const food of FOOD_SEED.filter((f) => f.group === 'fat' && f.id !== 'sesame-paste')) {
+      expect(food.suggest, food.id).toBe(false);
+    }
+    expect(get('sesame-paste').suggest).toBeUndefined();
+    // Katsuo dashi is introduced on purpose from 初期, and is the first fish a baby meets.
+    expect(get('katsuo-dashi').suggest).toBeUndefined();
+    expect(get('okayu-10x').suggest).toBeUndefined();
+  });
+
+  it.each([
+    'apple', 'pear-western', 'nashi', 'shokupan', 'roll-bread', 'french-bread',
+    'cherry-tomato', 'grape', 'cherry', 'blueberry', 'quail-egg-boiled',
+    'processed-cheese', 'mozzarella', 'wiener-sausage', 'ham-roast', 'kamaboko', 'chikuwa', 'hanpen',
+    'chickpeas-boiled', 'lentils-boiled', 'soybeans-boiled', 'edamame-boiled', 'azuki-boiled',
+    'kidney-beans-boiled', 'soramame-boiled', 'green-peas-boiled', 'sweetcorn-boiled',
+    'peanut-paste', 'almond-ground', 'cashew-ground', 'walnut-ground',
+    'kombu-dashi', 'awase-dashi', 'hijiki-dried', 'hijiki-boiled', 'shirasu', 'shirasuboshi',
+    'milk-whole', 'skim-milk-powder', 'egg-yolk', 'natto', 'hikiwari-natto', 'kinako',
+    'nagaimo-boiled', 'udon-dried', 'somen-boiled', 'wakame-dried-cut', 'wakame-desalted',
+    'yaki-nori', 'aonori-dried', 'tamago-bolo', 'mayonnaise', 'senbei-shoyu', 'pomegranate',
+    'kizami-kombu', 'chicken-liver-boiled', 'pork-liver-boiled', 'beef-liver-boiled', 'konnyaku',
+    'persimmon', 'raisin', 'prune-dried', 'apricot-dried', 'fig-dried', 'banana-dried', 'persimmon-dried',
+    'shiitake-boiled', 'shimeji-boiled', 'maitake-boiled', 'enoki-boiled', 'button-mushroom-boiled',
+    'kanten-powder',
+  ])('should carry a preparation note on %s', (id) => {
+    expect(get(id).note).toBeTruthy();
+  });
+
+  it('should warn that yolk is separated at once and that delayed vomiting needs a doctor', () => {
+    expect(get('egg-yolk').note).toMatch(/separate/i);
+    expect(get('egg-yolk').note).toMatch(/vomit/i);
+  });
+
+  it('should keep kombu iodine within the infant upper limit', () => {
+    // 昆布だし 5,300 µg/100 g; 日本人の食事摂取基準2025 upper limit 250–350 µg/day under 1 year.
+    expect(get('kombu-dashi').note).toMatch(/1 teaspoon/i);
+    expect(get('kizami-kombu').note).toMatch(/iodine/i);
+  });
+
+  it('should warn that liver is very high in vitamin A', () => {
+    for (const id of ['chicken-liver-boiled', 'pork-liver-boiled', 'beef-liver-boiled']) {
+      expect(get(id).note, id).toMatch(/vitamin A/i);
+    }
+  });
+
+  it('should make raw apple a cooked-only food and cherry tomatoes quartered', () => {
+    expect(get('apple').note).toMatch(/not even grated/i);
+    expect(get('cherry-tomato').note).toMatch(/quarter/i);
+  });
+
+  it('should include the Okinawan staples', () => {
+    for (const id of ['shima-dofu', 'yushi-dofu', 'beni-imo', 'ta-imo', 'mozuku-desalted']) {
+      expect(byId.has(id), id).toBe(true);
+    }
+    expect(get('shima-dofu').allergens).toContain('soy');
+    expect(get('shima-dofu').minStage).toBe(2);
   });
 });

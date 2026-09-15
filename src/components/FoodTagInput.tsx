@@ -112,7 +112,8 @@ export function FoodTagInput({ items, onChange, foods, maxItems = MAX_MEAL_ITEMS
               onMouseEnter={() => setHighlightIndex(index)}
               onClick={() => selectSuggestion(suggestion)}
             >
-              {suggestion.name}
+              <span className={styles.optionName}>{suggestion.name}</span>
+              {suggestion.nameJa && <span className={styles.optionNameJa} lang="ja">{suggestion.nameJa}</span>}
             </li>
           ))}
         </ul>
