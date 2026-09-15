@@ -205,7 +205,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['apple'],
     gramsPerTsp: 5,
     minStage: 1,
-    note: 'Cook until soft until 18 months — never raw or only grated (choking).',
+    note: 'Cook until soft until 18 months — never raw, not even grated (choking).',
     sourceRef: 'USDA FoodData Central, apple, raw with skin; used as an estimate for peeled/cooked apple compote typical for weaning',
     nutrients: {
       energyKcal: 52, proteinG: 0.3, fatG: 0.2, carbsG: 11.4, fiberG: 2.4,
@@ -222,7 +222,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['egg'],
     gramsPerTsp: 6,
     minStage: 1,
-    note: 'Hard-boiled yolk only; start with a tiny amount.',
+    note: 'Hard-boil, separate the yolk at once, start tiny. Repeated vomiting hours later: see a doctor.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), chicken egg, yolk, raw; used as an estimate for hard-boiled yolk',
     nutrients: {
       energyKcal: 336, proteinG: 16.5, fatG: 34.3, carbsG: 0.2, fiberG: 0,
@@ -471,6 +471,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['wheat'],
     gramsPerTsp: 2,
     minStage: 3,
+    suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), panko, dried',
     nutrients: {
       energyKcal: 373, proteinG: 14.6, fatG: 6.8, carbsG: 59.4, fiberG: 4.0,
@@ -487,6 +488,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['wheat'],
     gramsPerTsp: 3,
     minStage: 2,
+    suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), wheat flour, soft (hakurikiko), first grade',
     nutrients: {
       energyKcal: 349, proteinG: 8.3, fatG: 1.5, carbsG: 73.3, fiberG: 2.5,
@@ -1119,7 +1121,6 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 2,
-    note: 'Grate or cook until 18 months.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), cucumber, fruit, raw',
     nutrients: {
       energyKcal: 13, proteinG: 1.0, fatG: 0.1, carbsG: 1.9, fiberG: 1.1,
@@ -1316,6 +1317,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 4,
     minStage: 3,
+    note: 'Cut across the fibres into pieces under 1 cm.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), shiitake, cultivated, boiled; protein given on the amino-acid-composition basis used for the 8th edition energy calculation',
     nutrients: {
       energyKcal: 22, proteinG: 2.0, fatG: 0.3, carbsG: 1.0, fiberG: 4.4,
@@ -1332,6 +1334,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 4,
     minStage: 3,
+    note: 'Cut across the fibres into pieces under 1 cm.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), buna-shimeji, boiled; protein on the amino-acid-composition basis',
     nutrients: {
       energyKcal: 22, proteinG: 2.2, fatG: 0.2, carbsG: 1.0, fiberG: 4.2,
@@ -1348,6 +1351,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 4,
     minStage: 4,
+    note: 'Cut across the fibres into pieces under 1 cm.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), enokitake, boiled; chopped fine for weaning, the long strands are hard to chew',
     nutrients: {
       energyKcal: 34, proteinG: 2.5, fatG: 0.1, carbsG: 3.3, fiberG: 4.5,
@@ -1364,6 +1368,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 4,
     minStage: 3,
+    note: 'Cut across the fibres into pieces under 1 cm.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), maitake, boiled; protein on the amino-acid-composition basis',
     nutrients: {
       energyKcal: 22, proteinG: 1.2, fatG: 0.3, carbsG: 2.1, fiberG: 4.3,
@@ -1414,6 +1419,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 4,
     minStage: 4,
+    note: 'Cut across the fibres into pieces under 1 cm.',
     sourceRef: 'USDA FoodData Central, mushrooms, white, cooked, boiled, drained, without salt',
     nutrients: {
       energyKcal: 28, proteinG: 2.2, fatG: 0.5, carbsG: 3.1, fiberG: 2.2,
@@ -1721,7 +1727,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 1,
-    note: 'Cook until soft until 18 months — never raw or only grated (choking).',
+    note: 'Cook until soft until 18 months — never raw, not even grated (choking).',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), western pear (yonashi), raw, flesh only',
     nutrients: {
       energyKcal: 48, proteinG: 0.3, fatG: 0.1, carbsG: 12.0, fiberG: 1.9,
@@ -1738,7 +1744,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 2,
-    note: 'Cook until soft until 18 months — never raw or only grated (choking).',
+    note: 'Cook until soft until 18 months — never raw, not even grated (choking).',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), nashi (Japanese pear), raw, flesh only',
     nutrients: {
       energyKcal: 38, proteinG: 0.3, fatG: 0.1, carbsG: 8.3, fiberG: 0.9,
@@ -1884,6 +1890,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 3,
+    note: 'Mashed only until 18 months — ripe persimmon can choke.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), sweet persimmon (amagaki), raw',
     nutrients: {
       energyKcal: 63, proteinG: 0.4, fatG: 0.2, carbsG: 13.3, fiberG: 1.6,
@@ -1917,6 +1924,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 3,
+    note: 'Soak in hot water until soft, then chop finely.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), prune, dried',
     nutrients: {
       energyKcal: 211, proteinG: 2.4, fatG: 0.2, carbsG: 48.0, fiberG: 7.1,
@@ -2111,6 +2119,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 3,
     minStage: 4,
+    note: 'Soak in hot water until soft, then chop finely.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), anzu (apricot), dried',
     nutrients: {
       energyKcal: 296, proteinG: 3.7, fatG: 0.4, carbsG: 60.6, fiberG: 9.8,
@@ -2127,6 +2136,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 3,
     minStage: 3,
+    note: 'Soak in hot water until soft, then chop finely.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), raisin (dried grape); chop before serving, whole raisins are a choking hazard',
     nutrients: {
       energyKcal: 324, proteinG: 2.7, fatG: 0.2, carbsG: 76.2, fiberG: 4.1,
@@ -2159,6 +2169,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 3,
     minStage: 4,
+    note: 'Soak in hot water until soft, then chop finely.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), persimmon, dried (hoshigaki)',
     nutrients: {
       energyKcal: 274, proteinG: 1.5, fatG: 1.7, carbsG: 57.3, fiberG: 14.0,
@@ -2585,7 +2596,8 @@ export const FOOD_SEED: readonly SeedFood[] = [
     group: 'protein',
     allergens: ['chicken'],
     gramsPerTsp: 4,
-    minStage: 2,
+    minStage: 3,
+    note: 'Very high in vitamin A: keep to a few grams, about once a week.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), chicken liver, raw; used as an estimate for the boiled and sieved preparation given for iron in Japanese weaning. Very high in vitamin A: guidance limits liver to small portions once or twice a week.',
     nutrients: {
       energyKcal: 100, proteinG: 18.9, fatG: 3.1, carbsG: 0.6, fiberG: 0,
@@ -2650,6 +2662,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['pork'],
     gramsPerTsp: 4,
     minStage: 3,
+    note: 'Very high in vitamin A: keep to a few grams, about once a week.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), pork liver, raw; used as an estimate for the boiled and sieved preparation. Very high in vitamin A: limit to small portions once or twice a week.',
     nutrients: {
       energyKcal: 114, proteinG: 20.4, fatG: 3.4, carbsG: 2.5, fiberG: 0,
@@ -2715,6 +2728,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['beef'],
     gramsPerTsp: 4,
     minStage: 3,
+    note: 'Very high in vitamin A: keep to a few grams, about once a week.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), beef liver, raw; used as an estimate for the boiled and sieved preparation. High in vitamin A: limit to small portions once or twice a week.',
     nutrients: {
       energyKcal: 119, proteinG: 19.6, fatG: 3.7, carbsG: 3.7, fiberG: 0,
@@ -2862,7 +2876,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['soy'],
     gramsPerTsp: 5,
     minStage: 2,
-    note: 'Chop; warm it at first.',
+    note: 'Pour boiling water over and chop, until 18 months.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), ito-hiki natto; chop and rinse the strings for early stages',
     nutrients: {
       energyKcal: 190, proteinG: 16.5, fatG: 10.0, carbsG: 5.4, fiberG: 6.7,
@@ -2879,7 +2893,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['soy'],
     gramsPerTsp: 2,
     minStage: 1,
-    note: 'Mix into moist food — dry powder makes babies choke.',
+    note: 'Mix into moist food — dry powder makes babies cough.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), kinako, whole soybean, yellow soybean',
     nutrients: {
       energyKcal: 451, proteinG: 36.7, fatG: 25.7, carbsG: 10.4, fiberG: 18.1,
@@ -3351,6 +3365,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     gramsPerTsp: 2,
     minStage: 2,
     note: 'Cooking only before 12 months.',
+    suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), skimmed milk powder',
     nutrients: {
       energyKcal: 359, proteinG: 34.0, fatG: 1.0, carbsG: 53.3, fiberG: 0,
@@ -3735,7 +3750,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 1,
-    note: 'High in iodine: a few spoons a day, alternate with katsuo dashi.',
+    note: 'Very high in iodine: at most 1 teaspoon a day under 1 year; katsuo dashi has almost none.',
     suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), kombu dashi, cold-water extraction',
     nutrients: {
@@ -3753,7 +3768,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 1,
-    suggest: false,
+    note: 'Unsalted, home-made or baby dashi; a first taste of fish.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), katsuo dashi, first extraction',
     nutrients: {
       energyKcal: 2, proteinG: 0.4, fatG: 0, carbsG: 0, fiberG: 0,
@@ -3770,7 +3785,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 1,
-    note: 'High in iodine: a few spoons a day, alternate with katsuo dashi.',
+    note: 'Contains kombu iodine: at most 2 teaspoons a day under 1 year.',
     suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), katsuo-kombu dashi, first extraction',
     nutrients: {
@@ -3839,7 +3854,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 4,
     minStage: 2,
-    note: 'Desalt well and chop finely.',
+    note: 'Still salty after desalting (1.4 g/100 g): prefer dried cut wakame.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), wakame, blanched and salted, desalted before use; chop very fine, seaweed is slippery',
     nutrients: {
       energyKcal: 16, proteinG: 1.5, fatG: 0.3, carbsG: 0.5, fiberG: 2.9,
@@ -4196,6 +4211,8 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 2,
     minStage: 3,
+    note: 'Unlike gelatin it does not melt in the mouth: set it soft and cut small.',
+    suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), powdered kanten (agar); used a gram at a time to set purees',
     nutrients: {
       energyKcal: 160, proteinG: 0.2, fatG: 0.2, carbsG: 2.7, fiberG: 79.0,
@@ -4212,7 +4229,8 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 5,
     minStage: 4,
-    minAgeMonths: 36,
+    minAgeMonths: 19,
+    note: 'Only as ito-konnyaku cut to 1 cm pieces (choking).',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), konnyaku, made from refined flour; rubbery and a serious choking hazard, chop very small',
     nutrients: {
       energyKcal: 5, proteinG: 0.1, fatG: 0, carbsG: 0.1, fiberG: 2.2,
@@ -4382,6 +4400,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 3,
     minStage: 4,
+    note: 'Soak in hot water until soft, then chop finely.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), ichijiku (fig), dried; chop finely, dried fruit sticks to the palate',
     nutrients: {
       energyKcal: 291, proteinG: 3.0, fatG: 1.1, carbsG: 64.6, fiberG: 10.7,
@@ -4398,6 +4417,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['banana'],
     gramsPerTsp: 3,
     minStage: 4,
+    note: 'Soak in hot water until soft, then chop finely.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), banana, dried',
     nutrients: {
       energyKcal: 299, proteinG: 3.8, fatG: 0.4, carbsG: 71.5, fiberG: 7.0,
@@ -4710,7 +4730,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['soy'],
     gramsPerTsp: 5,
     minStage: 2,
-    note: 'Warm it at first.',
+    note: 'Pour boiling water over it, until 18 months.',
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), hikiwari natto; already minced, so the usual natto for weaning',
     nutrients: {
       energyKcal: 185, proteinG: 16.6, fatG: 10.0, carbsG: 4.6, fiberG: 5.9,
@@ -4727,6 +4747,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: ['gelatin'],
     gramsPerTsp: 3,
     minStage: 3,
+    suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), gelatin; used a gram at a time to set purees, and a declared Japanese allergen',
     nutrients: {
       energyKcal: 347, proteinG: 87.6, fatG: 0.3, carbsG: 0, fiberG: 0,
@@ -4831,6 +4852,7 @@ export const FOOD_SEED: readonly SeedFood[] = [
     allergens: [],
     gramsPerTsp: 2,
     minStage: 3,
+    note: 'Extremely high in iodine and salt: not a food for babies.',
     suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), kizami kombu. Denser than hijiki, about 2 g per 5 mL spoon dry. Available carbohydrate is stated on the monosaccharide-equivalent basis the 8th edition uses for energy, not carbohydrate-by-difference minus fibre, which overstates it badly in kelp. Kombu is extremely high in iodine, so keep infant servings small and occasional.',
     nutrients: {

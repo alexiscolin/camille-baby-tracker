@@ -129,8 +129,11 @@ water, teas, formula, rehydration solution). Null when neither exists.
 | Phase | Reached when | Source |
 | --- | --- | --- |
 | `porridge` | Weaning started (or not yet started) | Guide p.32 |
-| `vegetables` | (a grain is introduced **and** day ≥ 7) **or** a vegetable/fruit is already introduced | 那覇市 (day 7–10), 港区 (week 2) |
-| `proteins` | phase ≥ vegetables **and** ((a vegetable/fruit is introduced **and** day ≥ 14) **or** a protein/dairy food is already introduced) | 那覇市 (day 11–15), 港区 (week 3) |
+| `vegetables` | (a grain eaten at ≥ 3 meals **and** day ≥ 7) **or** a vegetable/fruit or protein food is already introduced | 那覇市 (day 7–10), 港区 (week 2) |
+| `proteins` | (a vegetable/fruit eaten at ≥ 3 meals **and** ≥ 7 days since the first vegetable/fruit) **or** a protein/dairy food is already introduced | 那覇市 「野菜を始めてから約1週間」, 港区 (week 3), 豊見城市 (day 19–21) |
+
+"Eaten at ≥ 3 meals" (`USED_TO_EXPOSURES`) is a heuristic stand-in for the
+guide's 「慣れてきたら」: the log counts meals, not how much was eaten.
 
 The "already introduced" branches mean the app follows the family when they went
 faster; it never demotes them.
@@ -238,8 +241,8 @@ from the first rule that applies:
 | --- | --- | --- | --- |
 | 1 | `suggest === false` | excluded | — |
 | 2 | Shares an allergen with a `suspected` / manual-status food (existing) | `held` | "Shares Egg with Egg yolk, which is flagged." |
-| 3 | Carries an allergen from `ASK_DOCTOR_ALLERGENS` (or the eczema list when `eczema`) **not yet introduced** | `doctor` | "Japanese guidance gives no early-introduction advice for Peanut — decide with your paediatrician." / eczema: "With eczema, introduce Egg with your doctor." |
-| 4 | `minAgeMonths > ageMonths` | `later` | "From 12 months." / >18: "Not during weaning (from ~36 months)." |
+| 3 | `minAgeMonths > ageMonths` | `later` | "From 12 months." / >18: "Not during weaning (from ~36 months)." |
+| 4 | Carries an allergen from `ASK_DOCTOR_ALLERGENS` (or the eczema list when `eczema`) **not yet introduced** | `doctor` | "Japanese guidance gives no early-introduction advice for Peanut — decide with your paediatrician." / eczema: "With eczema, introduce Egg with your doctor." |
 | 5 | Stage 1 and the food's group is not open in the current phase | `later` | "Once vegetables are in (around day 7)." / "Once protein foods start (around day 14)." |
 | 6 | `minStage > stage` | `later` | "At stage 2 — tongue-mashable foods, around 7–8 months." |
 | 7 | A ladder rung or allergen entry food is not yet introduced | `later` | "After white fish." / "After egg yolk." / "After silken tofu." |
@@ -647,3 +650,39 @@ asked (project rule). Suggested commit order for a readable history:
   experts suggest early peanut *might* be considered there for eczema babies,
   under a doctor. The app keeps peanut in `doctor`; the family decides with its
   paediatrician.
+
+## 14. Independent counter-review and resolutions
+
+After implementation, two reviewers who had not seen the research re-checked
+the rules and the seed changes against primary sources
+(`2026-09-15-weaning-guidance-research/counter-review-*.md`). Confirmed:
+portions, the 2026 allergen lists, honey and cow's milk, the fish and egg
+order, and about 35 of the 51 stage changes. Resolved in code:
+
+| Finding | Resolution |
+| --- | --- |
+| Protein opened 14 days after the start, not about a week after vegetables | Counted from the first vegetable/fruit (§3) |
+| Moving on by days alone ignores 「慣れてきたら」 | The opening food must have been eaten at ≥ 3 meals (heuristic) |
+| Raw fish roe showed "ask your paediatrician" at 6 months | Age floors are checked before doctor routing (§5, rules 3–4) |
+| Eczema handled as three foods only | The hero tells an eczema family to see the doctor before starting and to treat the eczema first |
+| "Egg is the one allergen not to delay" misstates the guide | "Japanese guidance says not to delay egg"; the guide says no food should be delayed |
+| Weekday-daytime advice only for major allergens | One first-taste line for every new food in the hero |
+| "One new food a day" presented as the guide's | Attributed to city guides, with "often the same one for 2–3 days"; shopping plans at most 2 new foods a week at stage 1 |
+| Weekly maintenance for all 29 labelled allergens | Mandatory-list allergens only |
+| Sawara grouped as blue-backed; swordfish and shishamo unsourced | Sawara white; swordfish and shishamo removed from the ladder |
+| Kombu dashi note allowed ~2–3× the infant iodine upper limit | At most 1 teaspoon a day under 1 year (awase: 2); kizami kombu warned |
+| Liver rows had no vitamin A warning (5 g reaches the 600 µgRAE limit) | Notes on all three; chicken liver moved to stage 3 like pork and beef |
+| Katsuo dashi hidden though introduced on purpose from 初期 | Suggestible again |
+| Missing choking notes | Persimmon, dried fruit, mushrooms, kanten, konnyaku (ito-konnyaku, 19 months) |
+| Apple note could read as "grated is fine"; wakame still salty; cucumber note unsourced | Reworded; wakame warned; cucumber note removed |
+| Flour, panko, gelatin, kanten and skim milk suggested while other ingredients were not | All ingredients `suggest: false` |
+
+Kept deliberately, with the reason:
+
+- Yolk after tofu or white fish: the guide lists them as one step; the wait costs days, and the rule comment says it is this app's choice.
+- 3 days between new mandatory-list allergens: no Japanese source sets a number; kept for attribution, labelled heuristic.
+- Milk and wheat routed to the doctor with eczema: no source singles them out; kept as the conservative choice (95.6 % of reactions at age 0 with egg), labelled in the rule comment.
+- Peanut and tree nuts with the paediatrician: the national guide says delay does not prevent allergy, but gives no early-introduction advice; an Okinawan allergist suggests early intake might be considered for eczema babies in high-prevalence Okinawa — a decision for the family and their doctor.
+- Crab at 24 months and wheat at stage 2 (bread porridge appears in some 初期 tables): stricter than some sources, not unsafe; wheat stays out of the porridge week.
+- Readiness signs, texture progression, preterm corrected age and how much the baby ate are not modelled; the hero states the readiness signs in words.
+

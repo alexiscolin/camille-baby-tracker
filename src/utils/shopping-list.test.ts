@@ -82,6 +82,14 @@ describe('buildShoppingList', () => {
     expect(tofu.map((l) => l.reason)).toEqual(['staple']);
   });
 
+  it('should plan only a couple of new foods a week during the first stage', () => {
+    // First-month calendars (那覇市, 豊見城市, 港区) add about one new food a week.
+    const foods = [fromSeed('okayu-10x', 12), fromSeed('carrot', 3)];
+    const list = build(progress({ ageMonths: 6, ageStage: 1, stage: 1, phase: 'vegetables', mealsPerDay: 1, daysSinceStart: 12 }), foods);
+    const fresh = [...(list?.grain ?? []), ...(list?.vegFruit ?? []), ...(list?.protein ?? [])].filter((l) => l.reason === 'new');
+    expect(fresh.length).toBeLessThanOrEqual(2);
+  });
+
   it('should spread the week\'s new foods across grain, vegetables and protein', () => {
     const foods = [fromSeed('okayu-5x', 40), fromSeed('silken-tofu', 30), fromSeed('cod', 20)];
     const list = build(progress(), foods);

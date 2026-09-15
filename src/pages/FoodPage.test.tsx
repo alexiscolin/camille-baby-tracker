@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { FoodPage } from './FoodPage';
 import type { Food } from '../types/food';
+import type { Baby } from '../types/events';
 
 vi.mock('../hooks/useFoods', () => ({ useFoods: vi.fn() }));
 vi.mock('../hooks/useRangeEvents', () => ({ useRangeEvents: vi.fn() }));
@@ -61,11 +62,23 @@ describe('FoodPage', () => {
     expect(screen.getByRole('button', { name: /log it/i })).toBeInTheDocument();
   });
 
+  it('should tell a family with eczema to see the doctor before starting', async () => {
+    withFoods([]);
+    render(<FoodPage {...props} baby={{ ...(baby as Baby), eczema: true }} />);
+    expect(await screen.findByText(/eczema.*doctor before starting/i)).toBeInTheDocument();
+  });
+
+  it('should give first-taste advice for every new food, not only allergens', async () => {
+    withFoods([]);
+    render(<FoodPage {...props} />);
+    expect(await screen.findByText(/weekday daytime, when a clinic is open/i)).toBeInTheDocument();
+  });
+
   it('should keep a first-week baby on porridge and say when vegetables come', async () => {
     withFoods([makeFood({ id: 'okayu-10x', name: 'Okayu', group: 'grain', firstTriedAt: daysAgo(2) })]);
     render(<FoodPage {...props} />);
     expect(await screen.findByText(/keep going with porridge/i)).toBeInTheDocument();
-    expect(screen.getByText(/vegetables come in around day 7/i)).toBeInTheDocument();
+    expect(screen.getByText(/vegetables come in after about a week/i)).toBeInTheDocument();
   });
 
   it('should start a baby who has not started on rice porridge', async () => {

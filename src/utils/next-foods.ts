@@ -45,7 +45,7 @@ export type AllergenStatus = {
 };
 
 export type Pace = {
-  /** A food first tried today: the guide's practice is one new food a day. */
+  /** A food first tried today. City weaning guides (那覇市, 奈良市) suggest at most one new food a day. */
   newToday: Food | null;
   lastAllergen: { name: string; at: Date } | null;
   /** When the next new allergen fits; null when one is fine today. */
@@ -209,18 +209,20 @@ export function rankNextFoods({ seed, foods, progress, now }: NextFoodsInput): N
       };
     }
 
+    // The age floor comes first: raw fish roe at 6 months is "not yet", not a
+    // question for the paediatrician.
+    if (s.minAgeMonths !== undefined && progress.ageMonths < s.minAgeMonths) {
+      return waiting('later', s.minAgeMonths > 18
+        ? `Not during weaning (from about ${s.minAgeMonths} months).`
+        : `From ${s.minAgeMonths} months.`);
+    }
+
     const doctorAllergen = newAllergens.find((a) => doctorAllergens.has(a));
     if (doctorAllergen) {
       const label = allergenLabel(doctorAllergen);
       return waiting('doctor', progress.eczema && ECZEMA_DOCTOR_ALLERGENS.includes(doctorAllergen)
         ? `With eczema, introduce ${label} with your doctor.`
         : `Japanese guidance gives no early-introduction advice for ${label} — decide with your paediatrician.`);
-    }
-
-    if (s.minAgeMonths !== undefined && progress.ageMonths < s.minAgeMonths) {
-      return waiting('later', s.minAgeMonths > 18
-        ? `Not during weaning (from about ${s.minAgeMonths} months).`
-        : `From ${s.minAgeMonths} months.`);
     }
 
     if (!openGroups.has(s.group)) {
@@ -243,7 +245,7 @@ export function rankNextFoods({ seed, foods, progress, now }: NextFoodsInput): N
     let score = 0;
     if (s.allergens.includes(PUSHED_ALLERGEN) && !introducedAllergens.has(PUSHED_ALLERGEN)) {
       score += 40;
-      reasons.push('Egg is the one allergen Japanese guidance says not to delay — well cooked, a tiny amount first.');
+      reasons.push('Japanese guidance says not to delay egg — well cooked, a tiny amount first.');
     }
     const step = stepReason(s, introducedIds, introducedGroups);
     if (step) {
@@ -268,9 +270,6 @@ export function rankNextFoods({ seed, foods, progress, now }: NextFoodsInput): N
     }
     if (newPaced.length > 1) {
       reasons.push(`Carries ${newPaced.length} new allergens — harder to attribute a reaction if one occurs.`);
-    }
-    if (newPaced.length > 0) {
-      reasons.push('Give it on a weekday morning, when a clinic is open.');
     }
     return { seed: s, readiness: 'now', score, reasons };
   };
@@ -327,8 +326,11 @@ export function getAllergenStatus(foods: Food[], now: Date): AllergenStatus[] {
       ? new Date(Math.max(...triedFoods.map((f) => (f.lastTriedAt ?? f.firstTriedAt).toDate().getTime())))
       : undefined;
 
-    const needsMaintenance =
-      introduced && lastTriedAt !== undefined && now.getTime() - lastTriedAt.getTime() > MAINTENANCE_GAP_DAYS * DAY_MS;
+    // Keeping exposure up is advice about the major allergens; nothing asks
+    // for weekly apple or gelatin.
+    const needsMaintenance = isPacedAllergen(allergen)
+      && introduced && lastTriedAt !== undefined
+      && now.getTime() - lastTriedAt.getTime() > MAINTENANCE_GAP_DAYS * DAY_MS;
 
     return {
       allergen,

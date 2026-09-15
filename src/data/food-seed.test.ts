@@ -216,7 +216,7 @@ describe('food seed guidance fields', () => {
   });
 
   it.each([
-    ['chicken-sasami-boiled', 2], ['firm-tofu', 2], ['katsuobushi', 2],
+    ['chicken-sasami-boiled', 2], ['firm-tofu', 2], ['katsuobushi', 2], ['chicken-liver-boiled', 3],
     ['aji-boiled', 3], ['sawara-boiled', 3], ['beef-liver-boiled', 3], ['pork-liver-boiled', 3],
     ['cream-cheese', 3], ['kanten-powder', 3], ['avocado', 3], ['blueberry', 3],
     ['prune-dried', 3], ['mikan-canned', 3], ['peach-canned', 3],
@@ -237,7 +237,8 @@ describe('food seed guidance fields', () => {
     ['honey', 12],
     ['sencha', 19], ['eringi-boiled', 19], ['tarako', 19], ['unagi-kabayaki', 19],
     ['shrimp-boiled', 24], ['crab-boiled', 24], ['oyster-cooked', 24], ['scallop-boiled', 24],
-    ['squid-boiled', 36], ['octopus-boiled', 36], ['ikura', 36], ['konnyaku', 36],
+    ['konnyaku', 19],
+    ['squid-boiled', 36], ['octopus-boiled', 36], ['ikura', 36],
     ['abalone-boiled', 72],
   ] as const)('should not suggest %s before %i months', (id, months) => {
     expect(get(id).minAgeMonths).toBe(months);
@@ -248,7 +249,8 @@ describe('food seed guidance fields', () => {
       'water', 'barley-tea', 'rooibos-tea', 'hojicha', 'sencha', 'oral-rehydration-solution',
       'formula-powder', 'formula-prepared', 'omoyu', 'okayu-8x', 'okayu-7x',
       'rice-flour', 'cornstarch', 'katakuriko',
-      'kombu-dashi', 'katsuo-dashi', 'awase-dashi', 'niboshi-dashi', 'shiitake-dashi', 'dashi-granules',
+      'kombu-dashi', 'awase-dashi', 'niboshi-dashi', 'shiitake-dashi', 'dashi-granules',
+      'wheat-flour-soft', 'panko', 'gelatin-powder', 'kanten-powder', 'skim-milk-powder',
       'salt', 'sugar-white', 'soy-sauce-koikuchi', 'soy-sauce-usukuchi', 'miso-red', 'miso-white-sweet',
       'ketchup', 'curry-powder', 'lemon-juice', 'yuzu-juice', 'honey', 'kizami-kombu', 'matsutake',
     ];
@@ -257,6 +259,8 @@ describe('food seed guidance fields', () => {
       expect(food.suggest, food.id).toBe(false);
     }
     expect(get('sesame-paste').suggest).toBeUndefined();
+    // Katsuo dashi is introduced on purpose from 初期, and is the first fish a baby meets.
+    expect(get('katsuo-dashi').suggest).toBeUndefined();
     expect(get('okayu-10x').suggest).toBeUndefined();
   });
 
@@ -271,13 +275,33 @@ describe('food seed guidance fields', () => {
     'milk-whole', 'skim-milk-powder', 'egg-yolk', 'natto', 'hikiwari-natto', 'kinako',
     'nagaimo-boiled', 'udon-dried', 'somen-boiled', 'wakame-dried-cut', 'wakame-desalted',
     'yaki-nori', 'aonori-dried', 'tamago-bolo', 'mayonnaise', 'senbei-shoyu', 'pomegranate',
-    'cucumber-raw',
+    'kizami-kombu', 'chicken-liver-boiled', 'pork-liver-boiled', 'beef-liver-boiled', 'konnyaku',
+    'persimmon', 'raisin', 'prune-dried', 'apricot-dried', 'fig-dried', 'banana-dried', 'persimmon-dried',
+    'shiitake-boiled', 'shimeji-boiled', 'maitake-boiled', 'enoki-boiled', 'button-mushroom-boiled',
+    'kanten-powder',
   ])('should carry a preparation note on %s', (id) => {
     expect(get(id).note).toBeTruthy();
   });
 
+  it('should warn that yolk is separated at once and that delayed vomiting needs a doctor', () => {
+    expect(get('egg-yolk').note).toMatch(/separate/i);
+    expect(get('egg-yolk').note).toMatch(/vomit/i);
+  });
+
+  it('should keep kombu iodine within the infant upper limit', () => {
+    // 昆布だし 5,300 µg/100 g; 日本人の食事摂取基準2025 upper limit 250–350 µg/day under 1 year.
+    expect(get('kombu-dashi').note).toMatch(/1 teaspoon/i);
+    expect(get('kizami-kombu').note).toMatch(/iodine/i);
+  });
+
+  it('should warn that liver is very high in vitamin A', () => {
+    for (const id of ['chicken-liver-boiled', 'pork-liver-boiled', 'beef-liver-boiled']) {
+      expect(get(id).note, id).toMatch(/vitamin A/i);
+    }
+  });
+
   it('should make raw apple a cooked-only food and cherry tomatoes quartered', () => {
-    expect(get('apple').note).toMatch(/cook/i);
+    expect(get('apple').note).toMatch(/not even grated/i);
     expect(get('cherry-tomato').note).toMatch(/quarter/i);
   });
 

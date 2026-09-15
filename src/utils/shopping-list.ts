@@ -48,8 +48,14 @@ const PORTIONS: Record<WeaningStage, Record<'grain' | 'vegFruit' | ProteinKind, 
 };
 
 const FIRST_TASTE_GRAMS = 15;
-/** One new food a day, spread so a week is not five leafy greens in a row. */
+/** At most one new food a day, spread so a week is not five leafy greens in a row. */
 const NEW_PER_SLOT: Record<Slot, number> = { grain: 1, vegFruit: 3, protein: 3 };
+/**
+ * New foods planned per week. Practice: first-month calendars (那覇市, 豊見城市,
+ * 港区) add about one new food a week and keep each for a few days; later
+ * stages allow one a day.
+ */
+const NEW_PER_WEEK: Record<WeaningStage, number> = { 1: 2, 2: 7, 3: 7, 4: 7 };
 const DAYS = 7;
 const VEG_FRUIT_STAPLES = 4;
 const PROTEIN_KINDS = 3;
@@ -120,7 +126,7 @@ export function buildShoppingList(input: {
   const planned: SeedFood[] = [];
   let lastAllergenDay = -Infinity;
   for (const c of rankNextFoods({ seed, foods, progress, now })) {
-    if (planned.length >= DAYS) break;
+    if (planned.length >= NEW_PER_WEEK[stage]) break;
     if (c.readiness !== 'now') continue;
     const slot = slotOf(c.seed.group);
     if (!slot || !slotOpen[slot]) continue;

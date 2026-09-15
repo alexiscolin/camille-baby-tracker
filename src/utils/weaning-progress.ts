@@ -2,7 +2,7 @@ import { differenceInCalendarDays, differenceInMonths } from 'date-fns';
 import type { Timestamp } from 'firebase/firestore';
 import type { Food, FoodGroup, WeaningPhase, WeaningStage } from '../types/food';
 import { getWeaningStage } from './weaning-stage';
-import { NON_SOLID_IDS, PHASE_DAYS, PROGRESSION_STAGE_DAYS } from './weaning-rules';
+import { NON_SOLID_IDS, PHASE_DAYS, PROGRESSION_STAGE_DAYS, USED_TO_EXPOSURES } from './weaning-rules';
 
 /**
  * Where the baby is in weaning. Age alone is only a guide (「月齢はあくまでも
@@ -31,12 +31,16 @@ function introducedSolids(foods: Food[]) {
   return foods.filter(isIntroduced).filter((f) => !NON_SOLID_IDS.has(f.id));
 }
 
-/** The first solid food logged. Drinks do not start weaning. */
-export function deriveWeaningStart(foods: Food[]): Date | null {
-  return introducedSolids(foods).reduce<Date | null>((earliest, f) => {
+function earliestTried(foods: (Food & { firstTriedAt: Timestamp })[]): Date | null {
+  return foods.reduce<Date | null>((earliest, f) => {
     const d = f.firstTriedAt.toDate();
     return !earliest || d < earliest ? d : earliest;
   }, null);
+}
+
+/** The first solid food logged. Drinks do not start weaning. */
+export function deriveWeaningStart(foods: Food[]): Date | null {
+  return earliestTried(introducedSolids(foods));
 }
 
 function progressionStage(days: number, hasProtein: boolean): WeaningStage {
@@ -62,12 +66,19 @@ export function getWeaningProgress(input: {
   const daysSinceStart = startedAt ? differenceInCalendarDays(now, startedAt) : null;
   const days = daysSinceStart ?? 0;
 
-  const hasGrain = has(['grain']);
-  const hasVegFruit = has(['vegetable', 'fruit']);
+  const VEG_FRUIT: readonly FoodGroup[] = ['vegetable', 'fruit'];
+  const usedTo = (groups: readonly FoodGroup[]) =>
+    introduced.some((f) => groups.includes(f.group) && f.exposureCount >= USED_TO_EXPOSURES);
+  const hasVegFruit = has(VEG_FRUIT);
   const hasProtein = has(['protein', 'dairy']);
+  const firstVegFruit = earliestTried(introduced.filter((f) => VEG_FRUIT.includes(f.group)));
+  const daysSinceVegFruit = firstVegFruit ? differenceInCalendarDays(now, firstVegFruit) : 0;
+
   // The "already introduced" branches follow a family that went faster.
-  const vegetablesOpen = hasVegFruit || hasProtein || (hasGrain && days >= PHASE_DAYS.vegetables);
-  const proteinsOpen = hasProtein || (hasVegFruit && days >= PHASE_DAYS.proteins);
+  const vegetablesOpen = hasVegFruit || hasProtein
+    || (usedTo(['grain']) && days >= PHASE_DAYS.vegetables);
+  const proteinsOpen = hasProtein
+    || (usedTo(VEG_FRUIT) && daysSinceVegFruit >= PHASE_DAYS.proteinsAfterVegetables);
 
   const ageStage = getWeaningStage(birthDate, now);
   const byProgress = startedAt ? progressionStage(days, hasProtein) : 1;

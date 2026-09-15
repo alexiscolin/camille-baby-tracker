@@ -85,7 +85,7 @@ describe('rankNextFoods — the guide order', () => {
     const after = rankNextFoods({ seed: FOOD_SEED, foods: [...base, fromSeed('silken-tofu', 5)], progress: p, now: NOW });
     const yolk = find(after, 'egg-yolk');
     expect(yolk.readiness).toBe('now');
-    expect(yolk.reasons.join(' ')).toMatch(/not to delay/i);
+    expect(yolk.reasons.join(' ')).toMatch(/not to delay egg/i);
     expect(after.find((c) => c.readiness === 'now')?.seed.id).toBe('egg-yolk');
   });
 
@@ -117,6 +117,22 @@ describe('rankNextFoods — allergen policy', () => {
       expect(find(result, id).readiness, id).toBe('doctor');
     }
     expect(find(result, 'peanut-paste').reasons[0]).toMatch(/paediatrician/i);
+  });
+
+  it('should say "not during weaning" for raw fish roe at 6 months, before any doctor routing', () => {
+    const p = progress({ ageMonths: 6, ageStage: 1, stage: 1 });
+    const ikura = find(rankNextFoods({ seed: FOOD_SEED, foods: [], progress: p, now: NOW }), 'ikura');
+    expect(ikura.readiness).toBe('later');
+    expect(ikura.reasons[0]).toMatch(/not during weaning/i);
+    const older = progress({ ageMonths: 40, ageStage: 4, stage: 4 });
+    expect(find(rankNextFoods({ seed: FOOD_SEED, foods: [], progress: older, now: NOW }), 'ikura').readiness).toBe('doctor');
+  });
+
+  it('should not claim egg is the only allergen not to delay', () => {
+    const foods = [fromSeed('okayu-10x', 20), fromSeed('carrot', 12), fromSeed('silken-tofu', 5)];
+    const p = progress({ ageMonths: 6, ageStage: 1, stage: 1, daysSinceStart: 20, mealsPerDay: 1 });
+    const yolk = find(rankNextFoods({ seed: FOOD_SEED, foods, progress: p, now: NOW }), 'egg-yolk');
+    expect(yolk.reasons.join(' ')).not.toMatch(/the one allergen/i);
   });
 
   it('should treat an allergen already introduced by the family as a normal food', () => {
@@ -256,6 +272,14 @@ describe('getAllergenStatus', () => {
     const egg = (d: Date) => getAllergenStatus(at(d), NOW).find((a) => a.allergen === 'egg');
     expect(egg(subDays(NOW, 7))?.needsMaintenance).toBe(false);
     expect(egg(new Date(subDays(NOW, 7).getTime() - 1000))?.needsMaintenance).toBe(true);
+  });
+
+  it('should only ask to keep up the major allergens, not fruit on the recommended list', () => {
+    const lapsed = (allergen: 'apple' | 'egg') => food({ allergens: [allergen],
+      firstTriedAt: ts(subDays(NOW, 30)), lastTriedAt: ts(subDays(NOW, 20)) });
+    const status = getAllergenStatus([lapsed('apple'), lapsed('egg')], NOW);
+    expect(status.find((a) => a.allergen === 'apple')?.needsMaintenance).toBe(false);
+    expect(status.find((a) => a.allergen === 'egg')?.needsMaintenance).toBe(true);
   });
 
   it('should not flag maintenance for an allergen never introduced', () => {

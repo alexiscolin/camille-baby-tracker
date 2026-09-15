@@ -6,9 +6,9 @@ import type { Food, FoodGroup } from '../types/food';
 
 const NOW = new Date('2026-09-15T09:00:00');
 
-const tried = (id: string, group: FoodGroup, daysAgo: number): Food => ({
+const tried = (id: string, group: FoodGroup, daysAgo: number, exposureCount = 3): Food => ({
   id, name: id, group, allergens: [], gramsPerTsp: 5, minStage: 1, status: 'untried',
-  usageCount: 1, exposureCount: 1, reactionEventIds: [], nutrientSource: 'seed',
+  usageCount: 1, exposureCount, reactionEventIds: [], nutrientSource: 'seed',
   firstTriedAt: Timestamp.fromDate(subDays(NOW, daysAgo)),
 });
 
@@ -48,9 +48,22 @@ describe('getWeaningProgress', () => {
     expect(progress(6, [tried('okayu-10x', 'grain', 7)])).toMatchObject({ phase: 'vegetables', daysSinceStart: 7 });
   });
 
-  it('should open protein foods on day 14 once a vegetable is in, not on day 13', () => {
-    expect(progress(6, [tried('okayu-10x', 'grain', 14), tried('carrot', 'vegetable', 6)]).phase).toBe('proteins');
-    expect(progress(6, [tried('okayu-10x', 'grain', 13), tried('carrot', 'vegetable', 6)]).phase).toBe('vegetables');
+  it('should open protein foods about a week after the first vegetable, not two weeks after the start', () => {
+    // 那覇市: 「野菜を始めてから約1週間たったら たんぱく質を1さじからプラス」
+    expect(progress(6, [tried('okayu-10x', 'grain', 14), tried('carrot', 'vegetable', 7)]).phase).toBe('proteins');
+    expect(progress(6, [tried('okayu-10x', 'grain', 14), tried('carrot', 'vegetable', 1)]).phase).toBe('vegetables');
+    expect(progress(6, [tried('okayu-10x', 'grain', 30), tried('carrot', 'vegetable', 6)]).phase).toBe('vegetables');
+  });
+
+  it('should wait until the baby is used to porridge before opening vegetables', () => {
+    // 「慣れてきたら」: a porridge eaten at a single meal is not yet a habit.
+    expect(progress(6, [tried('okayu-10x', 'grain', 9, 1)]).phase).toBe('porridge');
+    expect(progress(6, [tried('okayu-10x', 'grain', 9, 3)]).phase).toBe('vegetables');
+  });
+
+  it('should wait until the baby is used to a vegetable before opening protein foods', () => {
+    const foods = [tried('okayu-10x', 'grain', 20), tried('carrot', 'vegetable', 10, 1)];
+    expect(progress(6, foods).phase).toBe('vegetables');
   });
 
   it('should follow a family that went faster instead of demoting it', () => {

@@ -192,6 +192,12 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
 
       {/* ─── Hero: one answer ─── */}
       <section className={styles.hero}>
+        {progress?.eczema && (
+          <p className={styles.caution}>
+            Eczema: Japanese guidance asks you to see your doctor before starting solids, and to
+            get the eczema treated first.
+          </p>
+        )}
         {!stage ? (
           <>
             <span className={styles.kicker}>Not yet</span>
@@ -203,7 +209,8 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
             <span className={styles.kicker}>{pace.newToday ? 'Tomorrow' : 'Try next'}</span>
             {pace.newToday && (
               <p className={styles.heroNote}>
-                Already tried something new today ({pace.newToday.name}) — one new food a day.
+                Already tried something new today ({pace.newToday.name}). City weaning guides
+                suggest at most one new food a day, often the same one for 2–3 days.
               </p>
             )}
             {!progress?.startedAt && (
@@ -224,14 +231,18 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
               {hero.reasons.map((reason) => <li key={reason}>{reason}</li>)}
             </ul>
             {hero.seed.note && <p className={styles.caution}>{hero.seed.note}</p>}
+            <p className={styles.hint}>
+              First tastes: one spoon, well cooked, on a weekday daytime, when a clinic is open.
+            </p>
           </>
         ) : progress?.phase === 'porridge' ? (
           <>
             <span className={styles.kicker}>This week</span>
             <p className={styles.heroName}>Keep going with porridge</p>
             <p className={styles.heroNote}>
-              Add a spoon every couple of days as the baby takes it. Vegetables come in
-              around day 7, then tofu, white fish and egg yolk around day 14.
+              Add a spoon every couple of days as the baby takes it. Vegetables come in after
+              about a week, once porridge is a habit; tofu, white fish and egg yolk about a week
+              after the first vegetable.
             </p>
           </>
         ) : (
