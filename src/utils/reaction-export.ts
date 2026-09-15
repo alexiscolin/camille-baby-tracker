@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { ALLERGEN_LABELS } from './allergens';
+import { allergenLabel } from './allergens';
 import type { BabyEvent } from '../types/events';
 import type { Food, MealEvent } from '../types/food';
 
@@ -31,7 +31,7 @@ export function buildReactionCsv(events: BabyEvent[], byId: Map<string, Food>): 
     const names = suspects.map((id) => byId.get(id)?.name ?? id);
     const allergens = [
       ...new Set(suspects.flatMap((id) => byId.get(id)?.allergens ?? [])),
-    ].map((a) => ALLERGEN_LABELS[a]);
+    ].map((a) => allergenLabel(a));
     const at = meal.timestamp.toDate();
 
     return [

@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
-import { format } from 'date-fns';
-import { Baby as BabyIcon, AlertCircle, Check, Settings, Download, ListChecks } from 'lucide-react';
-import { updateBaby } from '../services/family';
+import { format, parse } from 'date-fns';
+import { Baby as BabyIcon, AlertCircle, Check, Settings, Download, ListChecks, Salad } from 'lucide-react';
+import { setWeaningStartedAt, updateBaby } from '../services/family';
 import { formatBabyAge } from '../utils/date';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { useFoods } from '../hooks/useFoods';
 import { buildReactionCsv } from '../utils/reaction-export';
+import { deriveWeaningStart } from '../utils/weaning-progress';
 import type { Baby, BabySex, EventType } from '../types/events';
 import styles from './SettingsPage.module.css';
 
@@ -66,6 +67,32 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
     [events, foodsById],
   );
   const hasReactions = reactionCsv.trim().split('\n').length > 1;
+
+  /**
+   * Solids settings are preferences, written straight through like the
+   * tracked types. A cleared start date deletes the field, so suggestions go
+   * back to counting from the first logged food.
+   */
+  const derivedStart = useMemo(() => deriveWeaningStart(foods), [foods]);
+  const storedStart = baby?.weaningStartedAt?.toDate() ?? null;
+  const [weaningError, setWeaningError] = useState('');
+
+  async function saveWeaning(write: () => Promise<unknown>) {
+    setWeaningError('');
+    try {
+      await write();
+    } catch {
+      setWeaningError('Could not save. Please try again.');
+    }
+  }
+
+  function changeStart(value: string) {
+    // A half-typed desktop date arrives as ''; only a full date is written.
+    if (!value) return;
+    const date = parse(value, 'yyyy-MM-dd', new Date());
+    if (Number.isNaN(date.getTime())) return;
+    void saveWeaning(() => setWeaningStartedAt(familyId, babyId, date));
+  }
 
   const hasChanges = firstName.trim() !== (baby?.firstName ?? '')
     || (sex || undefined) !== baby?.sex;
@@ -185,6 +212,66 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
             </div>
           )}
         </form>
+      </div>
+
+      {/* ─── Solids ─── */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <Salad size={20} className={styles.sectionIcon} />
+          Solids
+        </h2>
+        {/* .form gives the date input the same field styling as the profile form. */}
+        <div className={styles.form}>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="weaning-start">Solids started</label>
+            <input
+              id="weaning-start"
+              type="date"
+              value={storedStart ? format(storedStart, 'yyyy-MM-dd') : ''}
+              onChange={(e) => changeStart(e.target.value)}
+            />
+          </div>
+          <p className={styles.hint}>
+            {storedStart
+              ? 'Set by hand. Suggestions count the days from this date.'
+              : derivedStart
+                ? `Taken from the first logged food (${format(derivedStart, 'd MMM yyyy')}). Set it if you started before logging.`
+                : 'Taken from the first logged food once there is one.'}
+          </p>
+          {storedStart && (
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.secondaryBtn}
+                onClick={() => void saveWeaning(() => setWeaningStartedAt(familyId, babyId, null))}
+              >
+                Use first logged food
+              </button>
+            </div>
+          )}
+        </div>
+        <label className={styles.checkRow}>
+          <input
+            type="checkbox"
+            className={styles.checkbox}
+            checked={baby?.eczema ?? false}
+            onChange={(e) => {
+              const eczema = e.target.checked;
+              void saveWeaning(() => updateBaby(familyId, babyId, { eczema }));
+            }}
+          />
+          <span className={styles.checkLabel}>Eczema or atopic dermatitis</span>
+        </label>
+        <p className={styles.hint}>
+          Japanese guidance: get eczema under control first, and introduce egg, milk
+          and wheat with your doctor.
+        </p>
+        {weaningError && (
+          <div className={styles.error}>
+            <AlertCircle size={16} />
+            <span>{weaningError}</span>
+          </div>
+        )}
       </div>
 
       {/* ─── Tracked events ─── */}

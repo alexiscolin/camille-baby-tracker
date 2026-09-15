@@ -85,6 +85,17 @@
   padding-top: var(--space-xs);
 }
 
+.secondaryBtn {
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .saveBtn {
   padding: var(--space-sm) var(--space-xl);
   background: var(--color-primary);

@@ -6,6 +6,7 @@ import {
   addDoc,
   updateDoc,
   arrayUnion,
+  deleteField,
   Timestamp,
   doc,
   getDoc,
@@ -76,9 +77,16 @@ export function subscribeToBaby(
 export async function updateBaby(
   familyId: string,
   babyId: string,
-  data: Partial<Pick<Baby, 'firstName' | 'sex' | 'hiddenEventTypes'>>,
+  data: Partial<Pick<Baby, 'firstName' | 'sex' | 'hiddenEventTypes' | 'eczema'>>,
 ) {
   return updateDoc(doc(db, 'families', familyId, 'babies', babyId), data);
+}
+
+/** `null` deletes the field, so the start date is derived from the log again. */
+export async function setWeaningStartedAt(familyId: string, babyId: string, date: Date | null) {
+  return updateDoc(doc(db, 'families', familyId, 'babies', babyId), {
+    weaningStartedAt: date ? Timestamp.fromDate(date) : deleteField(),
+  });
 }
 
 export async function addBaby(

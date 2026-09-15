@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { SettingsPage } from './SettingsPage';
@@ -7,9 +7,11 @@ import type { Baby } from '../types/events';
 import { EVENT_TYPES } from '../utils/event-config';
 
 const mockUpdateBaby = vi.fn();
+const mockSetWeaningStartedAt = vi.fn();
 
 vi.mock('../services/family', () => ({
   updateBaby: (...args: unknown[]) => mockUpdateBaby(...args),
+  setWeaningStartedAt: (...args: unknown[]) => mockSetWeaningStartedAt(...args),
 }));
 
 function makeBaby(overrides: Partial<Baby> = {}): Baby {
@@ -31,6 +33,34 @@ describe('SettingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUpdateBaby.mockResolvedValue(undefined);
+    mockSetWeaningStartedAt.mockResolvedValue(undefined);
+  });
+
+  it('should write the eczema setting straight through', async () => {
+    const user = userEvent.setup();
+    render(<SettingsPage {...baseProps} baby={makeBaby()} />);
+    await user.click(screen.getByRole('checkbox', { name: /eczema/i }));
+    expect(mockUpdateBaby).toHaveBeenCalledWith('fam-1', 'baby-1', { eczema: true });
+  });
+
+  it('should reflect a stored eczema flag', () => {
+    render(<SettingsPage {...baseProps} baby={makeBaby({ eczema: true })} />);
+    expect(screen.getByRole('checkbox', { name: /eczema/i })).toBeChecked();
+  });
+
+  it('should save the date solids started', () => {
+    render(<SettingsPage {...baseProps} baby={makeBaby()} />);
+    fireEvent.change(screen.getByLabelText(/solids started/i), { target: { value: '2026-09-01' } });
+    expect(mockSetWeaningStartedAt).toHaveBeenCalledWith('fam-1', 'baby-1', new Date(2026, 8, 1));
+  });
+
+  it('should clear the start date back to the first logged food', async () => {
+    const user = userEvent.setup();
+    render(<SettingsPage {...baseProps}
+      baby={makeBaby({ weaningStartedAt: Timestamp.fromDate(new Date(2026, 8, 1)) })} />);
+    expect(screen.getByLabelText(/solids started/i)).toHaveValue('2026-09-01');
+    await user.click(screen.getByRole('button', { name: /use first logged food/i }));
+    expect(mockSetWeaningStartedAt).toHaveBeenCalledWith('fam-1', 'baby-1', null);
   });
 
   it('should display baby profile section', () => {

@@ -127,6 +127,14 @@ service cloud.firestore {
             && request.resource.data.hiddenEventTypes.hasOnly(types));
     }
 
+    // Helper: optional weaning fields on a baby. Absent means "derive the
+    // start from the log" and "no eczema".
+    function hasValidWeaningFields() {
+      let data = request.resource.data;
+      return (!('weaningStartedAt' in data) || data.weaningStartedAt is timestamp)
+        && (!('eczema' in data) || data.eczema is bool);
+    }
+
     // Helper: validate measurement update
     function isValidMeasurementUpdate() {
       let data = request.resource.data;
@@ -240,13 +248,15 @@ service cloud.firestore {
           && request.resource.data.firstName.size() <= 100
           && request.resource.data.birthDate is timestamp
           && (!('sex' in request.resource.data) || request.resource.data.sex in ['male', 'female'])
-          && hasValidHiddenEventTypes();
+          && hasValidHiddenEventTypes()
+          && hasValidWeaningFields();
         allow update: if isFamilyMember(familyId)
           && request.resource.data.firstName is string
           && request.resource.data.firstName.size() > 0
           && request.resource.data.firstName.size() <= 100
           && (!('sex' in request.resource.data) || request.resource.data.sex in ['male', 'female'])
-          && hasValidHiddenEventTypes();
+          && hasValidHiddenEventTypes()
+          && hasValidWeaningFields();
         allow delete: if false;
       }
 

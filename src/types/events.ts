@@ -74,6 +74,10 @@ export interface Baby {
    * tracked, so nothing needs migrating; see `visibleEventTypes`.
    */
   hiddenEventTypes?: EventType[];
+  /** Set in Settings when solids started before logging; absent = first logged solid food. */
+  weaningStartedAt?: Timestamp;
+  /** Eczema or atopic dermatitis: egg, milk and wheat are introduced with a doctor. */
+  eczema?: boolean;
   createdAt: Timestamp;
 }
 

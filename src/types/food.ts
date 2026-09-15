@@ -39,6 +39,9 @@ export type FoodGroup = (typeof FOOD_GROUPS)[number];
 /** 1: 初期 5-6mo, 2: 中期 7-8mo, 3: 後期 9-11mo, 4: 完了期 12-18mo. */
 export type WeaningStage = 1 | 2 | 3 | 4;
 
+/** The first month of 初期, in the guide's order: porridge → vegetables and fruit → protein. */
+export type WeaningPhase = 'porridge' | 'vegetables' | 'proteins';
+
 export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 export type MealSlot = (typeof MEAL_SLOTS)[number];
 
@@ -115,6 +118,12 @@ export interface SeedFood {
   allergens: Allergen[];
   gramsPerTsp: number;
   minStage: WeaningStage;
+  /** Hard age floor in months, independent of stage and progress (honey: 12). */
+  minAgeMonths?: number;
+  /** One-line preparation or safety caveat shown with suggestions. ≤ 120 chars. */
+  note?: string;
+  /** `false` keeps the food loggable but never suggested (drinks, seasonings, oils, textures). */
+  suggest?: false;
   nutrients: Nutrients;
   sourceRef: string;
 }

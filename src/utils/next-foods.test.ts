@@ -1,16 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { getIntroductionWindow, rankNextFoods, getAllergenStatus } from './next-foods';
-import type { Food, SeedFood } from '../types/food';
 import { Timestamp } from 'firebase/firestore';
+import { subDays } from 'date-fns';
+import { rankNextFoods, getAllergenStatus, getPace } from './next-foods';
+import type { NextFoodCandidate } from './next-foods';
+import type { WeaningProgress } from './weaning-progress';
+import { FOOD_SEED } from '../data/food-seed';
+import type { Food, SeedFood } from '../types/food';
 
-const NOW = new Date('2026-09-01T08:00:00Z');
-const ts = (iso: string) => Timestamp.fromDate(new Date(iso));
+const NOW = new Date('2026-09-15T09:00:00');
+const ts = (d: Date) => Timestamp.fromDate(d);
 
 const food = (over: Partial<Food>): Food => ({
   id: 'x', name: 'X', group: 'vegetable', allergens: [], gramsPerTsp: 5,
   minStage: 1, status: 'safe', usageCount: 1, exposureCount: 3,
-  reactionEventIds: [], nutrientSource: 'seed', ...over,
+  reactionEventIds: [], nutrientSource: 'seed', firstTriedAt: ts(subDays(NOW, 20)), ...over,
 });
+
+const fromSeed = (id: string, daysAgo: number, over: Partial<Food> = {}): Food => {
+  const s = FOOD_SEED.find((f) => f.id === id);
+  if (!s) throw new Error(id);
+  return food({ id, name: s.name, group: s.group, allergens: [...s.allergens],
+    minStage: s.minStage, firstTriedAt: ts(subDays(NOW, daysAgo)), ...over });
+};
 
 const seed = (over: Partial<SeedFood>): SeedFood => ({
   id: 's', name: 'S', group: 'vegetable', allergens: [], gramsPerTsp: 5,
@@ -23,173 +34,231 @@ const seed = (over: Partial<SeedFood>): SeedFood => ({
   ...over,
 });
 
-describe('getIntroductionWindow', () => {
-  it('should be open when nothing new was introduced recently', () => {
-    const foods = [food({ firstTriedAt: ts('2026-08-20T00:00:00Z') })];
-    expect(getIntroductionWindow(foods, NOW)).toEqual({ open: true });
+const progress = (over: Partial<WeaningProgress> = {}): WeaningProgress => ({
+  ageMonths: 8, ageStage: 2, startedAt: subDays(NOW, 40), daysSinceStart: 40,
+  phase: 'proteins', stage: 2, mealsPerDay: 2, eczema: false, ...over,
+});
+
+const find = (list: NextFoodCandidate[], id: string) => {
+  const c = list.find((x) => x.seed.id === id);
+  if (!c) throw new Error(`${id} not ranked`);
+  return c;
+};
+
+describe('rankNextFoods — the guide order', () => {
+  // The bug the family reported: one week in, allergens were the top picks.
+  it('should suggest no allergen to a 7-month-old one week into weaning', () => {
+    const foods = [fromSeed('okayu-10x', 7), fromSeed('carrot', 1)];
+    const p = progress({ ageMonths: 7, stage: 1, phase: 'vegetables', daysSinceStart: 7, mealsPerDay: 1 });
+    const result = rankNextFoods({ seed: FOOD_SEED, foods, progress: p, now: NOW });
+    const now = result.filter((c) => c.readiness === 'now');
+    expect(now.length).toBeGreaterThan(0);
+    const forbidden = ['egg', 'milk', 'wheat', 'soy', 'peanut', 'walnut', 'cashew', 'almond',
+      'macadamia', 'pistachio', 'shrimp', 'crab', 'buckwheat'];
+    for (const c of now) {
+      expect(c.seed.allergens.filter((a) => forbidden.includes(a)), c.seed.id).toEqual([]);
+    }
+    expect(['vegetable', 'fruit']).toContain(now[0].seed.group);
   });
 
-  it('should be closed within three days of the last new food', () => {
-    const foods = [food({ firstTriedAt: ts('2026-08-31T00:00:00Z') })];
-    const result = getIntroductionWindow(foods, NOW);
-    expect(result.open).toBe(false);
+  it('should offer only porridge before weaning starts', () => {
+    const p = progress({ ageMonths: 6, ageStage: 1, stage: 1, phase: 'porridge', startedAt: null, daysSinceStart: null, mealsPerDay: 1 });
+    const now = rankNextFoods({ seed: FOOD_SEED, foods: [], progress: p, now: NOW })
+      .filter((c) => c.readiness === 'now');
+    expect(now.map((c) => c.seed.id)).toEqual(['okayu-10x']);
   });
 
-  it('should report the date the window reopens', () => {
-    const foods = [food({ firstTriedAt: ts('2026-08-31T00:00:00Z') })];
-    const result = getIntroductionWindow(foods, NOW);
-    if (result.open) throw new Error('expected a closed window');
-    expect(result.nextDate.toISOString().slice(0, 10)).toBe('2026-09-03');
+  it('should explain when vegetables and proteins open', () => {
+    const p = progress({ stage: 1, phase: 'porridge', daysSinceStart: 2, mealsPerDay: 1 });
+    const result = rankNextFoods({ seed: FOOD_SEED, foods: [fromSeed('okayu-10x', 2)], progress: p, now: NOW });
+    expect(find(result, 'carrot').reasons[0]).toMatch(/vegetables are in/i);
+    expect(find(result, 'silken-tofu').reasons[0]).toMatch(/protein foods start/i);
   });
 
-  it('should be open when nothing has ever been introduced', () => {
-    expect(getIntroductionWindow([], NOW)).toEqual({ open: true });
+  it('should hold egg yolk until silken tofu or white fish is in, then push it', () => {
+    const base = [fromSeed('okayu-10x', 20), fromSeed('carrot', 12)];
+    const p = progress({ ageMonths: 6, ageStage: 1, stage: 1, phase: 'proteins', daysSinceStart: 20, mealsPerDay: 1 });
+    const before = rankNextFoods({ seed: FOOD_SEED, foods: base, progress: p, now: NOW });
+    expect(find(before, 'egg-yolk')).toMatchObject({ readiness: 'later' });
+    expect(find(before, 'egg-yolk').reasons[0]).toMatch(/after silken tofu or white fish/i);
+
+    const after = rankNextFoods({ seed: FOOD_SEED, foods: [...base, fromSeed('silken-tofu', 5)], progress: p, now: NOW });
+    const yolk = find(after, 'egg-yolk');
+    expect(yolk.readiness).toBe('now');
+    expect(yolk.reasons.join(' ')).toMatch(/not to delay/i);
+    expect(after.find((c) => c.readiness === 'now')?.seed.id).toBe('egg-yolk');
   });
 
-  it('should be open exactly at the boundary, three days after the last new food', () => {
-    // NOW is 2026-09-01T08:00:00Z; three days before that, to the second, is
-    // 2026-08-29T08:00:00Z. The window uses >=, so this exact instant must
-    // already be open, not still closed.
-    const foods = [food({ firstTriedAt: ts('2026-08-29T08:00:00Z') })];
-    expect(getIntroductionWindow(foods, NOW)).toEqual({ open: true });
+  it('should keep white → red → blue-backed fish in order', () => {
+    const foods = [fromSeed('okayu-5x', 40), fromSeed('carrot', 35), fromSeed('silken-tofu', 30)];
+    const result = rankNextFoods({ seed: FOOD_SEED, foods, progress: progress({ stage: 3, ageStage: 3, ageMonths: 9 }), now: NOW });
+    expect(find(result, 'salmon-boiled').reasons[0]).toMatch(/after white fish/i);
+    const withCod = rankNextFoods({ seed: FOOD_SEED, foods: [...foods, fromSeed('cod', 10)], progress: progress({ stage: 3, ageStage: 3, ageMonths: 9 }), now: NOW });
+    expect(find(withCod, 'salmon-boiled').readiness).toBe('now');
+    expect(find(withCod, 'aji-boiled').reasons[0]).toMatch(/after red fish/i);
+  });
+
+  it('should wait for the entry food of an allergen', () => {
+    const foods = [fromSeed('okayu-5x', 40), fromSeed('carrot', 35), fromSeed('cod', 30)];
+    const result = rankNextFoods({ seed: FOOD_SEED, foods, progress: progress(), now: NOW });
+    expect(find(result, 'natto').reasons[0]).toMatch(/after silken tofu/i);
+  });
+
+  it('should explain a stage that is not reached yet', () => {
+    const result = rankNextFoods({ seed: FOOD_SEED, foods: [fromSeed('okayu-10x', 30)], progress: progress({ stage: 1, ageStage: 1, ageMonths: 6, phase: 'proteins' }), now: NOW });
+    expect(find(result, 'okayu-5x').reasons[0]).toMatch(/stage 2/i);
   });
 });
 
-describe('rankNextFoods', () => {
-  const base = { foods: [] as Food[], stage: 2 as const, now: NOW,
-                 recentNutrients: null };
-
-  it('should exclude foods above the current stage', () => {
-    const result = rankNextFoods({ ...base,
-      seed: [seed({ id: 'natto', minStage: 3 }), seed({ id: 'carrot', minStage: 1 })] });
-    expect(result.map((c) => c.seed.id)).toEqual(['carrot']);
+describe('rankNextFoods — allergen policy', () => {
+  it('should route peanut and tree nuts to the paediatrician, never to now', () => {
+    const result = rankNextFoods({ seed: FOOD_SEED, foods: [], progress: progress({ stage: 4, ageStage: 4, ageMonths: 14 }), now: NOW });
+    for (const id of ['peanut-paste', 'walnut-ground', 'cashew-ground', 'soba-boiled']) {
+      expect(find(result, id).readiness, id).toBe('doctor');
+    }
+    expect(find(result, 'peanut-paste').reasons[0]).toMatch(/paediatrician/i);
   });
 
-  it('should exclude foods already in the catalog', () => {
-    const result = rankNextFoods({ ...base,
-      foods: [food({ id: 'carrot', exposureCount: 1 })],
-      seed: [seed({ id: 'carrot' }), seed({ id: 'daikon' })] });
-    expect(result.map((c) => c.seed.id)).toEqual(['daikon']);
+  it('should treat an allergen already introduced by the family as a normal food', () => {
+    const foods = [fromSeed('peanut-paste', 30)];
+    const result = rankNextFoods({ seed: [seed({ id: 'peanut-cookie', allergens: ['peanut'], minStage: 1 })], foods, progress: progress(), now: NOW });
+    expect(result[0].readiness).not.toBe('doctor');
   });
 
-  it('should alternate groups among tied candidates instead of clustering them', () => {
-    const result = rankNextFoods({ ...base, seed: [
-      seed({ id: 'udon', group: 'grain', allergens: ['wheat'] }),
-      seed({ id: 'somen', group: 'grain', allergens: ['wheat'] }),
-      seed({ id: 'shokupan', group: 'grain', allergens: ['wheat'] }),
-      seed({ id: 'egg-yolk', group: 'protein', allergens: ['egg'] }),
-      seed({ id: 'whole-egg', group: 'protein', allergens: ['egg'] }),
-      seed({ id: 'omelette', group: 'protein', allergens: ['egg'] }),
-    ] });
-    expect(result.map((c) => c.seed.group)).toEqual(
-      ['grain', 'protein', 'grain', 'protein', 'grain', 'protein'],
-    );
-    // Order within a group is untouched: only the interleaving moved.
-    expect(result.filter((c) => c.seed.group === 'grain').map((c) => c.seed.id))
-      .toEqual(['udon', 'somen', 'shokupan']);
+  it('should send egg, milk and wheat to the doctor when the baby has eczema', () => {
+    const foods = [fromSeed('okayu-10x', 20), fromSeed('carrot', 12), fromSeed('silken-tofu', 5)];
+    const p = progress({ ageMonths: 6, ageStage: 1, stage: 1, daysSinceStart: 20, mealsPerDay: 1, eczema: true });
+    const yolk = find(rankNextFoods({ seed: FOOD_SEED, foods, progress: p, now: NOW }), 'egg-yolk');
+    expect(yolk.readiness).toBe('doctor');
+    expect(yolk.reasons[0]).toMatch(/eczema/i);
   });
 
-  it('should keep a higher-scoring candidate ahead of a more diverse one', () => {
-    const result = rankNextFoods({ ...base, seed: [
-      seed({ id: 'udon', group: 'grain', allergens: ['wheat'] }),
-      seed({ id: 'somen', group: 'grain', allergens: ['wheat'] }),
-      seed({ id: 'daikon', group: 'vegetable' }),
-    ] });
-    expect(result.map((c) => c.seed.id)).toEqual(['udon', 'somen', 'daikon']);
-  });
-
-  it('should rank an un-introduced mandatory allergen first', () => {
-    const result = rankNextFoods({ ...base,
-      seed: [seed({ id: 'daikon' }), seed({ id: 'egg-yolk', allergens: ['egg'] })] });
-    expect(result[0].seed.id).toBe('egg-yolk');
-    expect(result[0].reasons.join(' ')).toMatch(/allergen/i);
-  });
-
-  it('should rank an iron-rich food up when recent iron is low', () => {
-    const lowIron = { ironMg: 0.2 } as never;
-    const result = rankNextFoods({ ...base, recentNutrients: lowIron,
-      seed: [
-        seed({ id: 'daikon' }),
-        seed({ id: 'liver', group: 'protein',
-               nutrients: { ...seed({}).nutrients, ironMg: 9 } }),
-      ] });
-    expect(result[0].seed.id).toBe('liver');
-    expect(result[0].reasons.join(' ')).toMatch(/iron/i);
+  it('should space new allergens and say from when', () => {
+    const foods = [fromSeed('okayu-5x', 40), fromSeed('silken-tofu', 30), fromSeed('egg-yolk', 1)];
+    const result = rankNextFoods({ seed: FOOD_SEED, foods, progress: progress(), now: NOW });
+    const yoghurt = find(result, 'plain-yoghurt');
+    expect(yoghurt.readiness).toBe('later');
+    expect(yoghurt.reasons[0]).toMatch(/between new allergens/i);
   });
 
   it('should hold back a food sharing an allergen with a suspected food', () => {
-    const result = rankNextFoods({ ...base,
-      foods: [food({ id: 'mango', name: 'Mango', status: 'suspected',
-                     allergens: ['kiwi'] })],
-      seed: [seed({ id: 'kiwi', allergens: ['kiwi'] })] });
-    expect(result[0].heldBy).toEqual({ allergen: 'kiwi', foodName: 'Mango' });
+    const result = rankNextFoods({ seed: [seed({ id: 'kiwi', allergens: ['kiwi'] })],
+      foods: [food({ id: 'mango', name: 'Mango', status: 'suspected', allergens: ['kiwi'] })],
+      progress: progress(), now: NOW });
+    expect(result[0]).toMatchObject({ readiness: 'held', heldBy: { allergen: 'kiwi', foodName: 'Mango' } });
   });
 
-  it('should sort held-back candidates last but still return them', () => {
-    const result = rankNextFoods({ ...base,
-      foods: [food({ id: 'mango', name: 'Mango', status: 'confirmed_allergy',
-                     allergens: ['kiwi'] })],
-      seed: [seed({ id: 'kiwi', allergens: ['kiwi'] }), seed({ id: 'daikon' })] });
-    expect(result[result.length - 1].seed.id).toBe('kiwi');
-    expect(result).toHaveLength(2);
+  it('should ignore an allergen key retired from the labelling list', () => {
+    const result = rankNextFoods({ seed: [seed({ id: 'daikon' })],
+      foods: [food({ id: 'm', name: 'M', status: 'suspected', allergens: ['matsutake' as never] })],
+      progress: progress(), now: NOW });
+    expect(result[0].readiness).toBe('now');
+  });
+});
+
+describe('rankNextFoods — ages, exclusions and order', () => {
+  it('should never list unsuggested foods such as honey or water', () => {
+    const ids = rankNextFoods({ seed: FOOD_SEED, foods: [], progress: progress({ stage: 4, ageStage: 4, ageMonths: 15 }), now: NOW })
+      .map((c) => c.seed.id);
+    expect(ids).not.toContain('honey');
+    expect(ids).not.toContain('water');
   });
 
-  it('should score a two-mandatory-allergen food the same as a one-allergen food (max, not sum)', () => {
-    const [oneAllergen] = rankNextFoods({ ...base,
-      seed: [seed({ id: 'egg-yolk', allergens: ['egg'] })] });
-    const [twoAllergens] = rankNextFoods({ ...base,
-      seed: [seed({ id: 'egg-wheat-mix', allergens: ['egg', 'wheat'] })] });
+  it('should put squid off until after weaning', () => {
+    const result = rankNextFoods({ seed: FOOD_SEED, foods: [], progress: progress({ stage: 4, ageStage: 4, ageMonths: 15 }), now: NOW });
+    expect(find(result, 'squid-boiled')).toMatchObject({ readiness: 'later' });
+    expect(find(result, 'squid-boiled').reasons[0]).toMatch(/not during weaning/i);
+  });
 
-    expect(twoAllergens.score).toBe(oneAllergen.score);
-    expect(twoAllergens.reasons.join(' ')).toMatch(/2 new allergens/i);
+  it('should exclude foods already in the catalog', () => {
+    const result = rankNextFoods({ seed: [seed({ id: 'carrot' }), seed({ id: 'daikon' })],
+      foods: [food({ id: 'carrot' })], progress: progress(), now: NOW });
+    expect(result.map((c) => c.seed.id)).toEqual(['daikon']);
+  });
+
+  it('should order now, later, doctor, held', () => {
+    const order = { now: 0, later: 1, doctor: 2, held: 3 };
+    const result = rankNextFoods({ seed: FOOD_SEED, foods: [fromSeed('okayu-10x', 10)], progress: progress({ stage: 1, phase: 'vegetables' }), now: NOW });
+    const ranks = result.map((c) => order[c.readiness]);
+    expect([...ranks].sort((a, b) => a - b)).toEqual(ranks);
+  });
+
+  it('should not let seaweed, oils or sesame paste crowd out fish and egg', () => {
+    const foods = [fromSeed('okayu-10x', 45), fromSeed('carrot', 38), fromSeed('kabocha', 35),
+      fromSeed('silken-tofu', 30), fromSeed('cod', 25), fromSeed('egg-yolk', 20), fromSeed('banana', 16)];
+    const top = rankNextFoods({ seed: FOOD_SEED, foods, progress: progress(), now: NOW })
+      .filter((c) => c.readiness === 'now').slice(0, 5);
+    for (const c of top) expect(['fat', 'other'], c.seed.id).not.toContain(c.seed.group);
+  });
+
+  it('should nudge iron-rich foods from 6 months without claiming a deficit', () => {
+    const result = rankNextFoods({ seed: [
+      seed({ id: 'daikon' }),
+      seed({ id: 'komatsuna', nutrients: { ...seed({}).nutrients, ironMg: 2.1 } }),
+    ], foods: [food({ id: 'carrot' })], progress: progress(), now: NOW });
+    expect(result[0].seed.id).toBe('komatsuna');
+    expect(result[0].reasons.join(' ')).toMatch(/rich in iron/i);
+    expect(result[0].reasons.join(' ')).not.toMatch(/running low/i);
+  });
+
+  it('should alternate groups among tied candidates', () => {
+    const result = rankNextFoods({ seed: [
+      seed({ id: 'a1', group: 'vegetable' }), seed({ id: 'a2', group: 'vegetable' }),
+      seed({ id: 'b1', group: 'fruit' }), seed({ id: 'b2', group: 'fruit' }),
+    ], foods: [food({ id: 'v', group: 'vegetable' }), food({ id: 'f', group: 'fruit' })], progress: progress(), now: NOW });
+    expect(result.map((c) => c.seed.group)).toEqual(['vegetable', 'fruit', 'vegetable', 'fruit']);
+  });
+
+  it('should carry the seed note', () => {
+    const result = rankNextFoods({ seed: FOOD_SEED, foods: [fromSeed('okayu-10x', 10)], progress: progress({ stage: 1, phase: 'vegetables' }), now: NOW });
+    expect(find(result, 'apple').seed.note).toMatch(/cook/i);
+  });
+});
+
+describe('getPace', () => {
+  it('should not pace fruit on the recommended labelling list', () => {
+    const pace = getPace([food({ name: 'Banana', allergens: ['banana'], firstTriedAt: ts(NOW) })], NOW);
+    expect(pace.allergensOpenFrom).toBeNull();
+  });
+
+  it('should report a food first tried today', () => {
+    const pace = getPace([food({ name: 'Carrot', firstTriedAt: ts(NOW) })], NOW);
+    expect(pace.newToday?.name).toBe('Carrot');
+  });
+
+  it('should open the next allergen three calendar days after the last', () => {
+    const pace = getPace([food({ name: 'Egg yolk', allergens: ['egg'], firstTriedAt: ts(new Date('2026-09-14T18:00:00')) })], NOW);
+    expect(pace.lastAllergen?.name).toBe('Egg yolk');
+    expect(pace.allergensOpenFrom?.toDateString()).toBe(new Date('2026-09-17T00:00:00').toDateString());
+  });
+
+  it('should leave allergens open when the last one is old enough', () => {
+    const pace = getPace([food({ allergens: ['egg'], firstTriedAt: ts(subDays(NOW, 3)) })], NOW);
+    expect(pace.allergensOpenFrom).toBeNull();
+  });
+
+  it('should count an allergen as new only on its first food', () => {
+    const pace = getPace([
+      food({ id: 'y', allergens: ['egg'], firstTriedAt: ts(subDays(NOW, 10)) }),
+      food({ id: 'w', allergens: ['egg'], firstTriedAt: ts(subDays(NOW, 1)) }),
+    ], NOW);
+    expect(pace.allergensOpenFrom).toBeNull();
   });
 });
 
 describe('getAllergenStatus', () => {
-  it('should return one row per allergen, all 28', () => {
-    expect(getAllergenStatus([], NOW)).toHaveLength(28);
+  it('should return one row per allergen, all 29', () => {
+    expect(getAllergenStatus([], NOW)).toHaveLength(29);
   });
 
-  it('should mark an allergen introduced when a food carrying it was tried', () => {
-    const foods = [food({ allergens: ['egg'], firstTriedAt: ts('2026-08-01T00:00:00Z'),
-                          lastTriedAt: ts('2026-08-30T00:00:00Z') })];
-    const egg = getAllergenStatus(foods, NOW).find((a) => a.allergen === 'egg');
-    expect(egg?.introduced).toBe(true);
-  });
-
-  it('should flag maintenance when an introduced allergen went 14 days unused', () => {
-    const foods = [food({ allergens: ['egg'], firstTriedAt: ts('2026-08-01T00:00:00Z'),
-                          lastTriedAt: ts('2026-08-10T00:00:00Z') })];
-    const egg = getAllergenStatus(foods, NOW).find((a) => a.allergen === 'egg');
-    expect(egg?.needsMaintenance).toBe(true);
-  });
-
-  it('should not flag maintenance for a recently eaten allergen', () => {
-    const foods = [food({ allergens: ['egg'], firstTriedAt: ts('2026-08-01T00:00:00Z'),
-                          lastTriedAt: ts('2026-08-30T00:00:00Z') })];
-    const egg = getAllergenStatus(foods, NOW).find((a) => a.allergen === 'egg');
-    expect(egg?.needsMaintenance).toBe(false);
+  it('should flag maintenance just past 7 days, not at 7', () => {
+    const at = (d: Date) => [food({ allergens: ['egg'], firstTriedAt: ts(subDays(NOW, 30)), lastTriedAt: ts(d) })];
+    const egg = (d: Date) => getAllergenStatus(at(d), NOW).find((a) => a.allergen === 'egg');
+    expect(egg(subDays(NOW, 7))?.needsMaintenance).toBe(false);
+    expect(egg(new Date(subDays(NOW, 7).getTime() - 1000))?.needsMaintenance).toBe(true);
   });
 
   it('should not flag maintenance for an allergen never introduced', () => {
-    const egg = getAllergenStatus([], NOW).find((a) => a.allergen === 'egg');
-    expect(egg?.needsMaintenance).toBe(false);
-  });
-
-  it('should not flag maintenance at exactly 14 days — the gap must be over, not at, the limit', () => {
-    // NOW is 2026-09-01T08:00:00Z; 14 days before that, to the second, is
-    // 2026-08-18T08:00:00Z. The check is `>`, so exactly 14 days must not
-    // trip it yet.
-    const foods = [food({ allergens: ['egg'], firstTriedAt: ts('2026-08-01T00:00:00Z'),
-                          lastTriedAt: ts('2026-08-18T08:00:00Z') })];
-    const egg = getAllergenStatus(foods, NOW).find((a) => a.allergen === 'egg');
-    expect(egg?.needsMaintenance).toBe(false);
-  });
-
-  it('should flag maintenance just past the 14-day boundary', () => {
-    const foods = [food({ allergens: ['egg'], firstTriedAt: ts('2026-08-01T00:00:00Z'),
-                          lastTriedAt: ts('2026-08-17T08:00:00Z') })];
-    const egg = getAllergenStatus(foods, NOW).find((a) => a.allergen === 'egg');
-    expect(egg?.needsMaintenance).toBe(true);
+    expect(getAllergenStatus([], NOW).find((a) => a.allergen === 'egg')?.needsMaintenance).toBe(false);
   });
 });
