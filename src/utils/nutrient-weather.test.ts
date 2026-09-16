@@ -247,3 +247,12 @@ describe('nutrientGaps', () => {
     expect(nutrientGaps(rows)).not.toContain('carbsG');
   });
 });
+
+describe('perDay', () => {
+  const targets = dailyTargets([ref({ key: 'ironMg', kind: 'context' })], zero());
+
+  it('should carry the daily average, so an ungraded row still has a number to show', () => {
+    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets);
+    expect(iron.perDay).toBeCloseTo(4.5 / 7, 6);
+  });
+});

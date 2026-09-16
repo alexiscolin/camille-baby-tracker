@@ -188,6 +188,9 @@ export const FoodCharts = memo(function FoodCharts({
 
   const scrolls = view === 'first' || view === 'weather';
 
+  /** Before six months every row is shown but none is graded. */
+  const ungraded = weatherRows.every((row) => row.kind === 'context');
+
   return (
     <>
       <div className={styles.controls}>
@@ -303,13 +306,20 @@ export const FoodCharts = memo(function FoodCharts({
           <div data-testid="chart-weather">
             {weatherRows.length === 0 ? (
               <p className={styles.noData}>
-                No targets yet. Before about six months milk is still the whole diet, and
-                weaning is about getting used to a spoon rather than to a daily amount.
+                Nothing to show yet — weaning starts at about five months.
               </p>
             ) : (
               <>
                 <NutrientWeatherGrid rows={weatherRows} days={days} />
-                <p className={styles.chartNote}>{milkNote}</p>
+                {ungraded ? (
+                  <p className={styles.chartNote}>
+                    Amounts only for now. Targets start at six months: until then milk is
+                    still the whole diet, and 初期 is about getting used to a spoon rather
+                    than to a daily amount.
+                  </p>
+                ) : (
+                  <p className={styles.chartNote}>{milkNote}</p>
+                )}
               </>
             )}
           </div>

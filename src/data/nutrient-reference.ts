@@ -1,4 +1,5 @@
 import type { BabySex } from '../types/events';
+import { NUTRIENT_KEYS } from '../types/food';
 import type { NutrientKey } from '../types/food';
 import type { NutrientKind, ReferenceValue } from '../utils/nutrient-weather';
 
@@ -41,6 +42,15 @@ export const NUTRIENT_LABEL: Record<NutrientKey, string> = {
   vitaminDUg: 'Vitamin D',
   vitaminB12Ug: 'Vitamin B12',
   folateUg: 'Folate',
+};
+
+/** The unit each key is stored in, for rows that show a number instead of a verdict. */
+export const NUTRIENT_UNIT: Record<NutrientKey, string> = {
+  energyKcal: 'kcal',
+  proteinG: 'g', fatG: 'g', carbsG: 'g', fiberG: 'g', sugarsG: 'g',
+  ironMg: 'mg', calciumMg: 'mg', zincMg: 'mg', sodiumMg: 'mg', potassiumMg: 'mg',
+  vitaminCMg: 'mg',
+  vitaminAUgRae: 'µg', vitaminDUg: 'µg', vitaminB12Ug: 'µg', folateUg: 'µg',
 };
 
 interface Row {
@@ -98,6 +108,20 @@ interface Band {
 }
 
 const BANDS: Band[] = [
+  {
+    /**
+     * 初期 starts at 5 months (授乳・離乳の支援ガイド: 離乳の開始は生後5〜6か月頃),
+     * and the app's own stages start there too — so the diet is shown from 5
+     * months. Nothing is graded: 0〜5か月 is published as a milk-only band,
+     * derived from 0.78 L/日 of milk, and 6〜11か月 is the first band that
+     * expects food to bring anything at all. Grading a five-month-old against
+     * the later band would invent deficits at an age whose whole point is
+     * learning to swallow off a spoon.
+     */
+    fromMonths: 5,
+    milkMl: 780,
+    rows: NUTRIENT_KEYS.map((key) => ({ key, kind: 'context' as const, male: 0 })),
+  },
   {
     fromMonths: 6,
     milkMl: 600,

@@ -63,6 +63,8 @@ export interface WeatherRow {
   /** The daily target this row was graded against, for the tooltip. */
   target: number;
   cells: WeatherCell[];
+  /** Mean daily intake over the window, in the nutrient's own unit. */
+  perDay: number;
   /** Mean daily intake over the window, as a share of the target. */
   ratio: number | null;
   trend: Trend | null;
@@ -190,14 +192,17 @@ export function buildNutrientWeather(
       };
     });
 
+    const perDay = mean(amounts);
+
     return {
       key,
       kind,
       target: fromFood,
       cells,
-      ratio: kind === 'context' ? null : ratioOf(mean(amounts), fromFood),
+      perDay,
+      ratio: kind === 'context' ? null : ratioOf(perDay, fromFood),
       trend: trendOf(amounts, kind),
-      overCeiling: over(mean(amounts), ceiling),
+      overCeiling: over(perDay, ceiling),
     };
   });
 }

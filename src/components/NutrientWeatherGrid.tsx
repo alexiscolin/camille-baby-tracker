@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { NUTRIENT_LABEL } from '../data/nutrient-reference';
+import { NUTRIENT_LABEL, NUTRIENT_UNIT } from '../data/nutrient-reference';
 import { formatAmount } from '../utils/chart-helpers';
 import type { Band, WeatherRow } from '../utils/nutrient-weather';
 import styles from './NutrientWeatherGrid.module.css';
@@ -62,7 +62,9 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
                 <td
                   key={cell.date}
                   className={styles.cell}
-                  data-band={cell.band ?? 'none'}
+                  // An ungraded row has no band, but "was there any at all"
+                  // is still worth seeing — otherwise the row is seven blanks.
+                  data-band={cell.band ?? (cell.amount > 0 ? 'some' : 'none')}
                   data-over={cell.overCeiling}
                   // The dot is decoration; this is the cell's actual content.
                   aria-label={[
@@ -79,8 +81,9 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
 
               <td className={styles.verdict}>
                 {row.ratio === null ? (
-                  <span className={styles.ungraded} aria-label={`${name} not graded at this age`}>
-                    —
+                  <span className={styles.ungraded}>
+                    {formatAmount(row.perDay)} {NUTRIENT_UNIT[row.key]}
+                    <span className={styles.perDayNote}> /day</span>
                   </span>
                 ) : (
                   <>

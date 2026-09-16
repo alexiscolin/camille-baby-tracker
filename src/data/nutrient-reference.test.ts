@@ -8,14 +8,27 @@ const keyed = (ageMonths: number, sex: 'male' | 'female' = 'female') =>
     Record<NutrientKey, ReturnType<typeof referenceFor>[number]>;
 
 describe('referenceFor', () => {
-  it('should have no opinion before weaning food is meant to feed anyone', () => {
+  it('should say nothing at all before weaning can start', () => {
     expect(referenceFor(4, 'female')).toEqual([]);
-    expect(referenceFor(5, 'female')).toEqual([]);
-    expect(referenceFor(6, 'female').length).toBeGreaterThan(0);
+  });
+
+  it('should show the diet from five months, when weaning may begin', () => {
+    expect(referenceFor(5, 'female').length).toBeGreaterThan(0);
+  });
+
+  it('should grade nothing at five months, where the guide has no figure for food', () => {
+    // 0-5 months is published as a milk-only band; 6-11 months is the first one
+    // that expects food to bring anything. Grading a 5-month-old against the
+    // later band would invent deficits at an age when milk covers everything.
+    expect(referenceFor(5, 'female').every((r) => r.kind === 'context')).toBe(true);
+  });
+
+  it('should start grading at six months', () => {
+    expect(referenceFor(6, 'female').some((r) => r.kind === 'target')).toBe(true);
   });
 
   it('should cover every nutrient the grid draws, at every age', () => {
-    for (const age of [6, 8, 9, 11, 12, 17]) {
+    for (const age of [5, 6, 8, 9, 11, 12, 17]) {
       const keys = referenceFor(age, 'male').map((r) => r.key);
       expect(new Set(keys), `age ${age}`).toEqual(new Set(NUTRIENT_KEYS));
       expect(keys.length, `age ${age}`).toBe(NUTRIENT_KEYS.length);
@@ -89,6 +102,7 @@ describe('referenceFor', () => {
 
 describe('ASSUMED_MILK_ML', () => {
   it('should follow the volumes each band was actually derived from', () => {
+    expect(ASSUMED_MILK_ML(5)).toBe(780);
     expect(ASSUMED_MILK_ML(7)).toBe(600);
     expect(ASSUMED_MILK_ML(10)).toBe(450);
   });
