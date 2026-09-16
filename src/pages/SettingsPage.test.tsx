@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { subMonths } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 import { SettingsPage } from './SettingsPage';
 import type { Baby } from '../types/events';
@@ -61,6 +62,45 @@ describe('SettingsPage', () => {
     expect(screen.getByLabelText(/solids started/i)).toHaveValue('2026-09-01');
     await user.click(screen.getByRole('button', { name: /use first logged food/i }));
     expect(mockSetWeaningStartedAt).toHaveBeenCalledWith('fam-1', 'baby-1', null);
+  });
+
+  it('should save the chosen milk source', async () => {
+    const user = userEvent.setup();
+    render(<SettingsPage {...baseProps} baby={makeBaby()} />);
+    await user.click(screen.getByRole('button', { name: 'Formula' }));
+    expect(mockUpdateBaby).toHaveBeenCalledWith('fam-1', 'baby-1', { milkSource: 'formula' });
+  });
+
+  it('should save the daily milk volume', () => {
+    render(<SettingsPage {...baseProps} baby={makeBaby()} />);
+    fireEvent.change(screen.getByLabelText(/milk per day/i), { target: { value: '500' } });
+    expect(mockUpdateBaby).toHaveBeenCalledWith('fam-1', 'baby-1', { milkMlPerDay: 500 });
+  });
+
+  /** Derived from now, so the assertion does not rot as the baby ages. */
+  it('should offer the age default as the volume placeholder', () => {
+    render(<SettingsPage {...baseProps}
+      baby={makeBaby({ birthDate: Timestamp.fromDate(subMonths(new Date(), 7)) })} />);
+    expect(screen.getByLabelText(/milk per day/i)).toHaveAttribute('placeholder', '600');
+  });
+
+  /** Before six months there is no reference intake, and "0" would read as advice. */
+  it('should leave the volume placeholder empty before there is a reference', () => {
+    render(<SettingsPage {...baseProps}
+      baby={makeBaby({ birthDate: Timestamp.fromDate(subMonths(new Date(), 2)) })} />);
+    expect(screen.getByLabelText(/milk per day/i)).toHaveAttribute('placeholder', '');
+  });
+
+  /** An emptied field is a figure being retyped, not a baby drinking nothing. */
+  it('should ignore an emptied volume rather than writing zero', () => {
+    render(<SettingsPage {...baseProps} baby={makeBaby({ milkMlPerDay: 500 })} />);
+    fireEvent.change(screen.getByLabelText(/milk per day/i), { target: { value: '' } });
+    expect(mockUpdateBaby).not.toHaveBeenCalled();
+  });
+
+  it('should not ask for a volume when there is no milk', () => {
+    render(<SettingsPage {...baseProps} baby={makeBaby({ milkSource: 'none' })} />);
+    expect(screen.getByLabelText(/milk per day/i)).toBeDisabled();
   });
 
   it('should display baby profile section', () => {

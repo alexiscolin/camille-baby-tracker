@@ -5,6 +5,7 @@ import { rankNextFoods, getAllergenStatus, getPace } from './next-foods';
 import type { NextFoodCandidate } from './next-foods';
 import type { WeaningProgress } from './weaning-progress';
 import { FOOD_SEED } from '../data/food-seed';
+import { referenceFor } from '../data/nutrient-reference';
 import type { Food, SeedFood } from '../types/food';
 
 const NOW = new Date('2026-09-15T09:00:00');
@@ -284,5 +285,74 @@ describe('getAllergenStatus', () => {
 
   it('should not flag maintenance for an allergen never introduced', () => {
     expect(getAllergenStatus([], NOW).find((a) => a.allergen === 'egg')?.needsMaintenance).toBe(false);
+  });
+});
+
+describe('rankNextFoods — upper limits', () => {
+  // Liver is a stage 3 food, and it sits behind the sasami rung of the meat
+  // ladder, so both have to be true before it can be offered at all.
+  const reference = referenceFor(10, 'female');
+  const foods = [fromSeed('okayu-10x', 70), fromSeed('carrot', 60), fromSeed('chicken-sasami-boiled', 50)];
+  const p = progress({
+    ageMonths: 10, ageStage: 3, stage: 3, mealsPerDay: 3,
+    startedAt: subDays(NOW, 70), daysSinceStart: 70,
+  });
+  const rank = (over: Partial<Parameters<typeof rankNextFoods>[0]> = {}) =>
+    rankNextFoods({ seed: FOOD_SEED, foods, progress: p, now: NOW, ...over });
+
+  it('should warn that a normal serving of liver passes the vitamin A limit', () => {
+    // 14 000 ugRAE per 100 g against a 600 ugRAE daily limit: 4 g reaches it.
+    const liver = find(rank({ reference }), 'chicken-liver-boiled');
+    expect(liver.reasons.some((r) => /vitamin a/i.test(r))).toBe(true);
+  });
+
+  it('should still offer liver rather than hiding it', () => {
+    expect(find(rank({ reference }), 'chicken-liver-boiled').readiness).toBe('now');
+  });
+
+  it('should stop pushing a food it has just warned about', () => {
+    const warned = find(rank({ reference }), 'chicken-liver-boiled');
+    const unwarned = find(rank(), 'chicken-liver-boiled');
+    expect(warned.score).toBeLessThan(unwarned.score);
+  });
+
+  it('should leave a food that cannot pass a limit unwarned', () => {
+    const carrotish = find(rank({ reference }), 'kabocha');
+    expect(carrotish.reasons.some((r) => /limit/i.test(r))).toBe(false);
+  });
+
+  it('should say nothing about limits when no reference is given', () => {
+    expect(find(rank(), 'chicken-liver-boiled').reasons.some((r) => /limit/i.test(r))).toBe(false);
+  });
+});
+
+describe('rankNextFoods — measured gaps', () => {
+  const reference = referenceFor(8, 'female');
+  const base = seed({}).nutrients;
+  const ironRich = seed({ id: 'iron-rich', nutrients: { ...base, ironMg: 9 } });
+  const ironTrace = seed({ id: 'iron-trace', nutrients: { ...base, ironMg: 0.02 } });
+  const rank = (over: Partial<Parameters<typeof rankNextFoods>[0]> = {}) =>
+    rankNextFoods({
+      seed: [ironRich, ironTrace], foods: [fromSeed('okayu-10x', 40)],
+      progress: progress(), now: NOW, ...over,
+    });
+
+  it('should lift a food that supplies what the week was short of', () => {
+    const lifted = find(rank({ reference, gaps: ['ironMg'] }), 'iron-rich');
+    expect(lifted.score).toBeGreaterThan(find(rank({ reference }), 'iron-rich').score);
+  });
+
+  it('should say which gap it is answering', () => {
+    const lifted = find(rank({ reference, gaps: ['ironMg'] }), 'iron-rich');
+    expect(lifted.reasons.some((r) => /short of iron/i.test(r))).toBe(true);
+  });
+
+  it('should not lift a food carrying only a trace of it', () => {
+    const traced = find(rank({ reference, gaps: ['ironMg'] }), 'iron-trace');
+    expect(traced.score).toBe(find(rank({ reference }), 'iron-trace').score);
+  });
+
+  it('should change nothing when the week was short of nothing', () => {
+    expect(rank({ reference, gaps: [] })).toEqual(rank({ reference }));
   });
 });

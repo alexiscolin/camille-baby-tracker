@@ -93,3 +93,17 @@ describe('ASSUMED_MILK_ML', () => {
     expect(ASSUMED_MILK_ML(10)).toBe(450);
   });
 });
+
+describe('referenceFor without a recorded sex', () => {
+  it('should ask the most of the food on a floor, so a gap is never hidden', () => {
+    // Energy at 6-8 months: 650 for a boy, 600 for a girl.
+    const row = referenceFor(7).find((r) => r.key === 'energyKcal')!;
+    expect(row.amount).toBe(650);
+  });
+
+  it('should take the tightest side of a ceiling, so it warns sooner', () => {
+    // Salt at 1-2 years: under 3.0 g for a boy, under 2.5 g for a girl.
+    const row = referenceFor(14).find((r) => r.key === 'sodiumMg')!;
+    expect(row.amount).toBeCloseTo(984, 0);
+  });
+});

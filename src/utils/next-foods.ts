@@ -1,5 +1,5 @@
 import { addDays, format, isSameDay, startOfDay } from 'date-fns';
-import type { Food, FoodGroup, FoodStatus, SeedFood, WeaningStage } from '../types/food';
+import type { Food, FoodGroup, FoodStatus, NutrientKey, SeedFood, WeaningStage } from '../types/food';
 import { FOOD_GROUPS } from '../types/food';
 import type { Allergen } from './allergens';
 import { ALLERGENS, allergenLabel, isAllergen, isMandatoryAllergen } from './allergens';
@@ -7,10 +7,12 @@ import { isManualStatus } from './food-status';
 import type { WeaningProgress } from './weaning-progress';
 import { isIntroduced } from './weaning-progress';
 import {
-  ALLERGEN_ENTRY, ASK_DOCTOR_ALLERGENS, ECZEMA_DOCTOR_ALLERGENS, IRON_RICH_MG, LADDERS,
-  MAINTENANCE_GAP_DAYS, NEW_ALLERGEN_SPACING_DAYS, NUTRIENT_NUDGE_FROM_MONTHS, PACED_ALLERGENS,
-  PHASE_GROUPS, PUSHED_ALLERGEN, VITAMIN_D_SOURCE_UG,
+  ALLERGEN_ENTRY, ASK_DOCTOR_ALLERGENS, ECZEMA_DOCTOR_ALLERGENS, FIRST_TASTE_GRAMS, IRON_RICH_MG,
+  LADDERS, MAINTENANCE_GAP_DAYS, NEW_ALLERGEN_SPACING_DAYS, NUTRIENT_NUDGE_FROM_MONTHS,
+  PACED_ALLERGENS, PHASE_GROUPS, PUSHED_ALLERGEN, VITAMIN_D_SOURCE_UG,
 } from './weaning-rules';
+import { NUTRIENT_LABEL } from '../data/nutrient-reference';
+import type { ReferenceValue } from './nutrient-weather';
 
 export { MAINTENANCE_GAP_DAYS };
 
@@ -23,6 +25,10 @@ export type NextFoodsInput = {
   foods: Food[];
   progress: WeaningProgress;
   now: Date;
+  /** Published intakes for this age and sex. Without them nothing is said about limits. */
+  reference?: readonly ReferenceValue[];
+  /** Nutrients the last week came up short of, worst first. */
+  gaps?: readonly NutrientKey[];
 };
 
 export type NextFoodCandidate = {
@@ -77,6 +83,50 @@ const GROUP_NOUN: Partial<Record<FoodGroup, string>> = {
 };
 
 const PACED = new Set<string>(PACED_ALLERGENS);
+
+/** A serving has to carry this share of the daily figure to count as a source of it. */
+const SOURCE_SHARE = 0.1;
+const GAP_BONUS = 25;
+
+const servingAmount = (s: SeedFood, key: NutrientKey) =>
+  s.nutrients[key] * (FIRST_TASTE_GRAMS / 100);
+
+/**
+ * Whether a first serving of this food would pass a published upper limit.
+ *
+ * Chicken liver is why this exists: 14 000 ugRAE of vitamin A per 100 g against
+ * a 600 ugRAE daily limit, so four grams reaches the limit for the day — on a
+ * food this app suggests for its iron, and that Japanese guidance does
+ * recommend, in teaspoons and not every day. The food is never withheld; the
+ * amount is what matters, and the amount is what the warning talks about.
+ */
+export function ceilingWarning(
+  s: SeedFood,
+  reference: readonly ReferenceValue[] = [],
+): string | null {
+  for (const { key, ceiling } of reference) {
+    if (ceiling === undefined || ceiling <= 0) continue;
+    const times = servingAmount(s, key) / ceiling;
+    if (times <= 1) continue;
+    const howMuch = times >= 2 ? `about ${Math.round(times)} times` : 'past';
+    return `A ${FIRST_TASTE_GRAMS} g serving is ${howMuch} the daily ${NUTRIENT_LABEL[key].toLowerCase()} limit — a teaspoon at most, and not every day.`;
+  }
+  return null;
+}
+
+/** Foods worth suggesting for a gap: a trace of the nutrient is not an answer to it. */
+function answersGap(
+  s: SeedFood,
+  gaps: readonly NutrientKey[],
+  reference: readonly ReferenceValue[],
+): NutrientKey | null {
+  for (const key of gaps) {
+    const target = reference.find((r) => r.key === key);
+    if (!target || target.amount <= 0) continue;
+    if (servingAmount(s, key) >= target.amount * SOURCE_SHARE) return key;
+  }
+  return null;
+}
 
 /** Whether a first taste of this allergen is spaced from others and timed for clinic hours. */
 export function isPacedAllergen(allergen: string): boolean {
@@ -173,7 +223,9 @@ function stepReason(s: SeedFood, introducedIds: Set<string>, introducedGroups: S
  * Every food gets one readiness; nothing is dropped except `suggest: false`
  * rows, so a parent always sees the reason and can log it anyway.
  */
-export function rankNextFoods({ seed, foods, progress, now }: NextFoodsInput): NextFoodCandidate[] {
+export function rankNextFoods(
+  { seed, foods, progress, now, reference = [], gaps = [] }: NextFoodsInput,
+): NextFoodCandidate[] {
   const { stage } = progress;
   if (stage === null) return [];
 
@@ -195,8 +247,11 @@ export function rankNextFoods({ seed, foods, progress, now }: NextFoodsInput): N
   const minGroupCount = Math.min(...CORE_GROUPS.map((g) => groupCounts[g]));
 
   const classify = (s: SeedFood): NextFoodCandidate => {
+    // Computed up front so it is said whatever the readiness turns out to be:
+    // a food held back for months is still one to serve by the teaspoon later.
+    const warning = ceilingWarning(s, reference);
     const waiting = (readiness: Readiness, reason: string): NextFoodCandidate =>
-      ({ seed: s, readiness, score: 0, reasons: [reason] });
+      ({ seed: s, readiness, score: 0, reasons: warning ? [reason, warning] : [reason] });
     const newAllergens = s.allergens.filter((a) => !introducedAllergens.has(a));
     const newPaced = newAllergens.filter(isPacedAllergen);
 
@@ -252,13 +307,21 @@ export function rankNextFoods({ seed, foods, progress, now }: NextFoodsInput): N
       score += 30;
       reasons.push(step);
     }
-    if (progress.ageMonths >= NUTRIENT_NUDGE_FROM_MONTHS && s.nutrients.ironMg >= IRON_RICH_MG) {
+    // A food that would pass an upper limit keeps its place and its warning, but
+    // stops collecting the bonuses that would push it to the top of the list.
+    const nudgeable = warning === null && progress.ageMonths >= NUTRIENT_NUDGE_FROM_MONTHS;
+    if (nudgeable && s.nutrients.ironMg >= IRON_RICH_MG) {
       score += 20;
       reasons.push('Rich in iron — the guide asks for iron-rich foods from about 6 months.');
     }
-    if (progress.ageMonths >= NUTRIENT_NUDGE_FROM_MONTHS && s.nutrients.vitaminDUg >= VITAMIN_D_SOURCE_UG) {
+    if (nudgeable && s.nutrients.vitaminDUg >= VITAMIN_D_SOURCE_UG) {
       score += 10;
       reasons.push('A source of vitamin D, which breastfed babies can run short of.');
+    }
+    const gap = nudgeable ? answersGap(s, gaps, reference) : null;
+    if (gap) {
+      score += GAP_BONUS;
+      reasons.push(`The last week was short of ${NUTRIENT_LABEL[gap].toLowerCase()}, and this is a source of it.`);
     }
     if (CORE_GROUPS.includes(s.group) && groupCounts[s.group] === minGroupCount) {
       score += 20;
@@ -271,6 +334,7 @@ export function rankNextFoods({ seed, foods, progress, now }: NextFoodsInput): N
     if (newPaced.length > 1) {
       reasons.push(`Carries ${newPaced.length} new allergens — harder to attribute a reaction if one occurs.`);
     }
+    if (warning) reasons.push(warning);
     return { seed: s, readiness: 'now', score, reasons };
   };
 

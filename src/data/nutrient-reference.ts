@@ -23,6 +23,26 @@ import type { NutrientKind, ReferenceValue } from '../utils/nutrient-weather';
  * Re-check when the next edition lands (2030年版).
  */
 
+/** Display names, shared by the charts and the suggestion reasons. */
+export const NUTRIENT_LABEL: Record<NutrientKey, string> = {
+  energyKcal: 'Energy',
+  proteinG: 'Protein',
+  fatG: 'Fat',
+  carbsG: 'Carbs',
+  fiberG: 'Fibre',
+  sugarsG: 'Sugars',
+  ironMg: 'Iron',
+  calciumMg: 'Calcium',
+  zincMg: 'Zinc',
+  sodiumMg: 'Sodium',
+  potassiumMg: 'Potassium',
+  vitaminAUgRae: 'Vitamin A',
+  vitaminCMg: 'Vitamin C',
+  vitaminDUg: 'Vitamin D',
+  vitaminB12Ug: 'Vitamin B12',
+  folateUg: 'Folate',
+};
+
 interface Row {
   key: NutrientKey;
   kind: NutrientKind;
@@ -144,14 +164,22 @@ export function ASSUMED_MILK_ML(ageMonths: number): number {
  * Empty under six months: milk is still the whole diet, and grading a taste of
  * porridge against a daily requirement would be both wrong and frightening.
  */
-export function referenceFor(ageMonths: number, sex: BabySex): ReferenceValue[] {
+export function referenceFor(ageMonths: number, sex?: BabySex): ReferenceValue[] {
   const band = bandFor(ageMonths);
   if (!band) return [];
 
-  return band.rows.map(({ key, kind, male, female, ceiling }) => ({
-    key,
-    kind,
-    amount: sex === 'female' && female !== undefined ? female : male,
-    ...(ceiling === undefined ? {} : { ceiling }),
-  }));
+  return band.rows.map(({ key, kind, male, female, ceiling }) => {
+    const alt = female ?? male;
+    return {
+      key,
+      kind,
+      // Sex is optional on a baby. With none recorded, take the side that asks
+      // more of the food: the higher figure for a floor, the lower for a
+      // ceiling. Erring the other way would quietly mark a gap as covered.
+      amount: sex === undefined
+        ? (kind === 'limit' ? Math.min(male, alt) : Math.max(male, alt))
+        : (sex === 'female' ? alt : male),
+      ...(ceiling === undefined ? {} : { ceiling }),
+    };
+  });
 }

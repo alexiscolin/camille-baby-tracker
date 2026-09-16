@@ -77,7 +77,8 @@ export function subscribeToBaby(
 export async function updateBaby(
   familyId: string,
   babyId: string,
-  data: Partial<Pick<Baby, 'firstName' | 'sex' | 'hiddenEventTypes' | 'eczema'>>,
+  data: Partial<Pick<Baby,
+    'firstName' | 'sex' | 'hiddenEventTypes' | 'eczema' | 'milkSource' | 'milkMlPerDay'>>,
 ) {
   return updateDoc(doc(db, 'families', familyId, 'babies', babyId), data);
 }

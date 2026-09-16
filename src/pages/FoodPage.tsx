@@ -4,6 +4,10 @@ import { Timestamp } from 'firebase/firestore';
 import { ShieldAlert, History, ChevronDown, Salad, ShoppingCart } from 'lucide-react';
 import { useToday } from '../hooks/useToday';
 import { FOOD_SEED } from '../data/food-seed';
+import { ASSUMED_MILK_ML, referenceFor } from '../data/nutrient-reference';
+import {
+  buildNutrientWeather, dailyTargets, milkNutrients, nutrientGaps,
+} from '../utils/nutrient-weather';
 import { useFoods } from '../hooks/useFoods';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { CacheIndicator } from '../components/CacheIndicator';
@@ -102,9 +106,44 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
   const stage = progress?.stage ?? null;
   const pace = useMemo(() => getPace(foods, today), [foods, today]);
 
+  /**
+   * Milk composition comes from the seed, not from `foodById`: a family that has
+   * never logged a bottle still drinks milk, and reading the catalog would
+   * silently credit them with none and mark every nutrient short.
+   */
+  const seedById = useMemo(() => new Map(FOOD_SEED.map((s) => [s.id, s])), []);
+
+  const milkMl = baby?.milkMlPerDay ?? ASSUMED_MILK_ML(progress?.ageMonths ?? 0);
+  const milkSource = baby?.milkSource ?? 'breast';
+
+  /** Empty under six months, which is what switches the weather view off. */
+  const reference = useMemo(
+    () => (progress ? referenceFor(progress.ageMonths, baby?.sex) : []),
+    [progress, baby?.sex],
+  );
+
+  const targets = useMemo(
+    () => dailyTargets(reference, milkNutrients(milkSource, milkMl, seedById)),
+    [reference, milkSource, milkMl, seedById],
+  );
+
+  const weatherRows = useMemo(
+    () => (targets.length > 0 ? buildNutrientWeather(events, foodById, days, targets) : []),
+    [events, foodById, days, targets],
+  );
+
+  /** What the last range actually came up short of, which steers the suggestions. */
+  const gaps = useMemo(() => nutrientGaps(weatherRows), [weatherRows]);
+
+  const milkNote = milkSource === 'none'
+    ? 'No milk counted. Indicative, not medical advice.'
+    : `Targets assume ${milkMl} ml of ${milkSource === 'formula' ? 'formula' : 'breast milk'} a day. Indicative, not medical advice.`;
+
   const candidates = useMemo(
-    () => (progress ? rankNextFoods({ seed: FOOD_SEED, foods, progress, now: today }) : []),
-    [foods, progress, today],
+    () => (progress
+      ? rankNextFoods({ seed: FOOD_SEED, foods, progress, now: today, reference, gaps })
+      : []),
+    [foods, progress, today, reference, gaps],
   );
 
   const hero = candidates.find((c) => c.readiness === 'now') ?? null;
@@ -320,7 +359,13 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
           <SegmentedControl options={RANGE_OPTIONS} value={range} onChange={setRange} labels={RANGE_LABELS} />
         </div>
         <Suspense fallback={<p className={styles.hint}>Loading charts...</p>}>
-          <FoodCharts events={events} byId={foodById} days={days} rangeDays={rangeDays} />
+          <FoodCharts
+              events={events}
+              byId={foodById}
+              days={days}
+              weatherRows={weatherRows}
+              milkNote={milkNote}
+            />
         </Suspense>
       </section>
 

@@ -1,0 +1,103 @@
+.grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.caption {
+  caption-side: top;
+  text-align: left;
+  padding-bottom: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.rowHead {
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  white-space: nowrap;
+}
+
+.dayHead,
+.verdictHead {
+  font-weight: 500;
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  padding-bottom: 0.25rem;
+}
+
+.verdictHead {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.kindNote {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.overNote {
+  display: block;
+  color: var(--color-danger-strong);
+  font-weight: 500;
+  font-size: 0.6875rem;
+}
+
+.cell {
+  text-align: center;
+  padding: 0.1875rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-border-light);
+}
+
+/* Bands carry a shape as well as a colour: filled, half, hollow. Colour alone
+   would leave "on target" and "little" identical to a colour-blind reader, and
+   the cell's aria-label says it in words for everyone else. */
+.cell[data-band='met'] .dot {
+  background: var(--color-success);
+}
+
+.cell[data-band='partial'] .dot {
+  background: linear-gradient(to right, var(--color-success) 50%, var(--color-border-light) 50%);
+}
+
+.cell[data-band='low'] .dot {
+  background: transparent;
+  border: 1.5px solid var(--color-border-light);
+}
+
+.cell[data-band='none'] .dot {
+  background: transparent;
+  border: 1.5px dotted var(--color-border-light);
+}
+
+.cell[data-over='true'] .dot {
+  background: var(--color-danger);
+  box-shadow: 0 0 0 2px var(--color-danger-strong);
+}
+
+.verdict {
+  text-align: right;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  padding-left: 0.5rem;
+}
+
+.trend {
+  margin-left: 0.125rem;
+  color: var(--color-text-muted);
+}
+
+.ungraded {
+  color: var(--color-text-muted);
+}

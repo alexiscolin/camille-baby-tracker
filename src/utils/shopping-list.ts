@@ -6,7 +6,9 @@ import { pickBuyHint } from '../data/coop-okinawa';
 import { getAllergenStatus, isPacedAllergen, rankNextFoods } from './next-foods';
 import type { WeaningProgress } from './weaning-progress';
 import { isIntroduced } from './weaning-progress';
-import { LADDERS, NEW_ALLERGEN_SPACING_DAYS, NON_SOLID_IDS, PHASE_GROUPS } from './weaning-rules';
+import {
+  FIRST_TASTE_GRAMS, LADDERS, NEW_ALLERGEN_SPACING_DAYS, NON_SOLID_IDS, PHASE_GROUPS,
+} from './weaning-rules';
 
 export type Slot = 'grain' | 'vegFruit' | 'protein';
 type ProteinKind = 'fish' | 'meat' | 'tofu' | 'egg' | 'dairy';
@@ -47,7 +49,6 @@ const PORTIONS: Record<WeaningStage, Record<'grain' | 'vegFruit' | ProteinKind, 
   4: { grain: 90, vegFruit: 50, fish: 20, meat: 20, tofu: 55, egg: 2 / 3, dairy: 100 },
 };
 
-const FIRST_TASTE_GRAMS = 15;
 /** At most one new food a day, spread so a week is not five leafy greens in a row. */
 const NEW_PER_SLOT: Record<Slot, number> = { grain: 1, vegFruit: 3, protein: 3 };
 /**
