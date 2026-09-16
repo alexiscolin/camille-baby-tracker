@@ -97,17 +97,35 @@ describe('NutrientWeatherGrid', () => {
       rows={[row({ key: 'vitaminAUgRae', overCeiling: true })]}
       days={days}
     />);
-    expect(screen.getByRole('rowheader', { name: /vitamin a/i }))
-      .toHaveTextContent(/over the vitamin a limit/i);
+    const notes = screen.getByRole('list', { name: /about these rows/i });
+    expect(notes).toHaveTextContent(/over the .*limit/i);
   });
 
-  it('should say on the row why a nutrient is shown as an amount', () => {
+  it('should keep a row header down to the nutrient name', () => {
+    // A sentence in a header cell sets the column width to the sentence.
     render(<NutrientWeatherGrid
       rows={[row({ kind: 'context', ratio: null, trend: null, note: 'set above what milk provides' })]}
       days={days}
     />);
     expect(screen.getByRole('rowheader', { name: /iron/i }))
-      .toHaveTextContent(/set above what milk provides/i);
+      .not.toHaveTextContent(/set above what milk provides/i);
+  });
+
+  it('should carry the reason as a footnote under the table', () => {
+    render(<NutrientWeatherGrid
+      rows={[row({ kind: 'context', ratio: null, trend: null, note: 'set above what milk provides' })]}
+      days={days}
+    />);
+    const notes = screen.getByRole('list', { name: /about these rows/i });
+    expect(notes).toHaveTextContent(/iron/i);
+    expect(notes).toHaveTextContent(/set above what milk provides/i);
+  });
+
+  it('should label each day column short enough to fit a phone', () => {
+    render(<NutrientWeatherGrid rows={[row()]} days={days} />);
+    for (const th of screen.getAllByRole('columnheader').slice(1, -1)) {
+      expect(th.textContent!.length).toBeLessThanOrEqual(2);
+    }
   });
 
   it('should explain what a dot means, graded or not', () => {
