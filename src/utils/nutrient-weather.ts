@@ -33,15 +33,19 @@ export interface ReferenceValue {
   amount: number;
   /** The published 耐容上限量, where one exists at this age. */
   ceiling?: number;
+  /** Why this nutrient is shown as an amount instead of graded. */
+  note?: string;
 }
 
 export interface NutrientTarget {
   key: NutrientKey;
   kind: NutrientKind;
-  /** What food has to supply: the reference intake less what milk brings. */
-  fromFood: number;
-  /** Headroom left for food under the upper limit, once milk is counted. */
+  /** The published daily intake for the whole diet. 0 for an ungraded row. */
+  amount: number;
+  /** The published upper limit for the whole diet. */
   ceiling?: number;
+  /** Why this nutrient is shown as an amount instead of graded. */
+  note?: string;
 }
 
 export type Band = 'met' | 'partial' | 'low';
@@ -70,6 +74,8 @@ export interface WeatherRow {
   trend: Trend | null;
   /** The window average is past the upper limit — a habit, not a one-off day. */
   overCeiling: boolean;
+  /** Why this nutrient is shown as an amount instead of graded. */
+  note?: string;
 }
 
 /**
@@ -106,19 +112,22 @@ export function milkNutrients(
 }
 
 /**
- * The reference intake is for the whole diet; milk covers part of it. What is
- * left is what the meals have to bring, and that is the only number a parent
- * can act on. Floors at zero — a nutrient milk already covers is not a
- * negative target, it is simply not a job for food.
+ * The reference intake is for the whole diet, and the whole diet is what gets
+ * graded — milk counted in, not subtracted out. It answers "is she getting what
+ * she needs", which is the question a parent asks, rather than "are the meals
+ * hitting a quota", which is a question about cooking.
+ *
+ * The trade is that a nutrient milk already covers reads as fine even when the
+ * meals bring none of it, and that the figure moves with the milk volume the
+ * family estimated. The view says so on screen.
  */
-export function dailyTargets(reference: ReferenceValue[], milk: Nutrients): NutrientTarget[] {
-  return reference.map(({ key, kind, amount, ceiling }) => ({
+export function dailyTargets(reference: ReferenceValue[]): NutrientTarget[] {
+  return reference.map(({ key, kind, amount, ceiling, note }) => ({
     key,
     kind,
-    fromFood: kind === 'context' ? 0 : Math.max(0, amount - milk[key]),
-    // The limit is for the whole diet too, so what milk brings eats into the
-    // headroom food has left under it.
-    ...(ceiling === undefined ? {} : { ceiling: Math.max(0, ceiling - milk[key]) }),
+    amount: kind === 'context' ? 0 : amount,
+    ...(ceiling === undefined ? {} : { ceiling }),
+    ...(note === undefined ? {} : { note }),
   }));
 }
 
@@ -163,6 +172,8 @@ export function buildNutrientWeather(
   byId: Map<string, Food>,
   days: { date: Date; label: string }[],
   targets: NutrientTarget[],
+  /** What milk brings in a day, added to every day including days with no meal. */
+  milk: Nutrients,
 ): WeatherRow[] {
   const totalsByDay = new Map<string, Nutrients>();
   for (const day of days) totalsByDay.set(format(day.date, DAY_FORMAT), emptyNutrients());
@@ -179,10 +190,12 @@ export function buildNutrientWeather(
 
   const over = (amount: number, ceiling?: number) => ceiling !== undefined && amount > ceiling;
 
-  return targets.map(({ key, kind, fromFood, ceiling }) => {
-    const amounts = dayKeys.map((dayKey) => totalsByDay.get(dayKey)![key]);
+  return targets.map(({ key, kind, amount, ceiling, note }) => {
+    // Milk is the same every day, so the shape of the row still comes from the
+    // food; what changes is that a day reads as the diet, not as the cooking.
+    const amounts = dayKeys.map((dayKey) => totalsByDay.get(dayKey)![key] + milk[key]);
     const cells = dayKeys.map((date, i) => {
-      const ratio = ratioOf(amounts[i], fromFood);
+      const ratio = ratioOf(amounts[i], amount);
       return {
         date,
         amount: amounts[i],
@@ -197,12 +210,13 @@ export function buildNutrientWeather(
     return {
       key,
       kind,
-      target: fromFood,
+      target: amount,
       cells,
       perDay,
-      ratio: kind === 'context' ? null : ratioOf(perDay, fromFood),
+      ratio: kind === 'context' ? null : ratioOf(perDay, amount),
       trend: trendOf(amounts, kind),
       overCeiling: over(perDay, ceiling),
+      ...(note === undefined ? {} : { note }),
     };
   });
 }

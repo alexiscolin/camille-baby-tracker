@@ -100,6 +100,15 @@ describe('NutrientWeatherGrid', () => {
       .toHaveTextContent(/over the vitamin a limit/i);
   });
 
+  it('should say on the row why a nutrient is shown as an amount', () => {
+    render(<NutrientWeatherGrid
+      rows={[row({ kind: 'context', ratio: null, trend: null, note: 'set above what milk provides' })]}
+      days={days}
+    />);
+    expect(screen.getByRole('rowheader', { name: /iron/i }))
+      .toHaveTextContent(/set above what milk provides/i);
+  });
+
   it('should explain what a dot means, graded or not', () => {
     render(<NutrientWeatherGrid rows={[row()]} days={days} />);
     const legend = screen.getByRole('list', { name: /what the dots mean/i });

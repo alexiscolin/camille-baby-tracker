@@ -122,22 +122,29 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
     [progress, baby?.sex],
   );
 
-  const targets = useMemo(
-    () => dailyTargets(reference, milkNutrients(milkSource, milkMl, seedById)),
-    [reference, milkSource, milkMl, seedById],
+  const targets = useMemo(() => dailyTargets(reference), [reference]);
+
+  const milk = useMemo(
+    () => milkNutrients(milkSource, milkMl, seedById),
+    [milkSource, milkMl, seedById],
   );
 
   const weatherRows = useMemo(
-    () => (targets.length > 0 ? buildNutrientWeather(events, foodById, days, targets) : []),
-    [events, foodById, days, targets],
+    () => (targets.length > 0 ? buildNutrientWeather(events, foodById, days, targets, milk) : []),
+    [events, foodById, days, targets, milk],
   );
 
   /** What the last range actually came up short of, which steers the suggestions. */
   const gaps = useMemo(() => nutrientGaps(weatherRows), [weatherRows]);
 
+  /**
+   * The percentages are the whole diet, so the milk estimate is part of every
+   * one of them. Saying so is not a disclaimer, it is the main thing to know
+   * about how to read the number.
+   */
   const milkNote = milkSource === 'none'
-    ? 'No milk counted. Indicative, not medical advice.'
-    : `Targets assume ${milkMl} ml of ${milkSource === 'formula' ? 'formula' : 'breast milk'} a day. Indicative, not medical advice.`;
+    ? 'Meals only — no milk counted. Indicative, not medical advice.'
+    : `Includes an estimated ${milkMl} ml of ${milkSource === 'formula' ? 'formula' : 'breast milk'} a day, so these move with that estimate. Indicative, not medical advice.`;
 
   const candidates = useMemo(
     () => (progress

@@ -1,5 +1,4 @@
 import type { BabySex } from '../types/events';
-import { NUTRIENT_KEYS } from '../types/food';
 import type { NutrientKey } from '../types/food';
 import type { NutrientKind, ReferenceValue } from '../utils/nutrient-weather';
 
@@ -61,6 +60,8 @@ interface Row {
   female?: number;
   /** 耐容上限量, only where the guide sets one at this age. */
   ceiling?: number;
+  /** Why this row is shown as an amount rather than graded. */
+  note?: string;
 }
 
 /**
@@ -96,7 +97,7 @@ const INFANT_SHARED: Row[] = [
   { key: 'vitaminDUg', kind: 'target', male: 5.0, ceiling: 25 },
   { key: 'vitaminB12Ug', kind: 'target', male: 0.9 },
   { key: 'folateUg', kind: 'target', male: 70 },
-  { key: 'sodiumMg', kind: 'context', male: 600 },
+  { key: 'sodiumMg', kind: 'context', male: 600, note: 'an adequacy figure, not a limit' },
   ...UNGRADED,
 ];
 
@@ -110,17 +111,44 @@ interface Band {
 const BANDS: Band[] = [
   {
     /**
-     * 初期 starts at 5 months (授乳・離乳の支援ガイド: 離乳の開始は生後5〜6か月頃),
-     * and the app's own stages start there too — so the diet is shown from 5
-     * months. Nothing is graded: 0〜5か月 is published as a milk-only band,
-     * derived from 0.78 L/日 of milk, and 6〜11か月 is the first band that
-     * expects food to bring anything at all. Grading a five-month-old against
-     * the later band would invent deficits at an age whose whole point is
-     * learning to swallow off a spoon.
+     * 0〜5か月. Every value here except energy is a 目安量 derived as
+     * 母乳中濃度 × 0.78 L/日 (p.367-368), so the whole band describes what milk
+     * alone supplies. The app shows it from 5 months because 初期 may start
+     * then (授乳・離乳の支援ガイド: 離乳の開始は生後5〜6か月頃) and the app's own
+     * stages do.
+     *
+     * Iron is deliberately NOT graded here. The guide takes
+     * 0.35 mg/L × 0.78 L/日 = 0.273 mg/日 and rounds it to 0.5 (p.293), while
+     * taking the identical 0.273 mg/日 for copper and rounding it to 0.3
+     * (p.306). Same arithmetic, same document, two answers — so 0.5 is a
+     * deliberate safety margin above what breast milk provides, not a
+     * measurement of it. Dividing milk by that margin would mark every
+     * exclusively breastfed baby as short of iron, at an age when the only
+     * remedy the guide offers does not start until about 6 months.
+     *
+     * Sodium is ungraded for the same reason as the later bands: 目安量, with
+     * no 目標量 and no 耐容上限量 at this age.
      */
     fromMonths: 5,
     milkMl: 780,
-    rows: NUTRIENT_KEYS.map((key) => ({ key, kind: 'context' as const, male: 0 })),
+    rows: [
+      { key: 'energyKcal', kind: 'target', male: 550, female: 500 },
+      { key: 'proteinG', kind: 'target', male: 10 },
+      {
+        key: 'ironMg', kind: 'context', male: 0.5,
+        note: 'set above what milk supplies, so a share of it would mislead',
+      },
+      { key: 'calciumMg', kind: 'target', male: 200 },
+      { key: 'zincMg', kind: 'target', male: 1.5 },
+      { key: 'potassiumMg', kind: 'target', male: 400 },
+      { key: 'vitaminAUgRae', kind: 'target', male: 300, ceiling: 600 },
+      { key: 'vitaminCMg', kind: 'target', male: 40 },
+      { key: 'vitaminDUg', kind: 'target', male: 5.0, ceiling: 25 },
+      { key: 'vitaminB12Ug', kind: 'target', male: 0.4 },
+      { key: 'folateUg', kind: 'target', male: 40 },
+      { key: 'sodiumMg', kind: 'context', male: 100, note: 'an adequacy figure, not a limit' },
+      ...UNGRADED,
+    ],
   },
   {
     fromMonths: 6,
@@ -192,11 +220,12 @@ export function referenceFor(ageMonths: number, sex?: BabySex): ReferenceValue[]
   const band = bandFor(ageMonths);
   if (!band) return [];
 
-  return band.rows.map(({ key, kind, male, female, ceiling }) => {
+  return band.rows.map(({ key, kind, male, female, ceiling, note }) => {
     const alt = female ?? male;
     return {
       key,
       kind,
+      ...(note === undefined ? {} : { note }),
       // Sex is optional on a baby. With none recorded, take the side that asks
       // more of the food: the higher figure for a floor, the lower for a
       // ceiling. Erring the other way would quietly mark a gap as covered.
