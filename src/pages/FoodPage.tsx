@@ -1,5 +1,5 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
-import { addDays, subDays, startOfDay, endOfDay, eachDayOfInterval, format } from 'date-fns';
+import { addDays, addMonths, subDays, startOfDay, endOfDay, eachDayOfInterval, format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 import { ShieldAlert, History, ChevronDown, Salad, ShoppingCart } from 'lucide-react';
 import { useToday } from '../hooks/useToday';
@@ -16,6 +16,8 @@ import { getRangeDays } from '../utils/chart-helpers';
 import type { RangeType } from '../utils/chart-helpers';
 import { AllergenGrid, AllergenSheet } from '../components/AllergenGrid';
 import { ShoppingList } from '../components/ShoppingList';
+import { IronOutlookCard } from '../components/IronOutlookCard';
+import { ironOutlook } from '../utils/iron-outlook';
 import { ModalFallback } from '../components/ModalFallback';
 import { withChunkReload } from '../utils/lazy-route';
 import { formatBabyAge } from '../utils/date';
@@ -113,8 +115,8 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
    */
   const seedById = useMemo(() => new Map(FOOD_SEED.map((s) => [s.id, s])), []);
 
-  const milkMl = baby?.milkMlPerDay ?? ASSUMED_MILK_ML(progress?.ageMonths ?? 0);
   const milkSource = baby?.milkSource ?? 'breast';
+  const milkMl = baby?.milkMlPerDay ?? ASSUMED_MILK_ML(progress?.ageMonths ?? 0, milkSource);
 
   /** Empty under six months, which is what switches the weather view off. */
   const reference = useMemo(
@@ -136,6 +138,27 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
 
   /** What the last range actually came up short of, which steers the suggestions. */
   const gaps = useMemo(() => nutrientGaps(weatherRows), [weatherRows]);
+
+  /**
+   * Iron is answered on its own, in words. On the whole-diet percentage a
+   * breastfed baby's iron just reads low month after month: true, and useless
+   * without the number her meals actually have to hit.
+   */
+  const iron = useMemo(() => {
+    if (!progress || weatherRows.length === 0) return null;
+    const row = weatherRows.find((r) => r.key === 'ironMg');
+    const fromFood = row
+      ? row.cells.reduce((sum, c) => sum + c.fromFood, 0) / (row.cells.length || 1)
+      : 0;
+    return ironOutlook({
+      ageMonths: progress.ageMonths,
+      sex: baby?.sex,
+      source: milkSource,
+      mlPerDay: milkMl,
+      fromFood,
+      byId: seedById,
+    });
+  }, [progress, weatherRows, baby?.sex, milkSource, milkMl, seedById]);
 
   /**
    * The percentages are the whole diet, so the milk estimate is part of every
@@ -374,6 +397,15 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
               milkNote={milkNote}
             />
         </Suspense>
+        {iron && baby && (
+          <IronOutlookCard
+            outlook={iron}
+            source={milkSource}
+            mlPerDay={milkMl}
+            sixMonthsOn={addMonths(baby.birthDate.toDate(), 6)}
+            onPick={setLogTarget}
+          />
+        )}
       </section>
 
       {/* ─── Recently introduced ─── */}

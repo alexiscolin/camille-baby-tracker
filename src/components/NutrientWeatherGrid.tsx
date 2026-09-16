@@ -97,9 +97,11 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
                 <td
                   key={cell.date}
                   className={styles.cell}
-                  // An ungraded row has no band, but "was there any at all"
-                  // is still worth seeing — otherwise the row is seven blanks.
-                  data-band={cell.band ?? (cell.amount > 0 ? 'some' : 'none')}
+                  // An ungraded row has no band, but "did the meals bring any"
+                  // is still worth seeing. It reads the food alone: milk is the
+                  // same every day, so counting it would fill every dot for
+                  // every nutrient milk carries and say nothing at all.
+                  data-band={cell.band ?? (cell.fromFood > 0 ? 'some' : 'none')}
                   data-over={cell.overCeiling}
                   // The dot is decoration; this is the cell's actual content.
                   aria-label={[

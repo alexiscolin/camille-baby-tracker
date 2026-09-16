@@ -109,7 +109,7 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
   // Zero before six months, where the guide has no reference intake to derive
   // one from. Offering "0" there would read as advice rather than a default.
   const ageMonths = baby ? differenceInMonths(new Date(), baby.birthDate.toDate()) : 0;
-  const defaultMilkMl = ASSUMED_MILK_ML(ageMonths);
+  const defaultMilkMl = ASSUMED_MILK_ML(ageMonths, baby?.milkSource ?? 'breast');
 
   function changeMilkMl(value: string) {
     // An emptied field is a figure being retyped, not a baby drinking nothing —

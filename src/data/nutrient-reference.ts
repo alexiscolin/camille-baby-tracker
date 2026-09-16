@@ -1,4 +1,4 @@
-import type { BabySex } from '../types/events';
+import type { BabySex, MilkSource } from '../types/events';
 import type { NutrientKey } from '../types/food';
 import type { NutrientKind, ReferenceValue } from '../utils/nutrient-weather';
 
@@ -62,6 +62,8 @@ interface Row {
   ceiling?: number;
   /** Why this row is shown as an amount rather than graded. */
   note?: string;
+  /** Show the share, but never colour it. */
+  unbanded?: boolean;
 }
 
 /**
@@ -105,6 +107,18 @@ interface Band {
   fromMonths: number;
   /** 基準哺乳量, p.367 — the volume the guide derived this band's values from. */
   milkMl: number;
+  /**
+   * practice: the formula makers' own feeding tables, which run far above the
+   * 基準哺乳量 (和光堂 puts 6-9 months at about 880-980 ml/day and 9-12 months at
+   * 700-800). Midpoints, rounded.
+   *
+   * This is not a nicety. Every Japanese infant formula clears the 4.5 mg iron
+   * requirement at 600 ml and *none* of them clears it at 450 — so handing a
+   * bottle-fed baby the breastfeeding volume would invent an iron gap for a
+   * baby who has none. The parent measures bottles and can set the real figure;
+   * this is only what the field starts at.
+   */
+  formulaMl: number;
   rows: Row[];
 }
 
@@ -131,12 +145,13 @@ const BANDS: Band[] = [
      */
     fromMonths: 5,
     milkMl: 780,
+    formulaMl: 780,
     rows: [
       { key: 'energyKcal', kind: 'target', male: 550, female: 500 },
       { key: 'proteinG', kind: 'target', male: 10 },
       {
-        key: 'ironMg', kind: 'context', male: 0.5,
-        note: 'set above what milk supplies, so a share of it would mislead',
+        key: 'ironMg', kind: 'target', male: 0.5, unbanded: true,
+        note: 'about 60 % is normal on breast milk — from 6 months the target rises ninefold and the meals take over',
       },
       { key: 'calciumMg', kind: 'target', male: 200 },
       { key: 'zincMg', kind: 'target', male: 1.5 },
@@ -153,6 +168,7 @@ const BANDS: Band[] = [
   {
     fromMonths: 6,
     milkMl: 600,
+    formulaMl: 900,
     rows: [
       { key: 'energyKcal', kind: 'target', male: 650, female: 600 },
       { key: 'proteinG', kind: 'target', male: 15 },
@@ -162,6 +178,7 @@ const BANDS: Band[] = [
   {
     fromMonths: 9,
     milkMl: 450,
+    formulaMl: 750,
     rows: [
       { key: 'energyKcal', kind: 'target', male: 700, female: 650 },
       { key: 'proteinG', kind: 'target', male: 25 },
@@ -174,6 +191,7 @@ const BANDS: Band[] = [
     // last published volume is carried forward; the parent edits it in Settings,
     // which is the real answer at an age when milk intake varies enormously.
     milkMl: 450,
+    formulaMl: 750,
     rows: [
       { key: 'energyKcal', kind: 'target', male: 950, female: 900 },
       { key: 'proteinG', kind: 'target', male: 20 },
@@ -204,11 +222,17 @@ function bandFor(ageMonths: number): Band | null {
 }
 
 /**
- * The volume of milk this age's reference values were derived against, used as
- * the default when a family has not set their own.
+ * What the milk volume field starts at. Breast milk uses the 基準哺乳量 the
+ * reference values were derived against; formula uses the makers' own feeding
+ * tables, which are much higher. Mixed takes the breast figure: it credits less
+ * milk, which is the side that errs toward suggesting food rather than away
+ * from it.
  */
-export function ASSUMED_MILK_ML(ageMonths: number): number {
-  return bandFor(ageMonths)?.milkMl ?? 0;
+export function ASSUMED_MILK_ML(ageMonths: number, source: MilkSource = 'breast'): number {
+  if (source === 'none') return 0;
+  const band = bandFor(ageMonths);
+  if (!band) return 0;
+  return source === 'formula' ? band.formulaMl : band.milkMl;
 }
 
 /**
@@ -220,12 +244,13 @@ export function referenceFor(ageMonths: number, sex?: BabySex): ReferenceValue[]
   const band = bandFor(ageMonths);
   if (!band) return [];
 
-  return band.rows.map(({ key, kind, male, female, ceiling, note }) => {
+  return band.rows.map(({ key, kind, male, female, ceiling, note, unbanded }) => {
     const alt = female ?? male;
     return {
       key,
       kind,
       ...(note === undefined ? {} : { note }),
+      ...(unbanded ? { unbanded } : {}),
       // Sex is optional on a baby. With none recorded, take the side that asks
       // more of the food: the higher figure for a floor, the lower for a
       // ceiling. Erring the other way would quietly mark a gap as covered.
