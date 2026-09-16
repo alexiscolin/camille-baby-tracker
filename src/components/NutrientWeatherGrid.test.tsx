@@ -16,6 +16,7 @@ const row = (over: Partial<WeatherRow> = {}): WeatherRow => ({
     band: 'met' as const,
     overCeiling: false,
   })),
+  perDay: 4.5,
   ratio: 1,
   trend: 'flat',
   overCeiling: false,
@@ -63,6 +64,25 @@ describe('NutrientWeatherGrid', () => {
       days={days}
     />);
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
+  });
+
+  it('should show an ungraded row as an amount, not as a dash', () => {
+    render(<NutrientWeatherGrid
+      rows={[row({ key: 'carbsG', kind: 'context', perDay: 6.2, ratio: null, trend: null })]}
+      days={days}
+    />);
+    expect(screen.getByText(/6\.2\s*g/)).toBeInTheDocument();
+  });
+
+  it('should still say whether anything went in on an ungraded day', () => {
+    const cells = row().cells.map((c, i) => ({ ...c, band: null, amount: i === 1 ? 0 : 6 }));
+    render(<NutrientWeatherGrid
+      rows={[row({ key: 'carbsG', kind: 'context', cells, ratio: null, trend: null })]}
+      days={days}
+    />);
+    const tds = cellsOf(/carbs/i);
+    expect(tds[0]).toHaveAttribute('data-band', 'some');
+    expect(tds[1]).toHaveAttribute('data-band', 'none');
   });
 
   it('should flag the day an upper limit was passed', () => {

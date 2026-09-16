@@ -101,3 +101,13 @@
 .ungraded {
   color: var(--color-text-muted);
 }
+
+/* Ungraded rows have no verdict, but "some" versus "none" still reads. */
+.cell[data-band='some'] .dot {
+  background: var(--color-text-muted);
+  opacity: 0.45;
+}
+
+.perDayNote {
+  color: var(--color-text-muted);
+}
