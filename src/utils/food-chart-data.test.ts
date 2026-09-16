@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Timestamp } from 'firebase/firestore';
 import {
-  buildGroupIntake, buildVarietyCurve, buildNutrientCoverage,
+  buildGroupIntake, buildVarietyCurve,
   buildFirstExposureFromCatalog,
 } from './food-chart-data';
 import type { BabyEvent } from '../types/events';
@@ -76,20 +76,6 @@ describe('buildVarietyCurve', () => {
 
   it('should ignore non-meal events', () => {
     expect(buildVarietyCurve([pee(D1)], days).map((c) => c.total)).toEqual([0, 0]);
-  });
-});
-
-describe('buildNutrientCoverage', () => {
-  it('should divide the range total by the day count', () => {
-    const rows = buildNutrientCoverage(
-      [meal(D1, ['kabocha']), meal(D2, ['kabocha'])], byId, 2);
-    // 4 tsp = 20 g = 0.2 x 60 kcal = 12 kcal per meal, 24 over 2 days, 12 per day
-    expect(rows.find((r) => r.nutrient === 'energyKcal')?.perDay).toBeCloseTo(12, 5);
-  });
-
-  it('should ignore non-meal events', () => {
-    const rows = buildNutrientCoverage([pee(D1)], byId, 2);
-    expect(rows.every((r) => r.perDay === 0)).toBe(true);
   });
 });
 

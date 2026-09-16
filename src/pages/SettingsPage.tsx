@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { format, parse } from 'date-fns';
+import { differenceInMonths, format, parse } from 'date-fns';
 import { Baby as BabyIcon, AlertCircle, Check, Settings, Download, ListChecks, Salad } from 'lucide-react';
 import { setWeaningStartedAt, updateBaby } from '../services/family';
 import { formatBabyAge } from '../utils/date';
@@ -8,8 +8,20 @@ import { useRangeEvents } from '../hooks/useRangeEvents';
 import { useFoods } from '../hooks/useFoods';
 import { buildReactionCsv } from '../utils/reaction-export';
 import { deriveWeaningStart } from '../utils/weaning-progress';
-import type { Baby, BabySex, EventType } from '../types/events';
+import { ASSUMED_MILK_ML } from '../data/nutrient-reference';
+import { SegmentedControl } from '../components/SegmentedControl';
+import type { Baby, BabySex, EventType, MilkSource } from '../types/events';
 import styles from './SettingsPage.module.css';
+
+const MILK_SOURCES = ['breast', 'formula', 'mixed', 'none'] as const;
+const MILK_SOURCE_LABELS: Record<MilkSource, string> = {
+  breast: 'Breast',
+  formula: 'Formula',
+  mixed: 'Mixed',
+  none: 'None',
+};
+/** Mirrors the ceiling in firestore.rules: a typo guard, not a recommendation. */
+const MAX_MILK_ML = 2000;
 
 function downloadCsv(csv: string, filename: string) {
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -92,6 +104,21 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
     const date = parse(value, 'yyyy-MM-dd', new Date());
     if (Number.isNaN(date.getTime())) return;
     void saveWeaning(() => setWeaningStartedAt(familyId, babyId, date));
+  }
+
+  // Zero before six months, where the guide has no reference intake to derive
+  // one from. Offering "0" there would read as advice rather than a default.
+  const ageMonths = baby ? differenceInMonths(new Date(), baby.birthDate.toDate()) : 0;
+  const defaultMilkMl = ASSUMED_MILK_ML(ageMonths);
+
+  function changeMilkMl(value: string) {
+    // An emptied field is a figure being retyped, not a baby drinking nothing —
+    // writing the 0 that Number('') gives would tell the targets milk brings
+    // nothing. 'none' is how a parent says zero.
+    if (!value) return;
+    const ml = Number(value);
+    if (!Number.isFinite(ml) || ml < 0 || ml > MAX_MILK_ML) return;
+    void saveWeaning(() => updateBaby(familyId, babyId, { milkMlPerDay: ml }));
   }
 
   const hasChanges = firstName.trim() !== (baby?.firstName ?? '')
@@ -266,6 +293,36 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
           Japanese guidance: get eczema under control first, and introduce egg, milk
           and wheat with your doctor.
         </p>
+        <div className={styles.form}>
+          <div className={styles.field}>
+            <label className={styles.label}>Milk</label>
+            <SegmentedControl
+              options={MILK_SOURCES}
+              value={baby?.milkSource ?? 'breast'}
+              onChange={(milkSource) =>
+                void saveWeaning(() => updateBaby(familyId, babyId, { milkSource }))}
+              labels={MILK_SOURCE_LABELS}
+            />
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="milk-ml">Milk per day (ml)</label>
+            <input
+              id="milk-ml"
+              type="number"
+              min="0"
+              max={MAX_MILK_ML}
+              step="10"
+              value={baby?.milkMlPerDay ?? ''}
+              placeholder={defaultMilkMl > 0 ? String(defaultMilkMl) : ''}
+              disabled={baby?.milkSource === 'none'}
+              onChange={(e) => changeMilkMl(e.target.value)}
+            />
+          </div>
+          <p className={styles.hint}>
+            Nutrient targets are what food still has to bring once milk's share is
+            taken off, so a rough figure here keeps them honest.
+          </p>
+        </div>
         {weaningError && (
           <div className={styles.error}>
             <AlertCircle size={16} />

@@ -25,13 +25,14 @@ const props = {
   events: [meal],
   byId: new Map([['kabocha', kabocha]]),
   days,
-  rangeDays: 7,
+  weatherRows: [],
+  milkNote: 'Targets assume 600 ml of breast milk a day.',
 };
 
 describe('FoodCharts', () => {
   it('should offer the four chart views', () => {
     render(<FoodCharts {...props} />);
-    for (const label of ['Groups', 'Variety', 'First', 'Coverage']) {
+    for (const label of ['Groups', 'Variety', 'First', 'Weather']) {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
     }
   });

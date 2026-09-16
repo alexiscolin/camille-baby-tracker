@@ -148,6 +148,13 @@ export const NEW_ALLERGEN_SPACING_DAYS = 3;
  */
 export const MAINTENANCE_GAP_DAYS = 7;
 
+/**
+ * A first serving, in grams. Practice: the city calendars start a new food at
+ * 小さじ1 and work up over a few days. Used both to shop for a first taste and
+ * to ask whether that taste would pass an upper intake limit.
+ */
+export const FIRST_TASTE_GRAMS = 15;
+
 /** Guide p.32: iron and vitamin D sources from about 6 months, especially if breastfed. */
 export const NUTRIENT_NUDGE_FROM_MONTHS = 6;
 export const IRON_RICH_MG = 1.5;

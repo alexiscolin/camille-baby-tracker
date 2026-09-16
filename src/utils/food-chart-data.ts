@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { mealNutrients, toGrams } from './meal-nutrition';
+import { toGrams } from './meal-nutrition';
 import { NUTRIENT_KEYS, FOOD_GROUPS } from '../types/food';
 import type { BabyEvent } from '../types/events';
 import type { Food, FoodGroup, MealEvent, NutrientKey } from '../types/food';
@@ -67,22 +67,6 @@ export function buildVarietyCurve(
     for (const foodId of eaten) seen.add(foodId);
     return { label: day.label, total: seen.size };
   });
-}
-
-/** Average daily intake of each nutrient over the given number of days. */
-export function buildNutrientCoverage(
-  events: BabyEvent[],
-  byId: Map<string, Food>,
-  days: number,
-): { nutrient: NutrientKey; perDay: number }[] {
-  const totals = Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, 0])) as Record<NutrientKey, number>;
-
-  for (const event of mealEvents(events)) {
-    const nutrients = mealNutrients(event.items, byId);
-    for (const key of NUTRIENT_KEYS) totals[key] += nutrients[key];
-  }
-
-  return NUTRIENT_KEYS.map((nutrient) => ({ nutrient, perDay: totals[nutrient] / days }));
 }
 
 /**

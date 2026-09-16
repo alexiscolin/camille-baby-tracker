@@ -128,11 +128,23 @@ service cloud.firestore {
     }
 
     // Helper: optional weaning fields on a baby. Absent means "derive the
-    // start from the log" and "no eczema".
+    // start from the log", "no eczema", "breast milk" and "the reference
+    // default volume".
     function hasValidWeaningFields() {
       let data = request.resource.data;
       return (!('weaningStartedAt' in data) || data.weaningStartedAt is timestamp)
-        && (!('eczema' in data) || data.eczema is bool);
+        && (!('eczema' in data) || data.eczema is bool)
+        && (!('milkSource' in data) || data.milkSource in ['breast', 'formula', 'mixed', 'none'])
+        // The nutrient targets are the reference intake less what this volume
+        // supplies, so an absurd figure quietly zeroes every target and the
+        // grid reports a diet it never checked. A baby tops out around 1000 ml
+        // a day; 2000 leaves room for a generous estimate while still catching
+        // a litres-for-millilitres slip. Zero is legitimate — it is what
+        // 'none' means once milk has stopped.
+        && (!('milkMlPerDay' in data)
+          || (data.milkMlPerDay is number
+              && data.milkMlPerDay >= 0
+              && data.milkMlPerDay <= 2000));
     }
 
     // Helper: validate measurement update

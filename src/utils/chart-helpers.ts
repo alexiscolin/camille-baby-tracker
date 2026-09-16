@@ -58,3 +58,11 @@ export function computeDailyAverages(chartData: ChartDataPoint[]): Record<string
     }),
   ) as Record<string, string>;
 }
+
+/** Two significant-ish digits, so a 0.06 mg trace is still a readable number. */
+export function formatAmount(value: number): string {
+  if (value === 0) return '0';
+  if (value < 1) return value.toFixed(2);
+  if (value < 10) return value.toFixed(1);
+  return String(Math.round(value));
+}

@@ -89,7 +89,9 @@ const ratioOf = (amount: number, target: number): number => (target > 0 ? amount
 export function milkNutrients(
   source: MilkSource,
   mlPerDay: number,
-  byId: Map<string, Food>,
+  /** Read-only, and widened past Food: milk composition is reference data, so
+   *  it comes from the seed rather than from what this family has logged. */
+  byId: ReadonlyMap<string, { nutrients?: Nutrients }>,
 ): Nutrients {
   const id = MILK_FOOD_ID[source];
   const per100ml = id ? byId.get(id)?.nutrients : undefined;
