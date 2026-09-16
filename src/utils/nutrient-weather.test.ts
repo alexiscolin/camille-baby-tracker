@@ -74,31 +74,24 @@ describe('milkNutrients', () => {
 });
 
 describe('dailyTargets', () => {
-  const milk = { ...zero(), ironMg: 0.2, calciumMg: 150, sodiumMg: 80 };
-
-  it('should subtract what milk already supplies', () => {
-    const [iron] = dailyTargets([ref({ key: 'ironMg', amount: 5 })], milk);
-    expect(iron.fromFood).toBeCloseTo(4.8, 6);
+  it('should keep the published intake, because the whole diet is what is graded', () => {
+    const [iron] = dailyTargets([ref({ key: 'ironMg', amount: 4.5 })]);
+    expect(iron.amount).toBe(4.5);
   });
 
-  it('should floor at zero rather than going negative', () => {
-    const [calcium] = dailyTargets([ref({ key: 'calciumMg', amount: 100 })], milk);
-    expect(calcium.fromFood).toBe(0);
+  it('should pass an upper limit through untouched', () => {
+    const [vitA] = dailyTargets([ref({ key: 'vitaminAUgRae', amount: 400, ceiling: 600 })]);
+    expect(vitA.ceiling).toBe(600);
   });
 
-  it('should leave the full reference intake once milk has stopped', () => {
-    const [iron] = dailyTargets([ref({ key: 'ironMg', amount: 5 })], zero());
-    expect(iron.fromFood).toBe(5);
-  });
-
-  it('should subtract from a limit too, so the food budget is what milk leaves', () => {
-    const [sodium] = dailyTargets([ref({ key: 'sodiumMg', kind: 'limit', amount: 300 })], milk);
-    expect(sodium).toMatchObject({ kind: 'limit', fromFood: 220 });
+  it('should carry the reason a nutrient is left ungraded', () => {
+    const [iron] = dailyTargets([ref({ key: 'ironMg', kind: 'context', note: 'why not' })]);
+    expect(iron.note).toBe('why not');
   });
 
   it('should give a context nutrient no target at all', () => {
-    const [carbs] = dailyTargets([ref({ key: 'carbsG', kind: 'context', amount: 0 })], milk);
-    expect(carbs).toMatchObject({ kind: 'context', fromFood: 0 });
+    const [carbs] = dailyTargets([ref({ key: 'carbsG', kind: 'context', amount: 6 })]);
+    expect(carbs).toMatchObject({ kind: 'context', amount: 0 });
   });
 });
 
@@ -125,43 +118,40 @@ describe('bandOf', () => {
 });
 
 describe('buildNutrientWeather', () => {
-  const targets = dailyTargets(
-    [ref({ key: 'ironMg', amount: 5 }), ref({ key: 'carbsG', kind: 'context' })],
-    zero(),
-  );
+  const targets = dailyTargets([ref({ key: 'ironMg', amount: 5 }), ref({ key: 'carbsG', kind: 'context' })]);
 
   it('should give a zero cell to a day with no meals rather than skipping it', () => {
-    const [iron] = buildNutrientWeather([], byId, days, targets);
+    const [iron] = buildNutrientWeather([], byId, days, targets, zero());
     expect(iron.cells).toHaveLength(7);
     expect(iron.cells.every((c) => c.amount === 0 && c.band === 'low')).toBe(true);
   });
 
   it('should place each meal on its own day', () => {
-    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets);
+    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets, zero());
     expect(iron.cells[2].amount).toBeCloseTo(4.5, 6);
     expect(iron.cells[2].band).toBe('met');
     expect(iron.cells[1].amount).toBe(0);
   });
 
   it('should ignore events outside the requested days', () => {
-    const [iron] = buildNutrientWeather([meal(20, 'liver', 50)], byId, days, targets);
+    const [iron] = buildNutrientWeather([meal(20, 'liver', 50)], byId, days, targets, zero());
     expect(iron.cells.every((c) => c.amount === 0)).toBe(true);
   });
 
   it('should ignore events that are not meals', () => {
     const feeding = { id: 'f', type: 'feeding', timestamp: Timestamp.fromDate(day(3)) } as BabyEvent;
-    const [iron] = buildNutrientWeather([feeding], byId, days, targets);
+    const [iron] = buildNutrientWeather([feeding], byId, days, targets, zero());
     expect(iron.cells.every((c) => c.amount === 0)).toBe(true);
   });
 
   it('should average the window, not sum it', () => {
     // One 50 g serving of liver in seven days: 4.5 mg spread over a 5 mg/day target.
-    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets);
+    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets, zero());
     expect(iron.ratio).toBeCloseTo(4.5 / 7 / 5, 6);
   });
 
   it('should leave a context row ungraded', () => {
-    const rows = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets);
+    const rows = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets, zero());
     const carbs = rows.find((r) => r.key === 'carbsG')!;
     expect(carbs.ratio).toBeNull();
     expect(carbs.cells.every((c) => c.band === null)).toBe(true);
@@ -169,13 +159,13 @@ describe('buildNutrientWeather', () => {
 
   it('should report a falling trend when the later days are leaner', () => {
     const early = [meal(1, 'liver', 50), meal(2, 'liver', 50)];
-    const [iron] = buildNutrientWeather(early, byId, days, targets);
+    const [iron] = buildNutrientWeather(early, byId, days, targets, zero());
     expect(iron.trend).toBe('down');
   });
 
   it('should report a rising trend when the later days are richer', () => {
     const late = [meal(6, 'liver', 50), meal(7, 'liver', 50)];
-    const [iron] = buildNutrientWeather(late, byId, days, targets);
+    const [iron] = buildNutrientWeather(late, byId, days, targets, zero());
     expect(iron.trend).toBe('up');
   });
 });
@@ -183,38 +173,36 @@ describe('buildNutrientWeather', () => {
 describe('upper limits', () => {
   // Liver is the reason this exists: 14 000 ugRAE/100 g against a 600 ugRAE
   // daily limit, on a food the ranker actively suggests for its iron.
-  const targets = dailyTargets(
-    [ref({ key: 'vitaminAUgRae', amount: 400, ceiling: 600 }), ref({ key: 'ironMg', amount: 4.5 })],
-    zero(),
-  );
+  const targets = dailyTargets([ref({ key: 'vitaminAUgRae', amount: 400, ceiling: 600 }), ref({ key: 'ironMg', amount: 4.5 })]);
 
   it('should flag the day a limit was passed', () => {
-    const [vitA] = buildNutrientWeather([meal(3, 'liver', 10)], byId, days, targets);
+    const [vitA] = buildNutrientWeather([meal(3, 'liver', 10)], byId, days, targets, zero());
     expect(vitA.cells[2].overCeiling).toBe(true);
     expect(vitA.cells[1].overCeiling).toBe(false);
   });
 
   it('should flag the window when the average is over, not just one day', () => {
     const daily = days.map((_, i) => meal(i + 1, 'liver', 10));
-    const [vitA] = buildNutrientWeather(daily, byId, days, targets);
+    const [vitA] = buildNutrientWeather(daily, byId, days, targets, zero());
     expect(vitA.overCeiling).toBe(true);
   });
 
   it('should not call a single big day an over-limit week', () => {
-    const [vitA] = buildNutrientWeather([meal(3, 'liver', 4)], byId, days, targets);
+    const [vitA] = buildNutrientWeather([meal(3, 'liver', 4)], byId, days, targets, zero());
     expect(vitA.overCeiling).toBe(false);
   });
 
   it('should leave a nutrient with no published limit unflagged', () => {
     const daily = days.map((_, i) => meal(i + 1, 'liver', 50));
-    const iron = buildNutrientWeather(daily, byId, days, targets)[1];
+    const iron = buildNutrientWeather(daily, byId, days, targets, zero())[1];
     expect(iron.overCeiling).toBe(false);
   });
 
-  it('should take milk off the headroom, not just off the target', () => {
-    const milk = { ...zero(), vitaminAUgRae: 250 };
-    const [vitA] = dailyTargets([ref({ key: 'vitaminAUgRae', amount: 400, ceiling: 600 })], milk);
-    expect(vitA).toMatchObject({ fromFood: 150, ceiling: 350 });
+  it('should count milk toward an upper limit, not only food', () => {
+    const milk = { ...zero(), vitaminAUgRae: 700 };
+    const t = dailyTargets([ref({ key: 'vitaminAUgRae', amount: 400, ceiling: 600 })]);
+    const [vitA] = buildNutrientWeather([], byId, days, t, milk);
+    expect(vitA.overCeiling).toBe(true);
   });
 });
 
@@ -224,35 +212,57 @@ describe('nutrientGaps', () => {
     ref({ key: 'vitaminAUgRae', amount: 300 }),
     ref({ key: 'sodiumMg', kind: 'limit', amount: 300 }),
     ref({ key: 'carbsG', kind: 'context' }),
-  ], zero());
+  ]);
 
   it('should name the short nutrients worst first', () => {
     // Kabocha is generous with vitamin A and thin on iron, so iron is the worse gap.
     const rows = buildNutrientWeather(
-      days.map((_, i) => meal(i + 1, 'kabocha', 40)), byId, days, targets,
+      days.map((_, i) => meal(i + 1, 'kabocha', 40)), byId, days, targets, zero(),
     );
     expect(nutrientGaps(rows)).toEqual(['ironMg', 'vitaminAUgRae']);
   });
 
   it('should not name a nutrient that is already met', () => {
     const rows = buildNutrientWeather(
-      days.map((_, i) => meal(i + 1, 'liver', 50)), byId, days, targets,
+      days.map((_, i) => meal(i + 1, 'liver', 50)), byId, days, targets, zero(),
     );
     expect(nutrientGaps(rows)).not.toContain('ironMg');
   });
 
   it('should never name a limit or a context nutrient', () => {
-    const rows = buildNutrientWeather([], byId, days, targets);
+    const rows = buildNutrientWeather([], byId, days, targets, zero());
     expect(nutrientGaps(rows)).not.toContain('sodiumMg');
     expect(nutrientGaps(rows)).not.toContain('carbsG');
   });
 });
 
 describe('perDay', () => {
-  const targets = dailyTargets([ref({ key: 'ironMg', kind: 'context' })], zero());
+  const targets = dailyTargets([ref({ key: 'ironMg', kind: 'context' })]);
 
   it('should carry the daily average, so an ungraded row still has a number to show', () => {
-    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets);
+    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets, zero());
     expect(iron.perDay).toBeCloseTo(4.5 / 7, 6);
+  });
+});
+
+describe('milk in the total', () => {
+  const targets = dailyTargets([ref({ key: 'ironMg', amount: 4.5 })]);
+  const milk = { ...zero(), ironMg: 0.3 };
+
+  it('should count milk on every day, including days with no meal', () => {
+    const [iron] = buildNutrientWeather([], byId, days, targets, milk);
+    expect(iron.cells.every((c) => c.amount === 0.3)).toBe(true);
+  });
+
+  it('should add the food on top of the milk', () => {
+    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets, milk);
+    expect(iron.cells[2].amount).toBeCloseTo(4.8, 6);
+  });
+
+  it('should let milk alone carry a nutrient to its target', () => {
+    const t = dailyTargets([ref({ key: 'calciumMg', amount: 200 })]);
+    const [calcium] = buildNutrientWeather([], byId, days, t, { ...zero(), calciumMg: 210 });
+    expect(calcium.ratio).toBeCloseTo(1.05, 6);
+    expect(calcium.cells[0].band).toBe('met');
   });
 });

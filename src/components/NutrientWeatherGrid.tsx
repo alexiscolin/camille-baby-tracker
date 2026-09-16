@@ -85,6 +85,7 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
               <th scope="row" className={styles.rowHead}>
                 {name}
                 {row.kind === 'limit' && <span className={styles.kindNote}> (limit)</span>}
+                {row.note && <span className={styles.kindNote}> — {row.note}</span>}
                 {row.overCeiling && (
                   <span className={styles.overNote}>
                     {' '}over the {name.toLowerCase()} limit
