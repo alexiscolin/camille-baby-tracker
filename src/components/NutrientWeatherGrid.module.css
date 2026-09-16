@@ -111,3 +111,27 @@
 .perDayNote {
   color: var(--color-text-muted);
 }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.875rem;
+  margin: 0.625rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.3125rem;
+}
+
+/* The legend reuses .cell so its dots can never drift from the grid's, but a
+   cell is a table cell: it needs to lay out inline here. */
+.legend .cell {
+  display: inline-flex;
+  padding: 0;
+}

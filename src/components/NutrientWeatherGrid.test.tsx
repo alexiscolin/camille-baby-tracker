@@ -96,7 +96,25 @@ describe('NutrientWeatherGrid', () => {
       rows={[row({ key: 'vitaminAUgRae', overCeiling: true })]}
       days={days}
     />);
-    expect(screen.getByText(/over the .*limit/i)).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: /vitamin a/i }))
+      .toHaveTextContent(/over the vitamin a limit/i);
+  });
+
+  it('should explain what a dot means, graded or not', () => {
+    render(<NutrientWeatherGrid rows={[row()]} days={days} />);
+    const legend = screen.getByRole('list', { name: /what the dots mean/i });
+    expect(within(legend).getByText(/on target/i)).toBeInTheDocument();
+    expect(within(legend).getByText(/over the daily limit/i)).toBeInTheDocument();
+  });
+
+  it('should explain the ungraded dots instead when nothing is graded', () => {
+    render(<NutrientWeatherGrid
+      rows={[row({ key: 'carbsG', kind: 'context', ratio: null, trend: null })]}
+      days={days}
+    />);
+    const legend = screen.getByRole('list', { name: /what the dots mean/i });
+    expect(within(legend).getByText(/something that day/i)).toBeInTheDocument();
+    expect(within(legend).queryByText(/on target/i)).not.toBeInTheDocument();
   });
 
   it('should show which way a nutrient is moving', () => {

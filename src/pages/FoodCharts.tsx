@@ -58,20 +58,20 @@ const GROUP_LABEL: Record<FoodGroup, string> = {
   other: 'Other',
 };
 
-const VIEW_OPTIONS = ['groups', 'variety', 'first', 'weather'] as const;
+const VIEW_OPTIONS = ['weather', 'groups', 'variety', 'started'] as const;
 type ChartView = (typeof VIEW_OPTIONS)[number];
 
 const VIEW_LABELS: Record<ChartView, string> = {
   groups: 'Groups',
   variety: 'Variety',
-  first: 'First',
+  started: 'Started',
   weather: 'Weather',
 };
 
 const VIEW_NOTES: Record<ChartView, string> = {
   groups: 'Grams eaten per food group, per day.',
   variety: 'Distinct foods tried so far, counted once each.',
-  first: 'All time, not the selected range: the day each nutrient first entered the diet, and the food that brought it.',
+  started: 'All time, not the selected range: the day each nutrient first entered the diet, and the food that brought it.',
   weather: 'Each day against what the meals still owe once milk is counted. The verdict is the whole range, not any one day.',
 };
 
@@ -138,7 +138,7 @@ export const FoodCharts = memo(function FoodCharts({
   weatherRows,
   milkNote,
 }: FoodChartsProps) {
-  const [view, setView] = useState<ChartView>('groups');
+  const [view, setView] = useState<ChartView>('weather');
 
   const groupRows = useMemo(() => buildGroupIntake(events, byId, days), [events, byId, days]);
   const varietyRows = useMemo(() => buildVarietyCurve(events, days), [events, days]);
@@ -184,9 +184,9 @@ export const FoodCharts = memo(function FoodCharts({
    * not hide the answer to "when did we start this nutrient". The picker stays
    * rendered either way, or the exempt view would be unreachable.
    */
-  const emptyRange = !events.some((event) => event.type === 'meal') && view !== 'first';
+  const emptyRange = !events.some((event) => event.type === 'meal') && view !== 'started';
 
-  const scrolls = view === 'first' || view === 'weather';
+  const scrolls = view === 'started' || view === 'weather';
 
   /** Before six months every row is shown but none is graded. */
   const ungraded = weatherRows.every((row) => row.kind === 'context');
@@ -262,8 +262,8 @@ export const FoodCharts = memo(function FoodCharts({
           </div>
         )}
 
-        {!emptyRange && view === 'first' && (
-          <div data-testid="chart-first">
+        {!emptyRange && view === 'started' && (
+          <div data-testid="chart-started">
             {exposureRows.length === 0 ? (
               <p className={styles.noData}>Nothing logged carries nutrient data yet.</p>
             ) : (
