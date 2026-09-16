@@ -3322,6 +3322,42 @@ export const FOOD_SEED: readonly SeedFood[] = [
       vitaminB12Ug: 0, folateUg: 1,
     },
   },
+  /**
+   * Held per 100 mL, not per 100 g as printed: the daily volume the nutrient
+   * targets subtract is in millilitres, and the table gives its own conversion
+   * (備考: 100 mL = 101.7 g), so the density is applied once here.
+   *
+   * Two published values are deliberately not copied straight across:
+   * - Iron is formally Tr; 0.04 is what the table prints "for practical
+   *   convenience" (備考), and it is the figure to calculate with. Kept as is.
+   * - Vitamin D prints 0.3, but its 備考 says that figure *includes vitamin D
+   *   active metabolites*, and gives Tr without them. Supplementation guidance
+   *   counts the metabolite-free form, so crediting 0.3 here would subtract
+   *   about a third of the daily vitamin D target on the strength of a form
+   *   that guidance does not count — and quietly reassure a parent about the
+   *   one nutrient Japanese guidance singles out for breastfed babies. The
+   *   metabolite-free reading (Tr, taken as 0) is the safe one, and it is also
+   *   published. Tr is likewise taken as 0 for B12 and folate.
+   */
+  {
+    id: 'human-milk',
+    name: 'Breast milk',
+    nameJa: '人乳',
+    group: 'dairy',
+    // Not an allergen: human milk is not cow's milk protein, and tagging it
+    // 'milk' would count the milk allergen as introduced.
+    allergens: [],
+    gramsPerTsp: 5,
+    minStage: 1,
+    suggest: false,
+    sourceRef: 'Standard Tables of Food Composition in Japan (8th ed.) no. 13051, mature human milk; per 100 mL via the table\'s own 100 mL = 101.7 g. Vitamin D excludes active metabolites.',
+    nutrients: {
+      energyKcal: 62, proteinG: 1.1, fatG: 3.6, carbsG: 6.5, fiberG: 0,
+      sugarsG: 6.5, ironMg: 0.04, calciumMg: 27, zincMg: 0.3, sodiumMg: 15,
+      potassiumMg: 49, vitaminAUgRae: 47, vitaminCMg: 5.1, vitaminDUg: 0,
+      vitaminB12Ug: 0, folateUg: 0,
+    },
+  },
   {
     id: 'formula-powder',
     name: 'Infant formula, powder',
@@ -3333,8 +3369,8 @@ export const FOOD_SEED: readonly SeedFood[] = [
     suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), infant formula (chosei funyu), powder as sold',
     nutrients: {
-      energyKcal: 510, proteinG: 12.4, fatG: 26.8, carbsG: 55.9, fiberG: 0,
-      sugarsG: 55.9, ironMg: 6.5, calciumMg: 370, zincMg: 2.8, sodiumMg: 140,
+      energyKcal: 510, proteinG: 12.4, fatG: 26.8, carbsG: 51.3, fiberG: 0,
+      sugarsG: 51.3, ironMg: 6.5, calciumMg: 370, zincMg: 2.8, sodiumMg: 140,
       potassiumMg: 500, vitaminAUgRae: 560, vitaminCMg: 53, vitaminDUg: 9.3,
       vitaminB12Ug: 1.6, folateUg: 82,
     },
@@ -3350,8 +3386,8 @@ export const FOOD_SEED: readonly SeedFood[] = [
     suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), infant formula powder reconstituted at the standard 13 g per 100 mL',
     nutrients: {
-      energyKcal: 67, proteinG: 1.6, fatG: 3.5, carbsG: 7.3, fiberG: 0,
-      sugarsG: 7.3, ironMg: 0.9, calciumMg: 48, zincMg: 0.4, sodiumMg: 18,
+      energyKcal: 66, proteinG: 1.6, fatG: 3.5, carbsG: 6.7, fiberG: 0,
+      sugarsG: 6.7, ironMg: 0.8, calciumMg: 48, zincMg: 0.4, sodiumMg: 18,
       potassiumMg: 65, vitaminAUgRae: 73, vitaminCMg: 7, vitaminDUg: 1.2,
       vitaminB12Ug: 0.2, folateUg: 11,
     },

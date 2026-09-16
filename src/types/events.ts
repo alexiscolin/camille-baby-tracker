@@ -5,6 +5,9 @@ export type EventType = 'feeding' | 'pee' | 'poop' | 'medication' | 'bath' | 'me
 
 export type FeedingType = 'breast' | 'bottle';
 
+/** Which milk the baby still drinks, for the nutrient targets. */
+export type MilkSource = 'breast' | 'formula' | 'mixed' | 'none';
+
 /** @deprecated Legacy type from when each event tracked a single side */
 export type LegacyFeedingType = 'left' | 'right';
 
@@ -78,6 +81,10 @@ export interface Baby {
   weaningStartedAt?: Timestamp;
   /** Eczema or atopic dermatitis: egg, milk and wheat are introduced with a doctor. */
   eczema?: boolean;
+  /** Absent means breast milk, the app's starting assumption. */
+  milkSource?: MilkSource;
+  /** Estimated daily milk, in millilitres. Absent means the reference default. */
+  milkMlPerDay?: number;
   createdAt: Timestamp;
 }
 

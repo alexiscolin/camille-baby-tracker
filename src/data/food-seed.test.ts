@@ -3,6 +3,7 @@ import { FOOD_SEED, NUTRIENT_CEILINGS, IMPLIED_ALLERGENS } from './food-seed';
 import { NUTRIENT_KEYS, FOOD_GROUPS } from '../types/food';
 import { ALLERGENS } from '../utils/allergens';
 import { foodFromSeed } from '../services/food-catalog';
+import { MILK_FOOD_ID } from '../utils/nutrient-weather';
 
 const VALID_GROUPS = new Set<string>(FOOD_GROUPS);
 const VALID_ALLERGENS = new Set<string>(ALLERGENS);
@@ -311,5 +312,43 @@ describe('food seed guidance fields', () => {
     }
     expect(get('shima-dofu').allergens).toContain('soy');
     expect(get('shima-dofu').minStage).toBe(2);
+  });
+});
+
+/**
+ * The prepared row is not an independent measurement: it is the powder row at
+ * the dilution its own name states. Writing both by hand let three numbers
+ * drift out of step with the powder they are made from — iron among them, on
+ * the one nutrient the weaning guidance is built around. This keeps them tied.
+ */
+describe('infant formula rows', () => {
+  const DILUTION = 0.13;
+  const powder = FOOD_SEED.find((f) => f.id === 'formula-powder')!;
+  const prepared = FOOD_SEED.find((f) => f.id === 'formula-prepared')!;
+
+  /** Decimals actually written in the seed, so each value is only held to the precision it claims. */
+  const decimals = (value: number) => (String(value).split('.')[1] ?? '').length;
+
+  it('should make the prepared row up from the powder at the stated dilution', () => {
+    for (const key of NUTRIENT_KEYS) {
+      const expected = powder.nutrients[key] * DILUTION;
+      expect(prepared.nutrients[key], key).toBeCloseTo(expected, decimals(prepared.nutrients[key]));
+    }
+  });
+});
+
+describe('milk rows', () => {
+  it('should carry every milk the nutrient targets are built from', () => {
+    for (const id of Object.values(MILK_FOOD_ID)) {
+      if (id === null) continue;
+      expect(FOOD_SEED.find((f) => f.id === id), id).toBeDefined();
+    }
+  });
+
+  it('should never suggest a milk as a food to try', () => {
+    for (const id of Object.values(MILK_FOOD_ID)) {
+      if (id === null) continue;
+      expect(FOOD_SEED.find((f) => f.id === id)!.suggest, id).toBe(false);
+    }
   });
 });
