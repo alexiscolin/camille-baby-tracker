@@ -32,14 +32,14 @@ const props = {
 describe('FoodCharts', () => {
   it('should offer the four chart views', () => {
     render(<FoodCharts {...props} />);
-    for (const label of ['Groups', 'Variety', 'First', 'Weather']) {
+    for (const label of ['Weather', 'Groups', 'Variety', 'Started']) {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
     }
   });
 
-  it('should start on the group intake view', () => {
+  it('should start on the weather, the view the page exists to answer', () => {
     render(<FoodCharts {...props} />);
-    expect(screen.getByTestId('chart-groups')).toBeInTheDocument();
+    expect(screen.getByTestId('chart-weather')).toBeInTheDocument();
   });
 
   it('should swap the chart when the picker changes', async () => {
@@ -47,20 +47,19 @@ describe('FoodCharts', () => {
     render(<FoodCharts {...props} />);
     await user.click(screen.getByRole('button', { name: 'Variety' }));
     expect(screen.getByTestId('chart-variety')).toBeInTheDocument();
-    expect(screen.queryByTestId('chart-groups')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('chart-weather')).not.toBeInTheDocument();
   });
 
   it('should still answer the lifetime question when the range is empty', async () => {
     const user = userEvent.setup();
     const tried = { ...kabocha, firstTriedAt: Timestamp.fromDate(D1) } as Food;
     render(<FoodCharts {...props} events={[]} byId={new Map([['kabocha', tried]])} />);
-    await user.click(screen.getByRole('button', { name: 'First' }));
-    expect(screen.getByTestId('chart-first')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Started' }));
+    expect(screen.getByTestId('chart-started')).toBeInTheDocument();
     expect(screen.queryByText(/no meals logged/i)).not.toBeInTheDocument();
   });
 
-  it('should say the amounts are ungraded while the baby is under six months', async () => {
-    const user = userEvent.setup();
+  it('should say the amounts are ungraded while the baby is under six months', () => {
     const ungraded = {
       key: 'ironMg' as const, kind: 'context' as const, target: 0,
       cells: days.map((_, i) => ({
@@ -70,7 +69,6 @@ describe('FoodCharts', () => {
       perDay: 0.2, ratio: null, trend: null, overCeiling: false,
     };
     render(<FoodCharts {...props} weatherRows={[ungraded]} />);
-    await user.click(screen.getByRole('button', { name: 'Weather' }));
     expect(screen.getByText(/targets start at six months/i)).toBeInTheDocument();
     expect(screen.queryByText(/targets assume/i)).not.toBeInTheDocument();
   });
@@ -78,7 +76,7 @@ describe('FoodCharts', () => {
   it('should show the no-data message instead of an empty chart frame', () => {
     render(<FoodCharts {...props} events={[]} />);
     expect(screen.getByText(/no meals logged/i)).toBeInTheDocument();
-    expect(screen.queryByTestId('chart-groups')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('chart-weather')).not.toBeInTheDocument();
   });
 });
 

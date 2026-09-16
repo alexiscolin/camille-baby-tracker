@@ -23,11 +23,45 @@ const BAND_WORD: Record<Band, string> = {
 const TREND_LABEL = { up: 'rising', down: 'falling', flat: '' } as const;
 const TREND_ARROW = { up: '↑', down: '↓', flat: '' } as const;
 
+/** Same markup as a cell, so the legend cannot drift from what the grid draws. */
+function LegendDot({ band, over, children }: {
+  band: string;
+  over?: boolean;
+  children: string;
+}) {
+  return (
+    <li className={styles.legendItem}>
+      <span className={styles.cell} data-band={band} data-over={over ?? false}>
+        <span className={styles.dot} aria-hidden="true" />
+      </span>
+      {children}
+    </li>
+  );
+}
+
+const GRADED_LEGEND: { band: string; over?: boolean; text: string }[] = [
+  { band: 'met', text: 'on target' },
+  { band: 'partial', text: 'part way' },
+  { band: 'low', text: 'little' },
+  { band: 'met', over: true, text: 'over the daily limit' },
+];
+
+const UNGRADED_LEGEND: { band: string; over?: boolean; text: string }[] = [
+  { band: 'some', text: 'something that day' },
+  { band: 'none', text: 'nothing that day' },
+];
+
 export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
   rows,
   days,
 }: NutrientWeatherGridProps) {
+  // Before six months nothing is graded, and a legend of colours that never
+  // appear is worse than none at all.
+  const graded = rows.some((row) => row.kind !== 'context');
+  const legend = graded ? GRADED_LEGEND : UNGRADED_LEGEND;
+
   return (
+    <>
     <table className={styles.grid}>
       <caption className={styles.caption}>
         What the meals brought each day, against what they still owe once milk is counted.
@@ -101,5 +135,14 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
         })}
       </tbody>
     </table>
+
+    <ul className={styles.legend} aria-label="What the dots mean">
+      {legend.map((item) => (
+        <LegendDot key={item.text} band={item.band} over={item.over}>
+          {item.text}
+        </LegendDot>
+      ))}
+    </ul>
+    </>
   );
 });
