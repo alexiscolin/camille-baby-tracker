@@ -12,6 +12,7 @@ const row = (over: Partial<WeatherRow> = {}): WeatherRow => ({
   cells: days.map((_, i) => ({
     date: `2026-09-0${i + 1}`,
     amount: 4.5,
+    fromFood: 4.5,
     ratio: 1,
     band: 'met' as const,
     overCeiling: false,
@@ -75,7 +76,7 @@ describe('NutrientWeatherGrid', () => {
   });
 
   it('should still say whether anything went in on an ungraded day', () => {
-    const cells = row().cells.map((c, i) => ({ ...c, band: null, amount: i === 1 ? 0 : 6 }));
+    const cells = row().cells.map((c, i) => ({ ...c, band: null, fromFood: i === 1 ? 0 : 6 }));
     render(<NutrientWeatherGrid
       rows={[row({ key: 'carbsG', kind: 'context', cells, ratio: null, trend: null })]}
       days={days}

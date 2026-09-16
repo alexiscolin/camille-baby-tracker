@@ -35,6 +35,14 @@ export interface ReferenceValue {
   ceiling?: number;
   /** Why this nutrient is shown as an amount instead of graded. */
   note?: string;
+  /**
+   * Work out the share, but do not colour it. For a figure that is real and
+   * worth reading yet would mislead as a verdict — iron before six months,
+   * whose reference is set above what breast milk supplies, so every
+   * exclusively breastfed baby would sit in amber for months with nothing to
+   * do about it.
+   */
+  unbanded?: boolean;
 }
 
 export interface NutrientTarget {
@@ -46,6 +54,8 @@ export interface NutrientTarget {
   ceiling?: number;
   /** Why this nutrient is shown as an amount instead of graded. */
   note?: string;
+  /** Work out the share, but do not colour it. */
+  unbanded?: boolean;
 }
 
 export type Band = 'met' | 'partial' | 'low';
@@ -53,7 +63,11 @@ export type Trend = 'up' | 'down' | 'flat';
 
 export interface WeatherCell {
   date: string;
+  /** The whole diet that day: what the meals brought, plus the milk. */
   amount: number;
+  /** What the meals alone brought. Milk is the same every day, so this is the
+   *  only part that answers "did she eat any of this today". */
+  fromFood: number;
   ratio: number;
   band: Band | null;
   /** Past the upper limit on this day. Independent of `band`: a nutrient can be
@@ -122,12 +136,13 @@ export function milkNutrients(
  * family estimated. The view says so on screen.
  */
 export function dailyTargets(reference: ReferenceValue[]): NutrientTarget[] {
-  return reference.map(({ key, kind, amount, ceiling, note }) => ({
+  return reference.map(({ key, kind, amount, ceiling, note, unbanded }) => ({
     key,
     kind,
     amount: kind === 'context' ? 0 : amount,
     ...(ceiling === undefined ? {} : { ceiling }),
     ...(note === undefined ? {} : { note }),
+    ...(unbanded ? { unbanded } : {}),
   }));
 }
 
@@ -190,17 +205,19 @@ export function buildNutrientWeather(
 
   const over = (amount: number, ceiling?: number) => ceiling !== undefined && amount > ceiling;
 
-  return targets.map(({ key, kind, amount, ceiling, note }) => {
+  return targets.map(({ key, kind, amount, ceiling, note, unbanded }) => {
     // Milk is the same every day, so the shape of the row still comes from the
     // food; what changes is that a day reads as the diet, not as the cooking.
-    const amounts = dayKeys.map((dayKey) => totalsByDay.get(dayKey)![key] + milk[key]);
+    const fromFood = dayKeys.map((dayKey) => totalsByDay.get(dayKey)![key]);
+    const amounts = fromFood.map((eaten) => eaten + milk[key]);
     const cells = dayKeys.map((date, i) => {
       const ratio = ratioOf(amounts[i], amount);
       return {
         date,
         amount: amounts[i],
+        fromFood: fromFood[i],
         ratio,
-        band: bandOf(ratio, kind),
+        band: unbanded ? null : bandOf(ratio, kind),
         overCeiling: over(amounts[i], ceiling),
       };
     });

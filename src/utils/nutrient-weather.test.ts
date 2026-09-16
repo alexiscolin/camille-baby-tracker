@@ -266,3 +266,28 @@ describe('milk in the total', () => {
     expect(calcium.cells[0].band).toBe('met');
   });
 });
+
+describe('food apart from milk', () => {
+  const targets = dailyTargets([ref({ key: 'ironMg', amount: 4.5 })]);
+  const milk = { ...zero(), ironMg: 0.3 };
+
+  it('should keep what the meals brought, separately from the total', () => {
+    const [iron] = buildNutrientWeather([meal(3, 'liver', 50)], byId, days, targets, milk);
+    expect(iron.cells[2].fromFood).toBeCloseTo(4.5, 6);
+    expect(iron.cells[2].amount).toBeCloseTo(4.8, 6);
+  });
+
+  it('should report no food on a day milk alone carried the nutrient', () => {
+    const [iron] = buildNutrientWeather([], byId, days, targets, milk);
+    expect(iron.cells.every((c) => c.fromFood === 0 && c.amount === 0.3)).toBe(true);
+  });
+});
+
+describe('unbanded rows', () => {
+  it('should work out the share but refuse to colour it', () => {
+    const targets = dailyTargets([ref({ key: 'ironMg', amount: 0.5, unbanded: true })]);
+    const [iron] = buildNutrientWeather([], byId, days, targets, { ...zero(), ironMg: 0.31 });
+    expect(iron.ratio).toBeCloseTo(0.62, 2);
+    expect(iron.cells.every((c) => c.band === null)).toBe(true);
+  });
+});

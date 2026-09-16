@@ -101,9 +101,34 @@ describe('referenceFor', () => {
 
 describe('ASSUMED_MILK_ML', () => {
   it('should follow the volumes each band was actually derived from', () => {
-    expect(ASSUMED_MILK_ML(5)).toBe(780);
-    expect(ASSUMED_MILK_ML(7)).toBe(600);
-    expect(ASSUMED_MILK_ML(10)).toBe(450);
+    expect(ASSUMED_MILK_ML(5, 'breast')).toBe(780);
+    expect(ASSUMED_MILK_ML(7, 'breast')).toBe(600);
+    expect(ASSUMED_MILK_ML(10, 'breast')).toBe(450);
+  });
+
+  /**
+   * The 基準哺乳量 is a breastfeeding figure. The formula makers' own feeding
+   * tables put a bottle-fed baby far above it, and 450 ml is exactly the volume
+   * at which every Japanese formula falls short of the iron requirement — so
+   * carrying the breast figure over would invent an iron gap for a baby who
+   * has none.
+   */
+  it('should not hand a bottle-fed baby a breastfeeding volume', () => {
+    expect(ASSUMED_MILK_ML(7, 'formula')).toBeGreaterThan(ASSUMED_MILK_ML(7, 'breast'));
+    expect(ASSUMED_MILK_ML(10, 'formula')).toBeGreaterThan(ASSUMED_MILK_ML(10, 'breast'));
+  });
+
+  it('should keep a bottle-fed baby clear of the volume where formula stops covering iron', () => {
+    // Every Japanese formula clears 4.5 mg/day at 600 ml and none does at 450.
+    expect(ASSUMED_MILK_ML(10, 'formula')).toBeGreaterThan(600);
+  });
+
+  it('should treat mixed feeding as breast, the conservative side', () => {
+    expect(ASSUMED_MILK_ML(7, 'mixed')).toBe(ASSUMED_MILK_ML(7, 'breast'));
+  });
+
+  it('should assume nothing once milk has stopped', () => {
+    expect(ASSUMED_MILK_ML(14, 'none')).toBe(0);
   });
 });
 
@@ -150,9 +175,15 @@ describe('the 0-5 month band', () => {
    * amount breast milk supplies — and dividing one by the other would mark
    * every exclusively breastfed baby as short of iron.
    */
-  it('should not grade iron before six months', () => {
-    expect(keyed(5).ironMg.kind).toBe('context');
+  it('should work out iron before six months but never colour it', () => {
+    expect(keyed(5).ironMg.kind).toBe('target');
+    expect(keyed(5).ironMg.unbanded).toBe(true);
+    expect(keyed(5).ironMg.amount).toBe(0.5);
+  });
+
+  it('should colour iron from six months, when the meals take over', () => {
     expect(keyed(6).ironMg.kind).toBe('target');
+    expect(keyed(6).ironMg.unbanded).toBeUndefined();
   });
 
   it('should still not grade sodium, which is an adequacy figure here too', () => {
