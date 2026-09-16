@@ -16,11 +16,10 @@ describe('referenceFor', () => {
     expect(referenceFor(5, 'female').length).toBeGreaterThan(0);
   });
 
-  it('should grade nothing at five months, where the guide has no figure for food', () => {
-    // 0-5 months is published as a milk-only band; 6-11 months is the first one
-    // that expects food to bring anything. Grading a 5-month-old against the
-    // later band would invent deficits at an age when milk covers everything.
-    expect(referenceFor(5, 'female').every((r) => r.kind === 'context')).toBe(true);
+  it('should grade the whole diet at five months, milk included', () => {
+    // The 0-5 band describes what milk alone supplies, so comparing the total
+    // diet against it is meaningful. What it cannot do is grade food on its own.
+    expect(referenceFor(5, 'female').some((r) => r.kind === 'target')).toBe(true);
   });
 
   it('should start grading at six months', () => {
@@ -119,5 +118,44 @@ describe('referenceFor without a recorded sex', () => {
     // Salt at 1-2 years: under 3.0 g for a boy, under 2.5 g for a girl.
     const row = referenceFor(14).find((r) => r.key === 'sodiumMg')!;
     expect(row.amount).toBeCloseTo(984, 0);
+  });
+});
+
+describe('the 0-5 month band', () => {
+  it('should carry the published figures, not a blank row', () => {
+    const r = keyed(5, 'female');
+    expect(r.calciumMg.amount).toBe(200);
+    expect(r.zincMg.amount).toBe(1.5);
+    expect(r.vitaminDUg.amount).toBe(5.0);
+    expect(r.folateUg.amount).toBe(40);
+  });
+
+  it('should split energy by sex, the only row at this age that does', () => {
+    expect(keyed(5, 'male').energyKcal.amount).toBe(550);
+    expect(keyed(5, 'female').energyKcal.amount).toBe(500);
+  });
+
+  it('should keep the vitamin A and D ceilings, which exist from birth', () => {
+    expect(keyed(5).vitaminAUgRae.ceiling).toBe(600);
+    expect(keyed(5).vitaminDUg.ceiling).toBe(25);
+  });
+
+  it('should not invent a folate ceiling, which is not set at this age', () => {
+    expect(keyed(5).folateUg.ceiling).toBeUndefined();
+  });
+
+  /**
+   * The guide rounds 0.273 mg/day up to 0.5 for iron, and the identical 0.273
+   * down to 0.3 for copper. So 0.5 is a deliberate safety margin, not the
+   * amount breast milk supplies — and dividing one by the other would mark
+   * every exclusively breastfed baby as short of iron.
+   */
+  it('should not grade iron before six months', () => {
+    expect(keyed(5).ironMg.kind).toBe('context');
+    expect(keyed(6).ironMg.kind).toBe('target');
+  });
+
+  it('should still not grade sodium, which is an adequacy figure here too', () => {
+    expect(keyed(5).sodiumMg.kind).toBe('context');
   });
 });

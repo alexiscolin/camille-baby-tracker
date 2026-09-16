@@ -72,7 +72,7 @@ const VIEW_NOTES: Record<ChartView, string> = {
   groups: 'Grams eaten per food group, per day.',
   variety: 'Distinct foods tried so far, counted once each.',
   started: 'All time, not the selected range: the day each nutrient first entered the diet, and the food that brought it.',
-  weather: 'Each day against what the meals still owe once milk is counted. The verdict is the whole range, not any one day.',
+  weather: 'The whole diet, milk included, against what she needs at her age. The verdict is the whole range, not any one day.',
 };
 
 const AXIS_TICK = { fontSize: 11, fill: 'var(--color-text-muted)' };
@@ -188,8 +188,6 @@ export const FoodCharts = memo(function FoodCharts({
 
   const scrolls = view === 'started' || view === 'weather';
 
-  /** Before six months every row is shown but none is graded. */
-  const ungraded = weatherRows.every((row) => row.kind === 'context');
 
   return (
     <>
@@ -311,15 +309,7 @@ export const FoodCharts = memo(function FoodCharts({
             ) : (
               <>
                 <NutrientWeatherGrid rows={weatherRows} days={days} />
-                {ungraded ? (
-                  <p className={styles.chartNote}>
-                    Amounts only for now. Targets start at six months: until then milk is
-                    still the whole diet, and 初期 is about getting used to a spoon rather
-                    than to a daily amount.
-                  </p>
-                ) : (
-                  <p className={styles.chartNote}>{milkNote}</p>
-                )}
+                <p className={styles.chartNote}>{milkNote}</p>
               </>
             )}
           </div>

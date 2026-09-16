@@ -59,20 +59,6 @@ describe('FoodCharts', () => {
     expect(screen.queryByText(/no meals logged/i)).not.toBeInTheDocument();
   });
 
-  it('should say the amounts are ungraded while the baby is under six months', () => {
-    const ungraded = {
-      key: 'ironMg' as const, kind: 'context' as const, target: 0,
-      cells: days.map((_, i) => ({
-        date: `2026-09-0${i + 1}`, amount: 0.2, ratio: 1,
-        band: null, overCeiling: false,
-      })),
-      perDay: 0.2, ratio: null, trend: null, overCeiling: false,
-    };
-    render(<FoodCharts {...props} weatherRows={[ungraded]} />);
-    expect(screen.getByText(/targets start at six months/i)).toBeInTheDocument();
-    expect(screen.queryByText(/targets assume/i)).not.toBeInTheDocument();
-  });
-
   it('should show the no-data message instead of an empty chart frame', () => {
     render(<FoodCharts {...props} events={[]} />);
     expect(screen.getByText(/no meals logged/i)).toBeInTheDocument();

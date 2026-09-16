@@ -1,6 +1,6 @@
 # Nutrient weather — design
 
-Status: design approved; reference tables researched and built; UI outstanding
+Status: built and shipped. Model revised 2026-09-16 after use — see "Revision: the whole diet".
 Date: 2026-09-16
 
 ## Problem
@@ -39,8 +39,9 @@ carries, because the question it answers is "how much must the meals bring" and
 milk iron is real dietary iron — but that subtraction is the app's arithmetic,
 not the guide's, and the reference file says so.
 
-**Resolution.** The target is not the reference intake; it is the reference
-intake *minus what milk contributes*:
+**Resolution (superseded — see "Revision: the whole diet" below).** The first
+model subtracted milk from the reference intake and graded food against the
+remainder:
 
 ```
 targetFromFood(nutrient) = max(0, referenceIntake(nutrient) − milkContribution(nutrient))
@@ -316,3 +317,62 @@ Two published values were not copied straight across:
 - `FoodCharts`: the grid view, and delete `coverage`.
 - `rankNextFoods`: the measured-gap bonus, and a guard so a food cannot be
   suggested into an upper limit it would blow — the liver problem above.
+
+
+## Revision: the whole diet
+
+Shipped, used, and changed on the same day. The parent's question, in their own
+words, was «pour savoir où on en est» — where are we. The first model did not
+answer it.
+
+Grading food against *what food owes* answers a question about cooking. It is
+the actionable framing, and it is the wrong one to lead with: a parent wants to
+know whether their baby is getting what she needs, and milk is most of that
+answer for the whole first year.
+
+**The model is now the whole diet against the published intake:**
+
+```
+ratio(nutrient) = (foodPerDay(nutrient) + milkPerDay(nutrient)) / referenceIntake(nutrient)
+```
+
+`dailyTargets` no longer takes milk; `buildNutrientWeather` does, and adds it to
+every day including days with no meal.
+
+### What this buys
+
+- It reads correctly at every age. At five months it shows roughly 100 %, which
+  is the truth: milk covers it. At nine months iron and vitamin D fall away on
+  their own, because milk genuinely stops covering them — which is the signal
+  the feature exists to give, arrived at honestly rather than by construction.
+- `nutrientGaps` now measures what the **baby** is short of rather than what the
+  cooking is short of, which is a better input to the food suggestions it feeds.
+
+### What it costs, stated plainly
+
+- A nutrient milk already covers reads as fine even when the meals bring none of
+  it. The grid no longer tells a parent whether their cooking is pulling its
+  weight.
+- Every percentage moves with the milk volume the family estimated. At five
+  months, when food contributes almost nothing, the percentages are very nearly
+  a readout of that one setting. The note under the grid says so.
+
+### The 0–5 month band, and the iron artefact
+
+Grading from five months needs the 0〜5か月 band, which is published as
+milk-only: each 目安量 is 母乳中濃度 × 0.78 L/日 (pp.367–368).
+
+**Iron is deliberately left ungraded there.** The guide takes
+0.35 mg/L × 0.78 L/日 = 0.273 mg/日 and rounds it to **0.5** (p.293). It takes
+the identical 0.273 mg/日 for copper and rounds it to **0.3** (p.306). Same
+arithmetic, same document, two answers — so 0.5 is a deliberate safety margin
+above what breast milk provides, not a measurement of it. Dividing milk by that
+margin would put every exclusively breastfed baby at about 62 % of iron: a
+single amber row, on the one nutrient a parent is watching, at an age when the
+only remedy the guide offers does not start for another month.
+
+Sodium stays ungraded at every age under twelve months for the reason it always
+was: a 目安量, with no 目標量 and no 耐容上限量.
+
+Both rows carry the reason on screen, next to the nutrient's name. A row that
+declines to grade itself has to say why, or it reads as a bug.
