@@ -1,5 +1,9 @@
 .grid {
   width: 100%;
+  /* Fixed layout is what keeps a thirty-day range on a phone: the columns
+     divide the width they are given instead of demanding the width of their
+     content. The dots shrink; the table never overflows. */
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.8125rem;
 }
@@ -14,11 +18,13 @@
 }
 
 .rowHead {
+  width: 5.5rem;
   text-align: left;
   font-weight: 500;
   color: var(--color-text-secondary);
   padding: 0.25rem 0.5rem 0.25rem 0;
-  white-space: nowrap;
+  /* Never nowrap: "Vitamin B12" wraps here rather than widening the column. */
+  overflow-wrap: break-word;
 }
 
 .dayHead,
@@ -30,6 +36,7 @@
 }
 
 .verdictHead {
+  width: 4.25rem;
   text-align: right;
   white-space: nowrap;
 }
@@ -39,24 +46,37 @@
   font-weight: 400;
 }
 
-.overNote {
-  display: block;
-  color: var(--color-danger-strong);
-  font-weight: 500;
-  font-size: 0.6875rem;
-}
-
 .cell {
   text-align: center;
-  padding: 0.1875rem;
+  padding: 0.1875rem 0;
 }
 
 .dot {
   display: inline-block;
-  width: 0.75rem;
-  height: 0.75rem;
+  /* Shrinks with the column on a long range, with a floor that stays visible. */
+  width: min(0.75rem, 100%);
+  max-width: 0.75rem;
+  min-width: 0.3125rem;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: var(--color-border-light);
+}
+
+.notes {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
+.notes li + li {
+  margin-top: 0.25rem;
+}
+
+.noteWarn {
+  color: var(--color-danger-strong);
 }
 
 /* Bands carry a shape as well as a colour: filled, half, hollow. Colour alone
@@ -86,6 +106,7 @@
 }
 
 .verdict {
+  width: 4.25rem;
   text-align: right;
   white-space: nowrap;
   color: var(--color-text-secondary);

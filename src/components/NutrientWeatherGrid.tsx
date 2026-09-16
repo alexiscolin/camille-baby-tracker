@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { format } from 'date-fns';
 import { NUTRIENT_LABEL, NUTRIENT_UNIT } from '../data/nutrient-reference';
 import { formatAmount } from '../utils/chart-helpers';
 import type { Band, WeatherRow } from '../utils/nutrient-weather';
@@ -60,6 +61,13 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
   const graded = rows.some((row) => row.kind !== 'context');
   const legend = graded ? GRADED_LEGEND : UNGRADED_LEGEND;
 
+  const footnotes = rows.flatMap((row) => [
+    ...(row.overCeiling
+      ? [{ key: row.key, text: `over the daily limit on average`, warn: true }]
+      : []),
+    ...(row.note ? [{ key: row.key, text: row.note, warn: false }] : []),
+  ]);
+
   return (
     <>
     <table className={styles.grid}>
@@ -71,7 +79,9 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
           <th scope="col" className={styles.rowHead}>Nutrient</th>
           {days.map((day) => (
             <th key={day.date.toISOString()} scope="col" className={styles.dayHead}>
-              {day.label}
+              {/* Day of the month only. A column here can be six pixels wide on
+                  a thirty-day range, and "Sep 16" would set a width no phone has. */}
+              {format(day.date, 'd')}
             </th>
           ))}
           <th scope="col" className={styles.verdictHead}>{days.length} days</th>
@@ -82,15 +92,11 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
           const name = NUTRIENT_LABEL[row.key];
           return (
             <tr key={row.key}>
+              {/* Name only. A sentence in a header cell sets the column to the
+                  width of the sentence; the reasons live under the table. */}
               <th scope="row" className={styles.rowHead}>
                 {name}
                 {row.kind === 'limit' && <span className={styles.kindNote}> (limit)</span>}
-                {row.note && <span className={styles.kindNote}> — {row.note}</span>}
-                {row.overCeiling && (
-                  <span className={styles.overNote}>
-                    {' '}over the {name.toLowerCase()} limit
-                  </span>
-                )}
               </th>
 
               {row.cells.map((cell, i) => (
@@ -138,6 +144,16 @@ export const NutrientWeatherGrid = memo(function NutrientWeatherGrid({
         })}
       </tbody>
     </table>
+
+    {footnotes.length > 0 && (
+      <ul className={styles.notes} aria-label="About these rows">
+        {footnotes.map((note) => (
+          <li key={note.key} className={note.warn ? styles.noteWarn : undefined}>
+            <strong>{NUTRIENT_LABEL[note.key]}</strong> — {note.text}
+          </li>
+        ))}
+      </ul>
+    )}
 
     <ul className={styles.legend} aria-label="What the dots mean">
       {legend.map((item) => (
