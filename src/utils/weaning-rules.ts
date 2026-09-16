@@ -101,7 +101,7 @@ export const LADDERS: Record<string, readonly Rung[]> = {
 /** Drinks: never the start of weaning, never a staple to shop for. */
 export const NON_SOLID_IDS: ReadonlySet<string> = new Set([
   'water', 'barley-tea', 'rooibos-tea', 'hojicha', 'sencha',
-  'oral-rehydration-solution', 'formula-powder', 'formula-prepared',
+  'oral-rehydration-solution', 'formula-powder', 'formula-prepared', 'human-milk',
 ]);
 
 /** Groups open in each 初期 phase. Guide p.32 order. */

@@ -58,7 +58,7 @@ export function buildReactionPayload(reaction: Reaction, items: MealItem[]): Rea
   };
 }
 
-function emptyNutrients(): Nutrients {
+export function emptyNutrients(): Nutrients {
   return Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, 0])) as unknown as Nutrients;
 }
 
