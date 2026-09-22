@@ -5,7 +5,7 @@ import { useRangeEvents } from '../hooks/useRangeEvents';
 import { useMeasurements } from '../hooks/useMeasurements';
 import { groupEventsByDay } from '../utils/event-groups';
 import { buildChartData } from '../utils/chart-data';
-import { getDayKey, parseDayKey, formatBabyAge } from '../utils/date';
+import { getDayKey, parseDayKey, formatDetailedAge } from '../utils/date';
 import { computeSummary } from '../utils/summary';
 import { EVENT_CONFIG, MIN_RADAR_AXES } from '../utils/event-config';
 import { useVisibleRateTypes } from '../hooks/useVisibleEventTypes';
@@ -183,7 +183,7 @@ export function DashboardPage({ familyId, babyId, userId, baby }: DashboardPageP
         <div className={styles.headerRight}>
           {baby && (
             <span className={styles.babyAge}>
-              {formatBabyAge(baby.birthDate.toDate())}
+              {formatDetailedAge(baby.birthDate.toDate())}
               {lastWeight && ` · ${lastWeight.value} kg`}
               {lastHeight && ` · ${lastHeight.value} cm`}
             </span>

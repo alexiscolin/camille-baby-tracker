@@ -1,4 +1,13 @@
-import { format, formatDistanceToNow, subDays, addDays, isSameDay } from 'date-fns';
+import {
+  format,
+  formatDistanceToNow,
+  subDays,
+  addDays,
+  addMonths,
+  isSameDay,
+  differenceInDays,
+  differenceInMonths,
+} from 'date-fns';
 import type { Timestamp } from 'firebase/firestore';
 
 export function formatTime(timestamp: Timestamp): string {
@@ -76,6 +85,40 @@ export function formatBabyAge(birthDate: Date, at: Date = new Date()): string {
   const remainMonths = months % 12;
   if (remainMonths === 0) return `${years} year${years > 1 ? 's' : ''} old`;
   return `${years}y ${remainMonths}m old`;
+}
+
+/**
+ * The same age as `formatBabyAge`, spelled out in full.
+ *
+ * Three readings of one number, because they answer different questions: the
+ * calendar breakdown is what you say out loud, the week count is what the
+ * growth charts and the health record are indexed on, and the day count is the
+ * one that still moves when the other two have stalled.
+ */
+export function formatDetailedAge(birthDate: Date, at: Date = new Date()): string {
+  const totalDays = differenceInDays(at, birthDate);
+
+  if (totalDays < 0) return '';
+  if (totalDays === 0) return 'born today';
+  // Through the first week the breakdown and both totals are the same number.
+  if (totalDays < 7) return `${totalDays}d`;
+
+  const months = differenceInMonths(at, birthDate);
+  const sinceMonthMark = differenceInDays(at, addMonths(birthDate, months));
+  const weeks = Math.floor(sinceMonthMark / 7);
+  const days = sinceMonthMark % 7;
+
+  const breakdown = [
+    months > 0 && `${months}mo`,
+    weeks > 0 && `${weeks}w`,
+    days > 0 && `${days}d`,
+  ].filter(Boolean).join(' ');
+
+  // Before the first month the week total only repeats the breakdown.
+  const totals =
+    months > 0 ? `${Math.floor(totalDays / 7)}w · ${totalDays}d` : `${totalDays}d`;
+
+  return `${breakdown} (${totals})`;
 }
 
 export function parseDayKey(key: string): Date {
