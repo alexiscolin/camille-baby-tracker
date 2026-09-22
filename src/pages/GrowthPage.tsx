@@ -23,7 +23,7 @@ import {
 import type { GrowthMetric } from '../utils/who-growth-data';
 import type { MeasurementType } from '../types/measurements';
 import type { Baby } from '../types/events';
-import { formatBabyAge } from '../utils/date';
+import { formatDetailedAge } from '../utils/date';
 import styles from './GrowthPage.module.css';
 
 interface GrowthPageProps {
@@ -143,7 +143,7 @@ export function GrowthPage({ familyId, babyId, userId, baby }: GrowthPageProps) 
           <h1 className={styles.title}>Growth</h1>
           {baby && (
             <p className={styles.subtitle}>
-              {baby.firstName} — {formatBabyAge(baby.birthDate.toDate())}
+              {baby.firstName} — {formatDetailedAge(baby.birthDate.toDate())}
             </p>
           )}
         </div>

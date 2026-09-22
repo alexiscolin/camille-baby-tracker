@@ -6,7 +6,7 @@ import { useRangeEvents } from '../hooks/useRangeEvents';
 import { CacheIndicator } from '../components/CacheIndicator';
 import { ModalFallback } from '../components/ModalFallback';
 import { withChunkReload } from '../utils/lazy-route';
-import { formatBabyAge } from '../utils/date';
+import { formatDetailedAge } from '../utils/date';
 import { matchesSearch } from '../utils/text-search';
 import type { Baby, MilestoneEvent } from '../types/events';
 import styles from './MilestonesPage.module.css';
@@ -163,7 +163,7 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
                   <span className={styles.entryTitle}>{milestone.title}</span>
                   <span className={styles.when}>
                     {format(at, 'd MMMM yyyy')}
-                    {birthDate && ` · ${formatBabyAge(birthDate, at)}`}
+                    {birthDate && ` · ${formatDetailedAge(birthDate, at)}`}
                   </span>
                   {milestone.notes && (
                     <span className={styles.note}>{milestone.notes}</span>

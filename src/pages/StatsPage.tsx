@@ -13,7 +13,7 @@ import {
 import { useToday } from '../hooks/useToday';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { buildChartData } from '../utils/chart-data';
-import { formatBabyAge } from '../utils/date';
+import { formatDetailedAge } from '../utils/date';
 
 import {
   getDayNightSplit,
@@ -182,7 +182,7 @@ export function StatsPage({ familyId, babyId, baby }: StatsPageProps) {
           <h1 className={styles.title}>Statistics</h1>
           {baby && (
             <p className={styles.subtitle}>
-              {baby.firstName} — {formatBabyAge(baby.birthDate.toDate())}
+              {baby.firstName} — {formatDetailedAge(baby.birthDate.toDate())}
             </p>
           )}
         </div>
