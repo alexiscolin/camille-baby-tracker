@@ -1,0 +1,185 @@
+/* Same scale as IronOutlookCard: body text for what matters, the chart-note
+   size for everything that qualifies it. */
+.card {
+  margin-bottom: var(--space-md);
+  padding: var(--space-md) var(--space-sm);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.title {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.section {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  margin: var(--space-md) 0 var(--space-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.section:first-of-type {
+  margin-top: var(--space-sm);
+}
+
+.when {
+  font-weight: 500;
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+}
+
+.calm {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.band + .band {
+  margin-top: var(--space-sm);
+}
+
+.bandHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  margin: 0;
+}
+
+.bandDot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--color-text);
+}
+
+/* Hollow while it is still ahead, filled once she is inside it. */
+.bandDotAhead {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--color-text-muted);
+}
+
+.bandLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.bandWhen {
+  margin-left: auto;
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.bandWhat {
+  margin: var(--space-2xs) 0 0;
+  padding-left: calc(7px + var(--space-xs));
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+.caveat {
+  margin: var(--space-2xs) 0 0;
+  padding-left: calc(7px + var(--space-xs));
+  font-size: var(--font-size-2xs);
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.note {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--font-size-2xs);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.source {
+  margin: var(--space-2xs) 0 0;
+  padding-left: calc(7px + var(--space-xs));
+  font-size: var(--font-size-2xs);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.items {
+  margin: 0;
+  padding-left: var(--space-md);
+  font-size: var(--font-size-xs);
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.motor {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.motorRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 var(--space-xs);
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.motorLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+}
+
+.range {
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* The bar spans both columns on its own row, under the label. */
+.track {
+  position: relative;
+  grid-column: 1 / -1;
+  order: 1;
+  height: 4px;
+  margin-top: 2px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-light);
+}
+
+.window {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-primary, var(--color-text-secondary));
+  opacity: 0.45;
+}
+
+.today {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--color-text);
+}
+
+.motorNote {
+  grid-column: 1 / -1;
+  order: 2;
+  margin-top: var(--space-2xs);
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+}
