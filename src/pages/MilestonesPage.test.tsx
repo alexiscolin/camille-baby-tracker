@@ -64,11 +64,11 @@ describe('MilestonesPage', () => {
    * age the baby happens to be on the day someone opens the list.
    */
   it('should show how old the baby was when it happened', () => {
-    // Born 20 March, milestone on 1 August: four months old that day, and
-    // older than that by the time anyone reads this. The assertion is only
+    // Born 20 March, milestone on 1 August: 4mo 1w 5d that day, and older
+    // than that by the time anyone reads this. The assertion is only
     // meaningful because those two differ.
     renderWith([milestone('m1', 'First smile', new Date(2026, 7, 1))]);
-    expect(screen.getByText(/4 months old/)).toBeInTheDocument();
+    expect(screen.getByText(/4mo 1w 5d \(19w · 134d\)/)).toBeInTheDocument();
   });
 
   it('should say so when nothing has been recorded', () => {

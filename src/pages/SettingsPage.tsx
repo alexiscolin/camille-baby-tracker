@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { differenceInMonths, format, parse } from 'date-fns';
 import { Baby as BabyIcon, AlertCircle, Check, Settings, Download, ListChecks, Salad } from 'lucide-react';
 import { setWeaningStartedAt, updateBaby } from '../services/family';
-import { formatBabyAge } from '../utils/date';
+import { formatDetailedAge } from '../utils/date';
 import { EVENT_CONFIG, EVENT_TYPES } from '../utils/event-config';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { useFoods } from '../hooks/useFoods';
@@ -182,7 +182,7 @@ export function SettingsPage({ familyId, babyId, baby }: SettingsPageProps) {
           <>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Age</span>
-              <span className={styles.infoValue}>{formatBabyAge(baby.birthDate.toDate())}</span>
+              <span className={styles.infoValue}>{formatDetailedAge(baby.birthDate.toDate())}</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Birth date</span>

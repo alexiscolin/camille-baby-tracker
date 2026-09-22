@@ -55,40 +55,11 @@ export function getRelativeDayLabel(date: Date): string {
 }
 
 /**
- * How old the baby was at a given moment, defaulting to now.
+ * How old the baby is, or was at a given moment.
  *
- * The parameter exists for milestones: "she was 5 months old" is the point of
- * the entry, and it must not drift to her age the day someone reads the list.
- */
-export function formatBabyAge(birthDate: Date, at: Date = new Date()): string {
-  const diffMs = at.getTime() - birthDate.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) return '';
-  if (diffDays === 0) return 'born today';
-  if (diffDays === 1) return '1 day old';
-  if (diffDays < 14) return `${diffDays} days old`;
-
-  const weeks = Math.floor(diffDays / 7);
-  if (diffDays < 60) {
-    const remainDays = diffDays % 7;
-    if (remainDays === 0) return `${weeks} weeks old`;
-    return `${weeks}w ${remainDays}d old`;
-  }
-
-  const months = Math.floor(diffDays / 30.44);
-  if (months < 12) {
-    return `${months} month${months > 1 ? 's' : ''} old`;
-  }
-
-  const years = Math.floor(months / 12);
-  const remainMonths = months % 12;
-  if (remainMonths === 0) return `${years} year${years > 1 ? 's' : ''} old`;
-  return `${years}y ${remainMonths}m old`;
-}
-
-/**
- * The same age as `formatBabyAge`, spelled out in full.
+ * The `at` parameter exists for milestones: "she was 5 months old" is the
+ * point of the entry, and it must not drift to her age the day someone reads
+ * the list.
  *
  * Three readings of one number, because they answer different questions: the
  * calendar breakdown is what you say out loud, the week count is what the

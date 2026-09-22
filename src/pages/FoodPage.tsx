@@ -20,7 +20,7 @@ import { IronOutlookCard } from '../components/IronOutlookCard';
 import { ironOutlook } from '../utils/iron-outlook';
 import { ModalFallback } from '../components/ModalFallback';
 import { withChunkReload } from '../utils/lazy-route';
-import { formatBabyAge } from '../utils/date';
+import { formatDetailedAge } from '../utils/date';
 import { STAGE_LABELS } from '../utils/weaning-stage';
 import { getWeaningProgress } from '../utils/weaning-progress';
 import { rankNextFoods, getPace, getAllergenStatus } from '../utils/next-foods';
@@ -250,7 +250,7 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
           <h1 className={styles.title}>Food</h1>
           {baby && (
             <p className={styles.subtitle}>
-              {formatBabyAge(baby.birthDate.toDate())}
+              {formatDetailedAge(baby.birthDate.toDate())}
               {stage ? ` — ${STAGE_LABELS[stage]}` : ''}
               {stage && progress?.daysSinceStart != null ? ` · day ${progress.daysSinceStart + 1} of solids` : ''}
             </p>
