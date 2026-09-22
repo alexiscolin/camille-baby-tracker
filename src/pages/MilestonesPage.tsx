@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { useToday } from '../hooks/useToday';
 import { useRangeEvents } from '../hooks/useRangeEvents';
 import { CacheIndicator } from '../components/CacheIndicator';
+import { DevelopmentTimeline } from '../components/DevelopmentTimeline';
 import { ModalFallback } from '../components/ModalFallback';
 import { withChunkReload } from '../utils/lazy-route';
 import { formatDetailedAge } from '../utils/date';
@@ -114,6 +115,10 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
           </button>
         </div>
       </div>
+
+      {/* Above the list on purpose: the recorded milestones are a keepsake, what
+          is coming is the thing you act on. */}
+      {birthDate && <DevelopmentTimeline birthDate={birthDate} />}
 
       {searchable && (
         <div className={styles.search}>
