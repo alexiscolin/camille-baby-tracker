@@ -35,6 +35,7 @@ export const COOP_OKINAWA: Record<string, readonly BuyHint[]> = {
   natto: [coop('CO-OP 国産大豆で作った納豆ペースト', 120)],
   'hikiwari-natto': [coop('CO-OP 国産大豆で作った納豆ペースト', 120)],
   cod: [coop('CO-OP 北海道産白身魚のほぐし身', 60)],
+  'white-fish-flakes': [coop('CO-OP 北海道産白身魚のほぐし身', 60)],
   shirasu: [coop('CO-OP 食塩不使用ふっくらしらす干し', 60)],
   shirasuboshi: [coop('CO-OP 食塩不使用ふっくらしらす干し', 60)],
   'silken-tofu': [coop('CO-OP 国産大豆カット絹とうふ', 360)],

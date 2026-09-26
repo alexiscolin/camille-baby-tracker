@@ -75,13 +75,13 @@ export const ALLERGEN_ENTRY: Partial<Record<Allergen, Rung>> = {
  */
 export const LADDERS: Record<string, readonly Rung[]> = {
   firstProteins: [
-    { label: 'silken tofu or white fish', ids: ['silken-tofu', 'cod', 'flounder-boiled', 'sea-bream-boiled', 'shirasu', 'shirasuboshi'] },
+    { label: 'silken tofu or white fish', ids: ['silken-tofu', 'cod', 'white-fish-flakes', 'flounder-boiled', 'sea-bream-boiled', 'shirasu', 'shirasuboshi'] },
     { label: 'egg yolk', ids: ['egg-yolk'] },
   ],
   fish: [
     // Sawara is cooked as a white fish in Japan; it waits on its own stage (3).
     // Swordfish and shishamo have no agreed group and are left out.
-    { label: 'white fish', ids: ['cod', 'flounder-boiled', 'sea-bream-boiled', 'shirasu', 'shirasuboshi', 'sawara-boiled'] },
+    { label: 'white fish', ids: ['cod', 'white-fish-flakes', 'flounder-boiled', 'sea-bream-boiled', 'shirasu', 'shirasuboshi', 'sawara-boiled'] },
     { label: 'red fish', ids: ['salmon-boiled', 'salmon-canned', 'tuna-boiled', 'tuna-canned-water', 'katsuo-boiled'] },
     { label: 'blue-backed fish', ids: ['aji-boiled', 'mackerel-boiled', 'mackerel-canned', 'sardine-boiled', 'saury-grilled', 'yellowtail-boiled'] },
   ],

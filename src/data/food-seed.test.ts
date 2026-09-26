@@ -4,6 +4,8 @@ import { NUTRIENT_KEYS, FOOD_GROUPS } from '../types/food';
 import { ALLERGENS } from '../utils/allergens';
 import { foodFromSeed } from '../services/food-catalog';
 import { MILK_FOOD_ID } from '../utils/nutrient-weather';
+import { rankSuggestions } from '../utils/food-search';
+import { LADDERS } from '../utils/weaning-rules';
 
 const VALID_GROUPS = new Set<string>(FOOD_GROUPS);
 const VALID_ALLERGENS = new Set<string>(ALLERGENS);
@@ -350,5 +352,21 @@ describe('milk rows', () => {
       if (id === null) continue;
       expect(FOOD_SEED.find((f) => f.id === id)!.suggest, id).toBe(false);
     }
+  });
+});
+
+/**
+ * Generic white fish flakes (白身魚) are how they are sold and how a parent
+ * logs them, so the row has to be findable by its Japanese name and count
+ * as the white fish the weaning order starts from.
+ */
+describe('white fish flakes', () => {
+  it('should be found by searching 白身魚', () => {
+    expect(rankSuggestions('白身魚', [], FOOD_SEED)[0]?.id).toBe('white-fish-flakes');
+  });
+
+  it('should count as a first protein and as white fish', () => {
+    expect(LADDERS.firstProteins[0].ids).toContain('white-fish-flakes');
+    expect(LADDERS.fish[0].ids).toContain('white-fish-flakes');
   });
 });
