@@ -2261,6 +2261,23 @@ export const FOOD_SEED: readonly SeedFood[] = [
     },
   },
   {
+    id: 'white-fish-flakes',
+    name: 'White fish (shiromizakana) flakes, boiled, boneless',
+    nameJa: '白身魚（ほぐし身）',
+    group: 'protein',
+    allergens: [],
+    gramsPerTsp: 5,
+    minStage: 1,
+    note: 'Check for bones even when the pack says boneless.',
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), cod (madara), raw; used as an estimate for generic white fish flakes, which are mostly cod (the CO-OP ほぐし身 pack is madara)',
+    nutrients: {
+      energyKcal: 72, proteinG: 17.6, fatG: 0.2, carbsG: 0.1, fiberG: 0,
+      sugarsG: 0, ironMg: 0.2, calciumMg: 32, zincMg: 0.5, sodiumMg: 110,
+      potassiumMg: 350, vitaminAUgRae: 10, vitaminCMg: 0, vitaminDUg: 1.0,
+      vitaminB12Ug: 1.3, folateUg: 5,
+    },
+  },
+  {
     id: 'sea-bream-boiled',
     name: 'Sea bream (madai), farmed, boiled',
     nameJa: '真鯛',
