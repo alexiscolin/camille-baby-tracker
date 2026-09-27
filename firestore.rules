@@ -57,15 +57,17 @@ service cloud.firestore {
     }
 
     // Helper: validate medication-specific fields
-    // Helper: validate milestone fields. The title is free text by design —
-    // a fixed vocabulary would be a list of things to feel behind on — so the
-    // only thing to enforce is that it exists and stays a reasonable length.
+    // Helper: validate milestone fields. The title is free text; milestoneKey
+    // is set when the milestone was ticked from the app's calendar of expected
+    // steps, and is only bounded here — the app owns the vocabulary.
     function hasValidMilestoneFields() {
       let data = request.resource.data;
       return data.type == 'milestone'
         && data.title is string
         && data.title.size() > 0
-        && data.title.size() <= 200;
+        && data.title.size() <= 200
+        && (!('milestoneKey' in data)
+          || (data.milestoneKey is string && data.milestoneKey.size() <= 64));
     }
 
     function hasValidMedicationFields() {

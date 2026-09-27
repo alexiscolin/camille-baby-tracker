@@ -53,12 +53,14 @@ export interface BathEvent extends BaseEvent {
 
 /**
  * Something that happened once and will not happen again: first steps, first
- * tooth, first word. The title is free text — a list of expected milestones
- * would be a list of things to feel behind on. `notes` carries the detail.
+ * tooth, first word. The title is free text; `notes` carries the detail.
+ * `milestoneKey` is set when it was ticked from the calendar of expected steps
+ * (`EXPECTED_MILESTONES`), so renaming the title does not un-tick the step.
  */
 export interface MilestoneEvent extends BaseEvent {
   type: 'milestone';
   title: string;
+  milestoneKey?: string;
 }
 
 export type BabyEvent =
