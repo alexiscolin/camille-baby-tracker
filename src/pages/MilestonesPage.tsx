@@ -1,4 +1,5 @@
 import { useMemo, useState, lazy, Suspense } from 'react';
+import { Timestamp } from 'firebase/firestore';
 import { Plus, Search, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToday } from '../hooks/useToday';
@@ -9,6 +10,8 @@ import { ModalFallback } from '../components/ModalFallback';
 import { withChunkReload } from '../utils/lazy-route';
 import { formatDetailedAge } from '../utils/date';
 import { matchesSearch } from '../utils/text-search';
+import { addEvent } from '../services/events';
+import type { ExpectedMilestone } from '../utils/development-timeline';
 import type { Baby, MilestoneEvent } from '../types/events';
 import styles from './MilestonesPage.module.css';
 
@@ -44,6 +47,8 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<MilestoneEvent | null>(null);
   const [query, setQuery] = useState('');
+  const [pending, setPending] = useState<ReadonlySet<string>>(new Set());
+  const [tickError, setTickError] = useState(false);
   const today = useToday();
 
   /*
@@ -83,6 +88,34 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
     [milestones, query],
   );
 
+  /**
+   * One tap, no modal: the step is recorded now, and the modal is one more tap
+   * away on the ticked step for the date or a note. Firestore queues the write
+   * offline, so a failure here is a rejected write, not a lost connection.
+   */
+  async function tick(step: ExpectedMilestone) {
+    setTickError(false);
+    setPending((keys) => new Set(keys).add(step.key));
+    try {
+      await addEvent(familyId, {
+        babyId,
+        type: 'milestone',
+        title: step.label,
+        milestoneKey: step.key,
+        timestamp: Timestamp.now(),
+        createdBy: userId,
+      });
+    } catch {
+      setTickError(true);
+    } finally {
+      setPending((keys) => {
+        const next = new Set(keys);
+        next.delete(step.key);
+        return next;
+      });
+    }
+  }
+
   const searchable = milestones.length >= SEARCH_APPEARS_AT;
   const filtered = searchable && query.trim() !== '';
 
@@ -118,7 +151,21 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
 
       {/* Above the list on purpose: the recorded milestones are a keepsake, what
           is coming is the thing you act on. */}
-      {birthDate && <DevelopmentTimeline birthDate={birthDate} />}
+      {tickError && (
+        <p className={styles.error} role="alert">
+          Couldn’t record it — try again.
+        </p>
+      )}
+      {birthDate && (
+        <DevelopmentTimeline
+          birthDate={birthDate}
+          now={today}
+          recorded={milestones}
+          onDone={tick}
+          onOpen={setEditing}
+          pending={pending}
+        />
+      )}
 
       {searchable && (
         <div className={styles.search}>
@@ -144,7 +191,7 @@ export function MilestonesPage({ familyId, babyId, userId, baby }: MilestonesPag
            yet, the other that nothing matches what was typed. */
         <p className={styles.empty}>No milestone matches “{query.trim()}”.</p>
       ) : (
-        <ol className={styles.list}>
+        <ol className={styles.list} aria-label="Recorded milestones">
           {shown.map((milestone) => {
             const at = milestone.timestamp.toDate();
             return (

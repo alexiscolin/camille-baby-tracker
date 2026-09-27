@@ -1,6 +1,7 @@
 /* Same scale as IronOutlookCard: body text for what matters, the chart-note
    size for everything that qualifies it. */
 .card {
+  min-width: 0;
   margin-bottom: var(--space-md);
   padding: var(--space-md) var(--space-sm);
   border: 1px solid var(--color-border-light);
@@ -15,32 +16,6 @@
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-
-.section {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-xs);
-  margin: var(--space-md) 0 var(--space-xs);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.section:first-of-type {
-  margin-top: var(--space-sm);
-}
-
-.when {
-  font-weight: 500;
-  font-size: var(--font-size-2xs);
-  color: var(--color-text-muted);
-}
-
-.calm {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
 }
 
 .band + .band {
@@ -121,65 +96,203 @@
   color: var(--color-text);
 }
 
-.motor {
+.intro {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--font-size-2xs);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.bandKind {
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* One month. A thin rule on the left makes the rows read as a timeline. */
+.row {
+  padding: var(--space-xs) 0 var(--space-sm) var(--space-sm);
+  border-left: 2px solid var(--color-border-light);
+}
+
+.rowCurrent {
+  border-left-color: var(--color-milestone);
+}
+
+.rowHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.rowHead::first-letter {
+  text-transform: uppercase;
+}
+
+.now {
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-full);
+  background: var(--color-milestone-bg);
+  color: var(--color-milestone);
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+}
+
+.checkpoint {
+  margin-bottom: var(--space-sm);
+}
+
+.checkpointHead {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.checkpoint .source {
+  padding-left: 0;
+}
+
+.row .band {
+  margin-bottom: var(--space-sm);
+}
+
+.steps {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.motorRow {
+.step {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0 var(--space-xs);
-  align-items: center;
-  margin-bottom: var(--space-xs);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-xs);
+  align-items: start;
+  padding: var(--space-xs) 0;
 }
 
-.motorLabel {
-  font-size: var(--font-size-xs);
+.step + .step {
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* Filled once she is inside the window, hollow while it is ahead. A window
+   that has closed is not coloured differently: it is not a verdict. */
+.dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: var(--radius-full);
+}
+
+.status-now,
+.status-past {
+  background: var(--color-milestone);
+}
+
+.status-ahead {
+  box-shadow: inset 0 0 0 1.5px var(--color-text-muted);
+}
+
+.status-done {
+  background: var(--color-success);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stepLabel {
+  font-size: var(--font-size-sm);
   color: var(--color-text);
 }
 
-.range {
+.stepMeta {
   font-size: var(--font-size-2xs);
   color: var(--color-text-muted);
-  white-space: nowrap;
-  text-align: right;
+  cursor: pointer;
+  list-style: none;
 }
 
-/* The bar spans both columns on its own row, under the label. */
-.track {
-  position: relative;
-  grid-column: 1 / -1;
-  order: 1;
-  height: 4px;
-  margin-top: 2px;
-  border-radius: var(--radius-full);
-  background: var(--color-border-light);
+.stepMeta::-webkit-details-marker {
+  display: none;
 }
 
-.window {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  border-radius: var(--radius-full);
-  background: var(--color-primary, var(--color-text-secondary));
-  opacity: 0.45;
+/* A small ⓘ says there is more behind the window line. */
+.stepMeta::after {
+  content: ' ⓘ';
 }
 
-.today {
-  position: absolute;
-  top: -3px;
-  width: 2px;
-  height: 10px;
-  border-radius: 1px;
-  background: var(--color-text);
+.more[open] .stepMeta::after {
+  content: '';
 }
 
-.motorNote {
-  grid-column: 1 / -1;
-  order: 2;
+.more {
+  display: flex;
+  flex-direction: column;
+}
+
+.stepNote {
+  display: block;
   margin-top: var(--space-2xs);
   font-size: var(--font-size-2xs);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.stepSource {
+  display: block;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.tickBtn,
+.doneBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-height: 32px;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tickBtn {
+  border: 1px solid var(--color-milestone);
+  background: none;
+  color: var(--color-milestone);
+}
+
+.tickBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.doneBtn {
+  border: none;
+  background: var(--color-milestone-bg);
+  color: var(--color-text);
+}
+
+.past {
+  margin-bottom: var(--space-xs);
+}
+
+.pastSummary {
+  padding: var(--space-xs) 0;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
 }

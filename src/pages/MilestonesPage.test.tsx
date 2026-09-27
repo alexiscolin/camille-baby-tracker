@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { MilestonesPage } from './MilestonesPage';
@@ -8,6 +8,11 @@ import type { Baby, BabyEvent, MilestoneEvent, PeeEvent } from '../types/events'
 const mockUseRangeEvents = vi.fn();
 vi.mock('../hooks/useRangeEvents', () => ({
   useRangeEvents: (...args: unknown[]) => mockUseRangeEvents(...args),
+}));
+
+const mockAddEvent = vi.fn().mockResolvedValue({ id: 'new' });
+vi.mock('../services/events', () => ({
+  addEvent: (...args: unknown[]) => mockAddEvent(...args),
 }));
 
 const birth = new Date(2026, 2, 20);
@@ -132,8 +137,9 @@ describe('MilestonesPage', () => {
 
     await user.type(screen.getByLabelText(/search milestones/i), 'premiere');
 
-    expect(screen.getByText('Première dent')).toBeInTheDocument();
-    expect(screen.queryByText('Milestone 0')).not.toBeInTheDocument();
+    const list = screen.getByRole('list', { name: /recorded milestones/i });
+    expect(within(list).getByText('Première dent')).toBeInTheDocument();
+    expect(within(list).queryByText('Milestone 0')).not.toBeInTheDocument();
   });
 
   /** The detail that makes an entry findable is often in the notes. */
@@ -155,5 +161,21 @@ describe('MilestonesPage', () => {
 
     expect(screen.getByText(/No milestone matches/)).toBeInTheDocument();
     expect(screen.queryByText(/Nothing yet/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * The calendar's button is the whole point of it: one tap records the step,
+   * dated now, keyed so that renaming the title later does not un-tick it.
+   */
+  it('should record a calendar step as a milestone when it is ticked', async () => {
+    const user = userEvent.setup();
+    renderWith([]);
+
+    const step = screen.getByText('Première dent').closest('li') as HTMLElement;
+    await user.click(within(step).getByRole('button', { name: /c’est fait/i }));
+
+    expect(mockAddEvent).toHaveBeenCalledWith('fam-1', expect.objectContaining({
+      babyId: 'baby-1', type: 'milestone', title: 'Première dent', milestoneKey: 'firstTooth', createdBy: 'u1',
+    }));
   });
 });

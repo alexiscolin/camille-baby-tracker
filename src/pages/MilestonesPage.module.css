@@ -160,3 +160,9 @@
     font-size: var(--font-size-lg);
   }
 }
+
+.error {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}

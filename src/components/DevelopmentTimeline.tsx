@@ -1,140 +1,181 @@
-import { getDevelopmentOutlook } from '../utils/development-timeline';
+import { Check } from 'lucide-react';
+import { EXPECTED_MILESTONES, type ExpectedMilestone, type MilestoneDomain, type RoughNightBand } from '../utils/development-timeline';
+import { buildMilestoneCalendar, CALENDAR_END_MONTH, type CalendarMonth, type CalendarStep } from '../utils/milestone-calendar';
+import type { MilestoneEvent } from '../types/events';
 import styles from './DevelopmentTimeline.module.css';
 
 interface DevelopmentTimelineProps {
   birthDate: Date;
+  recorded: MilestoneEvent[];
+  /** "C'est fait": the parent says the step just happened. */
+  onDone: (step: ExpectedMilestone) => void;
+  /** A ticked step was tapped: open the milestone that ticked it. */
+  onOpen: (event: MilestoneEvent) => void;
+  /** Keys being written right now, so a double tap does not record twice. */
+  pending?: ReadonlySet<string>;
   /** Injectable so the tests are not hostage to the wall clock. */
   now?: Date;
+  catalog?: readonly ExpectedMilestone[];
 }
 
-/** The scale the motor bars are drawn on; the last window closes at 17.6. */
-const SCALE_MONTHS = 18;
+const DOMAIN_LABEL: Record<MilestoneDomain, string> = {
+  motor: 'Moteur', hands: 'Mains', language: 'Langage', social: 'Social', play: 'Jeu', teeth: 'Dents', sleep: 'Sommeil',
+};
 
-/** French decimals, because the figures are quoted from French sources. */
-const months = (value: number) => value.toFixed(1).replace('.', ',');
+/** French decimals, because the figures are quoted from French-facing sources. */
+const months = (value: number) => String(Math.round(value * 10) / 10).replace('.', ',');
 
-/**
- * Deliberately vague. The underlying windows are months wide, so a delay to the
- * day would dress an estimate up as a date.
- */
-function formatDelay(days: number): string {
-  if (days <= 0) return 'maintenant';
-  if (days < 14) return `dans ~${days} jours`;
-  if (days < 45) return `dans ~${Math.round(days / 7)} semaines`;
-  return `dans ~${Math.round(days / 30.4375)} mois`;
+const monthYear = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' });
+const dayMonth = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' });
+
+function windowText({ early, typical, late }: CalendarStep): string {
+  if (early !== null && late !== null) return `entre ${months(early)} et ${months(late)} mois`;
+  if (early !== null) return `dès ${months(early)} mois`;
+  if (late !== null) return `la plupart avant ${months(late)} mois`;
+  return `vers ${months(typical as number)} mois`;
+}
+
+function rowName(month: number): string {
+  if (month === 0) return 'Premier mois';
+  if (month === CALENDAR_END_MONTH) return '2 ans et après';
+  return `${month} mois`;
+}
+
+function Band({ band, running }: { band: RoughNightBand; running?: boolean }) {
+  return (
+    <div className={styles.band}>
+      <p className={styles.bandHead}>
+        <span className={`${styles.bandDot} ${running ? '' : styles.bandDotAhead}`} aria-hidden />
+        <span className={styles.bandKind}>Nuits</span>
+        <span className={styles.bandLabel}>{band.label}</span>
+        {running && <span className={styles.bandWhen}>en cours</span>}
+      </p>
+      <p className={styles.bandWhat}>{band.what}</p>
+      <p className={styles.caveat}>{band.caveat}</p>
+      <p className={styles.source}>{band.source}</p>
+    </div>
+  );
+}
+
+interface RowProps {
+  row: CalendarMonth;
+  current: boolean;
+  onDone: (step: ExpectedMilestone) => void;
+  onOpen: (event: MilestoneEvent) => void;
+  pending?: ReadonlySet<string>;
+}
+
+function Row({ row, current, onDone, onOpen, pending }: RowProps) {
+  return (
+    <div className={`${styles.row} ${current ? styles.rowCurrent : ''}`}>
+      <h4 className={styles.rowHead}>
+        {rowName(row.month)} · {monthYear.format(row.startsOn)}
+        {current && <span className={styles.now}>maintenant</span>}
+      </h4>
+
+      {row.checkpoint && (
+        <div className={styles.checkpoint}>
+          <p className={styles.checkpointHead}>
+            Examen des {row.checkpoint.ageMonths} mois — ce que le médecin regardera
+          </p>
+          <ul className={styles.items}>
+            {row.checkpoint.items.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+          <p className={styles.source}>Carnet de santé 2025</p>
+        </div>
+      )}
+
+      {row.bands.map((band) => <Band key={band.key} band={band} />)}
+
+      {row.steps.length > 0 && (
+        <ul className={styles.steps}>
+          {row.steps.map((step) => (
+            <li key={step.key} className={styles.step}>
+              <span className={`${styles.dot} ${styles[`status-${step.status}`]}`} aria-hidden />
+              <span className={styles.stepBody}>
+                <span className={styles.stepLabel}>{step.label}</span>
+                {/* The window stays in sight; the note and the source are one
+                    tap away, or the calendar becomes a wall of citations. */}
+                <details className={styles.more}>
+                  <summary className={styles.stepMeta}>
+                    {DOMAIN_LABEL[step.domain]} · {windowText(step)}
+                  </summary>
+                  {step.note && <span className={styles.stepNote}>{step.note}</span>}
+                  <span className={styles.stepSource}>{step.source}</span>
+                </details>
+              </span>
+              {step.done ? (
+                <button type="button" className={styles.doneBtn} onClick={() => onOpen(step.done!)}>
+                  <Check size={14} aria-hidden /> fait le {dayMonth.format(step.done.timestamp.toDate())}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.tickBtn}
+                  disabled={pending?.has(step.key)}
+                  onClick={() => onDone(step)}
+                >
+                  C’est fait
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 /**
- * What is coming for the baby, and when the nights are likely to get worse.
+ * What can happen, month by month, from birth to two years — and a button to
+ * record each step the day it happens.
  *
- * Only two rough patches are predictable from a calendar, and both are here
- * with the caveat that undermines them. Everything a parenting app normally
- * puts in a feature like this — leaps, sleep regressions, growth spurts — was
- * researched and thrown out; see the header of `development-timeline.ts` for
- * why, before adding any of it back.
+ * Each step sits in the month it most often happens, but the window printed
+ * under it is what is normal, and it is always months wide. No step is ever
+ * called late: a step past its window is simply still there, and the card ends
+ * by pointing to the doctor. Everything a parenting app normally adds here —
+ * leaps, sleep regressions, growth spurts — was researched and thrown out; see
+ * the header of `development-timeline.ts` before adding any of it back.
  */
-export function DevelopmentTimeline({ birthDate, now }: DevelopmentTimelineProps) {
-  const { ageMonths, roughNights, nextCheckpoint, motor } = getDevelopmentOutlook(birthDate, now);
-  const ahead = motor.filter((m) => m.status !== 'after');
-
-  const nothingToSay =
-    roughNights.current.length === 0 &&
-    roughNights.upcoming.length === 0 &&
-    !nextCheckpoint &&
-    ahead.length === 0;
-
-  if (nothingToSay) return null;
+export function DevelopmentTimeline({
+  birthDate, recorded, onDone, onOpen, pending, now = new Date(), catalog = EXPECTED_MILESTONES,
+}: DevelopmentTimelineProps) {
+  const calendar = buildMilestoneCalendar(birthDate, now, recorded, catalog);
+  const pastSteps = calendar.past.flatMap((row) => row.steps);
+  const pastDone = pastSteps.filter((s) => s.status === 'done').length;
+  const pastOpen = pastSteps.length - pastDone;
+  const rowProps = { onDone, onOpen, pending };
 
   return (
-    <section className={styles.card} aria-labelledby="dev-timeline">
-      <h3 className={styles.title} id="dev-timeline">Ce qui vient</h3>
+    <section className={styles.card} aria-labelledby="dev-calendar">
+      <h3 className={styles.title} id="dev-calendar">Calendrier</h3>
+      <p className={styles.intro}>
+        Chaque étape est rangée à son âge typique quand on le connaît, sinon à l’âge où
+        la plupart des bébés l’ont faite. Sa fourchette dit ce qui est normal — toute sa
+        largeur l’est ; touchez-la pour la source.
+      </p>
 
-      <h4 className={styles.section}>Nuits</h4>
-      {/* Answers the question the parent actually has — is tonight going to be
-          bad? — before listing anything that is merely ahead. */}
-      {roughNights.current.length === 0 && (
-        <p className={styles.calm}>Rien de connu en ce moment.</p>
+      {calendar.ongoingBands.map((band) => <Band key={band.key} band={band} running />)}
+
+      {calendar.past.length > 0 && (
+        <details className={styles.past}>
+          <summary className={styles.pastSummary}>
+            Mois passés · {pastDone} fait{pastDone > 1 ? 's' : ''}
+            {pastOpen > 0 && `, ${pastOpen} pas encore coché${pastOpen > 1 ? 's' : ''}`}
+          </summary>
+          {calendar.past.map((row) => <Row key={row.month} row={row} current={false} {...rowProps} />)}
+        </details>
       )}
-      {roughNights.current.map((band) => (
-        <div key={band.key} className={styles.band}>
-          <p className={styles.bandHead}>
-            <span className={styles.bandDot} aria-hidden />
-            <span className={styles.bandLabel}>{band.label}</span>
-            <span className={styles.bandWhen}>en cours</span>
-          </p>
-          <p className={styles.bandWhat}>{band.what}</p>
-          <p className={styles.caveat}>{band.caveat}</p>
-          <p className={styles.source}>{band.source}</p>
-        </div>
-      ))}
-      {roughNights.upcoming.map((band) => (
-        <div key={band.key} className={styles.band}>
-          <p className={styles.bandHead}>
-            <span className={`${styles.bandDot} ${styles.bandDotAhead}`} aria-hidden />
-            <span className={styles.bandLabel}>{band.label}</span>
-            <span className={styles.bandWhen}>{formatDelay(band.startsInDays)}</span>
-          </p>
-          <p className={styles.bandWhat}>{band.what}</p>
-          <p className={styles.caveat}>{band.caveat}</p>
-          <p className={styles.source}>{band.source}</p>
-        </div>
+
+      {calendar.ahead.map((row) => (
+        <Row key={row.month} row={row} current={row.month === calendar.currentMonth} {...rowProps} />
       ))}
 
-      {roughNights.current.length === 0 && (
-        <p className={styles.note}>
-          Le reste de ce qui perturbe ses nuits — ramper, se mettre debout, parler — dépend
-          d’elle, pas de la date. Les fourchettes ci-dessous disent quand c’est possible.
-        </p>
-      )}
-
-      {nextCheckpoint && (
-        <>
-          <h4 className={styles.section}>
-            Prochain rendez-vous · {nextCheckpoint.ageMonths} mois
-            <span className={styles.when}>{formatDelay(nextCheckpoint.inDays)}</span>
-          </h4>
-          <ul className={styles.items}>
-            {nextCheckpoint.items.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          <p className={styles.source}>Carnet de santé 2025 — ce que le médecin regardera</p>
-        </>
-      )}
-
-      {ahead.length > 0 && (
-        <>
-          <h4 className={styles.section}>Repères moteurs</h4>
-          <ul className={styles.motor}>
-            {ahead.map((m) => (
-              <li key={m.key} className={styles.motorRow}>
-                <span className={styles.motorLabel}>{m.label}</span>
-                <span className={styles.track} aria-hidden>
-                  <span
-                    className={styles.window}
-                    style={{
-                      left: `${(m.p1 / SCALE_MONTHS) * 100}%`,
-                      width: `${((m.p99 - m.p1) / SCALE_MONTHS) * 100}%`,
-                    }}
-                  />
-                  <span
-                    className={styles.today}
-                    style={{ left: `${Math.min(ageMonths / SCALE_MONTHS, 1) * 100}%` }}
-                  />
-                </span>
-                <span className={styles.range}>
-                  {months(m.p1)} – {months(m.p99)} mois
-                </span>
-                {m.note && <span className={styles.motorNote}>{m.note}</span>}
-              </li>
-            ))}
-          </ul>
-          <p className={styles.source}>
-            OMS, étude multicentrique (n=816) — du 1ᵉʳ au 99ᵉ percentile. Le trait marque où
-            elle en est ; toute la largeur est normale.
-          </p>
-        </>
-      )}
+      <p className={styles.note}>
+        « La plupart » veut souvent dire 3 enfants sur 4 : le quatrième n’a pas de
+        problème pour autant. Une étape vous inquiète ? Parlez-en au médecin au prochain
+        examen — c’est à lui d’en juger, pas à ce calendrier.
+      </p>
     </section>
   );
 }
