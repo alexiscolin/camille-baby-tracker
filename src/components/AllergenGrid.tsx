@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { ALLERGEN_LABELS } from '../utils/allergens';
 import { statusLabel } from '../utils/food-status';
 import { MAINTENANCE_GAP_DAYS } from '../utils/weaning-rules';
@@ -46,6 +46,7 @@ export function AllergenGrid({ statuses, onSelect }: AllergenGridProps) {
             aria-label={`${ALLERGEN_LABELS[s.allergen]} — ${statusLabel(s)}`}
             onClick={() => onSelect(s)}
           >
+            {s.introduced && <Check size={12} aria-hidden data-testid="introduced-check" />}
             {ALLERGEN_LABELS[s.allergen]}
           </button>
         ))}
@@ -55,6 +56,7 @@ export function AllergenGrid({ statuses, onSelect }: AllergenGridProps) {
         <span className={`${styles.dot} ${styles.watch}`} /> watch
         <span className={`${styles.dot} ${styles.alert}`} /> allergy
         <span className={`${styles.dot} ${styles.none}`} /> not introduced
+        <Check size={12} aria-hidden /> introduced
         <span className={styles.legendNote}>ringed = labelled allergen (特定原材料)</span>
       </p>
     </div>

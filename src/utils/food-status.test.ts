@@ -162,6 +162,10 @@ describe('statusLabel', () => {
     expect(statusLabel({ status: 'safe', exposureCount: 5 })).toBe('No reaction ×5');
   });
 
+  it('should count the tastes of a food tried fewer than three times, not call it new', () => {
+    expect(statusLabel({ status: 'untried', exposureCount: 2 })).toBe('Tried ×2');
+  });
+
   it('should label the other statuses', () => {
     expect(statusLabel({ status: 'untried', exposureCount: 0 })).toBe('Not introduced');
     expect(statusLabel({ status: 'watch', exposureCount: 4 })).toBe('Watch');
