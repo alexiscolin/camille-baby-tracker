@@ -17,6 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-2xs);
   /* The touch floor the bottom nav and the rest of the UI hold to. */
   min-height: 44px;
   padding: var(--space-xs) var(--space-md);

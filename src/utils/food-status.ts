@@ -78,5 +78,7 @@ const LABELS: Record<Exclude<FoodStatus, 'safe'>, string> = {
  */
 export function statusLabel(food: Pick<Food, 'status' | 'exposureCount'>): string {
   if (food.status === 'safe') return `No reaction ×${food.exposureCount}`;
+  // `untried` also covers the first two tastes, before three clean ones make it `safe`.
+  if (food.status === 'untried' && food.exposureCount > 0) return `Tried ×${food.exposureCount}`;
   return LABELS[food.status];
 }

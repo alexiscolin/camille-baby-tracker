@@ -169,6 +169,25 @@ describe('FoodPage', () => {
     expect(await screen.findByRole('button', { name: /^Salmon — No reaction ×4/ })).toBeInTheDocument();
   });
 
+  it('should tick the allergen tokens already introduced, and only those', async () => {
+    withFoods([
+      makeFood({ id: 'egg-yolk', name: 'Egg yolk', allergens: ['egg'], exposureCount: 1, firstTriedAt: daysAgo(3) }),
+    ]);
+    render(<FoodPage {...props} />);
+    const egg = await screen.findByRole('button', { name: /^Egg — Tried ×1/ });
+    expect(egg.querySelector('[data-testid="introduced-check"]')).not.toBeNull();
+    const crab = screen.getByRole('button', { name: /^Crab — Not introduced/ });
+    expect(crab.querySelector('[data-testid="introduced-check"]')).toBeNull();
+  });
+
+  it('should not call a recently introduced food "not introduced"', async () => {
+    withFoods([
+      makeFood({ id: 'carrot', name: 'Carrot', group: 'vegetable', exposureCount: 2, firstTriedAt: daysAgo(3) }),
+    ]);
+    render(<FoodPage {...props} />);
+    expect(await screen.findByText('Tried ×2')).toBeInTheDocument();
+  });
+
   it('should render held-back candidates with their reason instead of hiding them', async () => {
     const user = userEvent.setup();
     withFoods([
