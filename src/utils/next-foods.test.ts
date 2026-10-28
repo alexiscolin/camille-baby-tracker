@@ -283,6 +283,23 @@ describe('getAllergenStatus', () => {
     expect(status.find((a) => a.allergen === 'egg')?.needsMaintenance).toBe(true);
   });
 
+  it('should turn an allergen clear after three uneventful meals, though nothing stored the status', () => {
+    const egg = (counts: number[]) => getAllergenStatus(
+      counts.map((n, i) => food({ id: `egg-${i}`, allergens: ['egg'], status: 'untried', exposureCount: n })),
+      NOW,
+    ).find((a) => a.allergen === 'egg')?.status;
+    expect(egg([2])).toBe('untried');
+    expect(egg([2, 1])).toBe('safe');
+  });
+
+  it('should keep a suspicion over any number of clean meals', () => {
+    const status = getAllergenStatus([
+      food({ id: 'a', allergens: ['egg'], status: 'untried', exposureCount: 5 }),
+      food({ id: 'b', allergens: ['egg'], status: 'suspected', exposureCount: 1 }),
+    ], NOW).find((a) => a.allergen === 'egg')?.status;
+    expect(status).toBe('suspected');
+  });
+
   it('should not flag maintenance for an allergen never introduced', () => {
     expect(getAllergenStatus([], NOW).find((a) => a.allergen === 'egg')?.needsMaintenance).toBe(false);
   });

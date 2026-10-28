@@ -22,6 +22,16 @@ export function deriveStatus(
   return 'watch';
 }
 
+/**
+ * Nothing writes `safe` when a meal is saved: `untried` only means "no reaction
+ * on file", so the third clean meal is read off the counter at display time.
+ */
+export function effectiveStatus(food: Pick<Food, 'status' | 'exposureCount'>): FoodStatus {
+  return food.status === 'untried' && food.exposureCount >= CLEAN_EXPOSURES_FOR_SAFE
+    ? 'safe'
+    : food.status;
+}
+
 /** Foods to suspect after a reaction: the novel ones, or all of them. */
 export function novelFoodIds(items: MealItem[]): string[] {
   const novel = items.filter((i) => i.firstTry).map((i) => i.foodId);
@@ -77,8 +87,9 @@ const LABELS: Record<Exclude<FoodStatus, 'safe'>, string> = {
  * not "harmless" — the distinction matters most on the major allergens.
  */
 export function statusLabel(food: Pick<Food, 'status' | 'exposureCount'>): string {
-  if (food.status === 'safe') return `No reaction ×${food.exposureCount}`;
+  const status = effectiveStatus(food);
+  if (status === 'safe') return `No reaction ×${food.exposureCount}`;
   // `untried` also covers the first two tastes, before three clean ones make it `safe`.
-  if (food.status === 'untried' && food.exposureCount > 0) return `Tried ×${food.exposureCount}`;
-  return LABELS[food.status];
+  if (status === 'untried' && food.exposureCount > 0) return `Tried ×${food.exposureCount}`;
+  return LABELS[status];
 }

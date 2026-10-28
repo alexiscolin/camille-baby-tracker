@@ -180,6 +180,28 @@ describe('FoodPage', () => {
     expect(crab.querySelector('[data-testid="introduced-check"]')).toBeNull();
   });
 
+  it('should colour each allergen token as its legend dot says', async () => {
+    withFoods([
+      makeFood({ id: 'shirasu', name: 'Shirasu', allergens: ['salmon'], exposureCount: 3, firstTriedAt: daysAgo(9) }),
+      makeFood({ id: 'plain-yoghurt', name: 'Yoghurt', allergens: ['milk'], status: 'suspected', firstTriedAt: daysAgo(2) }),
+      makeFood({ id: 'egg-yolk', name: 'Egg yolk', allergens: ['egg'], status: 'confirmed_allergy', firstTriedAt: daysAgo(5) }),
+    ]);
+    const { container } = render(<FoodPage {...props} />);
+    const token = (name: RegExp) => screen.getByRole('button', { name });
+    await screen.findByRole('button', { name: /^Salmon — No reaction ×3/ });
+    const legend = (label: string) => [...container.querySelectorAll('p span')]
+      .find((dot) => dot.nextSibling?.textContent?.trim() === label);
+
+    expect(token(/^Salmon — /)).toHaveClass('clear');
+    expect(legend('no reaction')).toHaveClass('clear');
+    expect(token(/^Milk — /)).toHaveClass('watch');
+    expect(legend('watch')).toHaveClass('watch');
+    expect(token(/^Egg — /)).toHaveClass('alert');
+    expect(legend('allergy')).toHaveClass('alert');
+    expect(token(/^Crab — /)).toHaveClass('none');
+    expect(legend('not introduced')).toHaveClass('none');
+  });
+
   it('should not call a recently introduced food "not introduced"', async () => {
     withFoods([
       makeFood({ id: 'carrot', name: 'Carrot', group: 'vegetable', exposureCount: 2, firstTriedAt: daysAgo(3) }),
