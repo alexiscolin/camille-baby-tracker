@@ -3,7 +3,7 @@ import type { Food, FoodGroup, FoodStatus, NutrientKey, SeedFood, WeaningStage }
 import { FOOD_GROUPS } from '../types/food';
 import type { Allergen } from './allergens';
 import { ALLERGENS, allergenLabel, isAllergen, isMandatoryAllergen } from './allergens';
-import { isManualStatus } from './food-status';
+import { effectiveStatus, isManualStatus } from './food-status';
 import type { WeaningProgress } from './weaning-progress';
 import { isIntroduced } from './weaning-progress';
 import {
@@ -381,6 +381,7 @@ export function getAllergenStatus(foods: Food[], now: Date): AllergenStatus[] {
   return ALLERGENS.map((allergen) => {
     const relevant = foods.filter((f) => f.allergens.includes(allergen));
     const triedFoods = relevant.filter(isIntroduced);
+    const exposureCount = relevant.reduce((sum, f) => sum + f.exposureCount, 0);
     const introduced = triedFoods.length > 0;
 
     const firstTriedAt = introduced
@@ -402,8 +403,9 @@ export function getAllergenStatus(foods: Food[], now: Date): AllergenStatus[] {
       introduced,
       firstTriedAt,
       lastTriedAt,
-      exposureCount: relevant.reduce((sum, f) => sum + f.exposureCount, 0),
-      status: rollupStatus(relevant),
+      exposureCount,
+      // Exposures add up across foods: egg yolk twice and egg once is three tastes of egg.
+      status: effectiveStatus({ status: rollupStatus(relevant), exposureCount }),
       needsMaintenance,
     };
   });

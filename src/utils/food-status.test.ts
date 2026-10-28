@@ -166,6 +166,10 @@ describe('statusLabel', () => {
     expect(statusLabel({ status: 'untried', exposureCount: 2 })).toBe('Tried ×2');
   });
 
+  it('should count a third uneventful meal as no reaction, though the stored status never moved', () => {
+    expect(statusLabel({ status: 'untried', exposureCount: 3 })).toBe('No reaction ×3');
+  });
+
   it('should label the other statuses', () => {
     expect(statusLabel({ status: 'untried', exposureCount: 0 })).toBe('Not introduced');
     expect(statusLabel({ status: 'watch', exposureCount: 4 })).toBe('Watch');
