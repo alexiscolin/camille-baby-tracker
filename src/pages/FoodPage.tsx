@@ -30,7 +30,10 @@ import { buildShoppingList } from '../utils/shopping-list';
 import type { Allergen } from '../utils/allergens';
 import type { AllergenStatus, NextFoodCandidate, Readiness } from '../utils/next-foods';
 import type { Baby } from '../types/events';
+import { NUTRITION_GROUPS } from '../types/food';
 import type { Food, FoodStatus, SeedFood } from '../types/food';
+import { NON_SOLID_IDS } from '../utils/weaning-rules';
+import { isIntroduced } from '../utils/weaning-progress';
 import styles from './FoodPage.module.css';
 
 const FoodCharts = lazy(() =>
@@ -56,7 +59,6 @@ interface FoodPageProps {
 
 /** How many rows the disclosure shows per group before it summarises the rest. */
 const OPTION_LIMIT = 8;
-const RECENT_CHIP_LIMIT = 12;
 
 const OPTION_GROUPS: { readiness: Readiness; title: string; limit: number }[] = [
   { readiness: 'now', title: 'Also fine now', limit: OPTION_LIMIT },
@@ -201,13 +203,16 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
   const allergenStatuses = useMemo(() => getAllergenStatus(foods, today), [foods, today]);
   const introducedCount = allergenStatuses.filter((s) => s.introduced).length;
 
-  const recentFoods = useMemo(
-    () => foods
-      .filter((f): f is Food & { firstTriedAt: Timestamp } => Boolean(f.firstTriedAt))
-      .sort((a, b) => b.firstTriedAt.toMillis() - a.firstTriedAt.toMillis())
-      .slice(0, RECENT_CHIP_LIMIT),
-    [foods],
-  );
+  const triedByGroup = useMemo(() => {
+    const tried = foods
+      .filter(isIntroduced)
+      .filter((f) => !NON_SOLID_IDS.has(f.id))
+      .sort((a, b) => b.firstTriedAt.toMillis() - a.firstTriedAt.toMillis());
+    return NUTRITION_GROUPS
+      .map((g) => ({ title: g.title, foods: tried.filter((f) => g.groups.includes(f.group)) }))
+      .filter((g) => g.title !== 'Other' || g.foods.length > 0);
+  }, [foods]);
+  const triedCount = triedByGroup.reduce((n, g) => n + g.foods.length, 0);
 
   /**
    * A manual status set on an allergen applies to every catalog food carrying
@@ -408,24 +413,32 @@ export function FoodPage({ familyId, babyId, userId, baby }: FoodPageProps) {
         )}
       </section>
 
-      {/* ─── Recently introduced ─── */}
+      {/* ─── Tried so far, by nutrition group ─── */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <History size={20} className={styles.sectionIcon} />
-          <h2 className={styles.sectionTitle}>Recently introduced</h2>
+          <h2 className={styles.sectionTitle}>Tried so far</h2>
+          <span className={styles.sectionHint}>{triedCount} foods</span>
         </div>
-        {recentFoods.length === 0 ? (
+        {triedCount === 0 ? (
           <p className={styles.hint}>Nothing logged yet.</p>
-        ) : (
-          <div className={styles.strip}>
-            {recentFoods.map((f) => (
-              <span key={f.id} className={styles.chip}>
-                <span className={styles.chipName}>{f.name}</span>
-                <span className={styles.chipMeta}>{statusLabel(f)}</span>
-              </span>
-            ))}
+        ) : triedByGroup.map((g) => (
+          <div key={g.title} className={styles.triedGroup}>
+            <h3 className={styles.optionsHeading}>{g.title}</h3>
+            {g.foods.length === 0 ? (
+              <p className={styles.hint}>None yet.</p>
+            ) : (
+              <ul aria-label={g.title} className={styles.chipWrap}>
+                {g.foods.map((f) => (
+                  <li key={f.id} className={styles.chip}>
+                    <span className={styles.chipName}>{f.name}</span>
+                    <span className={styles.chipMeta}>{statusLabel(f)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-        )}
+        ))}
       </section>
 
       <p className={styles.hint}>

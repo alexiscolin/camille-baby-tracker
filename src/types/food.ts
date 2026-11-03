@@ -36,6 +36,17 @@ export const FOOD_GROUPS = [
 ] as const;
 export type FoodGroup = (typeof FOOD_GROUPS)[number];
 
+/**
+ * The guide's three nutrition groups (主食・副菜・主菜) over the catalog's seven,
+ * plus a row for what fits none of them.
+ */
+export const NUTRITION_GROUPS: { title: string; groups: readonly FoodGroup[] }[] = [
+  { title: 'Energy', groups: ['grain'] },
+  { title: 'Vitamins & minerals', groups: ['vegetable', 'fruit'] },
+  { title: 'Protein', groups: ['protein', 'dairy'] },
+  { title: 'Other', groups: ['fat', 'other'] },
+];
+
 /** 1: 初期 5-6mo, 2: 中期 7-8mo, 3: 後期 9-11mo, 4: 完了期 12-18mo. */
 export type WeaningStage = 1 | 2 | 3 | 4;
 
