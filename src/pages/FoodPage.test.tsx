@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Timestamp } from 'firebase/firestore';
 import { FoodPage } from './FoodPage';
@@ -208,6 +208,38 @@ describe('FoodPage', () => {
     ]);
     render(<FoodPage {...props} />);
     expect(await screen.findByText('Tried ×2')).toBeInTheDocument();
+  });
+
+  it('should list every food tried, by the three nutrition groups', async () => {
+    withFoods([
+      makeFood({ id: 'okayu-10x', name: 'Okayu', group: 'grain', firstTriedAt: daysAgo(20) }),
+      makeFood({ id: 'carrot', name: 'Carrot', group: 'vegetable', firstTriedAt: daysAgo(10) }),
+      makeFood({ id: 'apple', name: 'Apple', group: 'fruit', firstTriedAt: daysAgo(9) }),
+      makeFood({ id: 'tofu', name: 'Tofu', group: 'protein', firstTriedAt: daysAgo(5) }),
+      makeFood({ id: 'plain-yoghurt', name: 'Yoghurt', group: 'dairy', firstTriedAt: daysAgo(4) }),
+      makeFood({ id: 'broccoli', name: 'Broccoli', group: 'vegetable' }),
+      ...Array.from({ length: 12 }, (_, i) =>
+        makeFood({ id: `veg-${i}`, name: `Veg ${i}`, group: 'vegetable', firstTriedAt: daysAgo(3) })),
+    ]);
+    render(<FoodPage {...props} />);
+    const group = (name: RegExp) => within(screen.getByRole('list', { name }));
+    expect(group(/energy/i).getAllByRole('listitem').map((li) => li.textContent))
+      .toEqual([expect.stringMatching(/^Okayu/)]);
+    expect(group(/vitamins/i).getByText('Apple')).toBeInTheDocument();
+    expect(group(/vitamins/i).getByText('Veg 0')).toBeInTheDocument();
+    expect(group(/vitamins/i).queryByText('Broccoli')).not.toBeInTheDocument();
+    expect(group(/protein/i).getByText('Yoghurt')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: /other/i })).not.toBeInTheDocument();
+  });
+
+  it('should keep fats and other solids in their own row, and leave drinks out', async () => {
+    withFoods([
+      makeFood({ id: 'olive-oil', name: 'Olive oil', group: 'fat', firstTriedAt: daysAgo(3) }),
+      makeFood({ id: 'water', name: 'Water', group: 'other', firstTriedAt: daysAgo(3) }),
+    ]);
+    render(<FoodPage {...props} />);
+    expect(within(screen.getByRole('list', { name: /other/i })).getByText('Olive oil')).toBeInTheDocument();
+    expect(screen.queryByText('Water')).not.toBeInTheDocument();
   });
 
   it('should render held-back candidates with their reason instead of hiding them', async () => {
