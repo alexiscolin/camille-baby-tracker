@@ -3904,6 +3904,24 @@ export const FOOD_SEED: readonly SeedFood[] = [
     },
   },
   {
+    id: 'consomme-cube',
+    name: 'Consommé (bouillon cube or granules)',
+    nameJa: 'コンソメ',
+    group: 'other',
+    allergens: ['milk', 'wheat', 'beef', 'soy', 'chicken'],
+    gramsPerTsp: 3,
+    minStage: 4,
+    suggest: false,
+    note: 'Nearly half salt: a pinch to flavour, never a soup base. Salt-free baby consommé exists.',
+    sourceRef: 'Japanese Standard Tables of Food Composition (8th ed., 2023 supplement), solid bouillon (17027). Allergens from the Ajinomoto コンソメ label (wheat, milk, beef, soy, chicken); other brands differ. Sugars not tabulated, estimated.',
+    nutrients: {
+      energyKcal: 233, proteinG: 7.0, fatG: 4.3, carbsG: 41.8, fiberG: 0.3,
+      sugarsG: 10.0, ironMg: 0.4, calciumMg: 26, zincMg: 0.1, sodiumMg: 17000,
+      potassiumMg: 200, vitaminAUgRae: 0, vitaminCMg: 0, vitaminDUg: 0,
+      vitaminB12Ug: 0.1, folateUg: 16,
+    },
+  },
+  {
     id: 'wakame-desalted',
     name: 'Wakame, salted and desalted',
     nameJa: '塩蔵わかめ（塩抜き）',
@@ -4430,6 +4448,26 @@ export const FOOD_SEED: readonly SeedFood[] = [
       sugarsG: 5.0, ironMg: 1.0, calciumMg: 8, zincMg: 1.1, sodiumMg: 500,
       potassiumMg: 130, vitaminAUgRae: 0, vitaminCMg: 0, vitaminDUg: 0,
       vitaminB12Ug: 0, folateUg: 19,
+    },
+  },
+  {
+    id: 'yasai-haihain',
+    name: 'Haihain with vegetables, iron-fortified baby senbei (Kameda)',
+    nameJa: '野菜ハイハイン',
+    group: 'grain',
+    allergens: [],
+    gramsPerTsp: 3,
+    minStage: 2,
+    // Not suggested: the iron suggestions rank by mg per 100 g, where this snack
+    // (20 mg) would outrank liver and fish. Logging it still counts its iron.
+    suggest: false,
+    note: 'Melts in the mouth; 0.7 mg iron per 2-piece bag. A snack — it does not replace a meal.',
+    sourceRef: 'Kameda Seika label, 野菜ハイハイン (2026): energy, protein, fat, carbohydrate, salt and iron (20 mg, iron pyrophosphate) per 100 g. None of the 28 allergens. Fibre, sugars and the other minerals are estimates for a rice-and-starch cracker; vitamins not declared, so 0.',
+    nutrients: {
+      energyKcal: 383, proteinG: 3.9, fatG: 1.0, carbsG: 88.9, fiberG: 0.6,
+      sugarsG: 5.0, ironMg: 20.0, calciumMg: 8, zincMg: 0.6, sodiumMg: 169,
+      potassiumMg: 70, vitaminAUgRae: 0, vitaminCMg: 0, vitaminDUg: 0,
+      vitaminB12Ug: 0, folateUg: 10,
     },
   },
   {

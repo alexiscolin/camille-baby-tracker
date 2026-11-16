@@ -376,3 +376,55 @@ describe('white fish flakes', () => {
     expect(LADDERS.fish[0].ids).toContain('white-fish-flakes');
   });
 });
+
+/**
+ * Consommé (コンソメ, #40) is how French-style stock reaches a Japanese kitchen:
+ * a cube or granules of meat (mostly chicken) and vegetable extract. The
+ * standard product declares wheat, milk, soy, chicken and beef, and is nearly
+ * half salt, so it is a seasoning to log, never a food to suggest.
+ */
+describe('consommé', () => {
+  const consomme = () => FOOD_SEED.find((f) => f.id === 'consomme-cube');
+
+  it('should be found by searching コンソメ, consommé or bouillon', () => {
+    for (const q of ['コンソメ', 'consommé', 'bouillon']) {
+      expect(rankSuggestions(q, [], FOOD_SEED)[0]?.id, q).toBe('consomme-cube');
+    }
+  });
+
+  it('should declare the allergens on the standard label', () => {
+    expect([...(consomme()?.allergens ?? [])].sort())
+      .toEqual(['beef', 'chicken', 'milk', 'soy', 'wheat']);
+  });
+
+  it('should be loggable but never suggested, with a salt warning', () => {
+    expect(consomme()?.suggest).toBe(false);
+    expect(consomme()?.note).toMatch(/salt/i);
+    expect(consomme()?.nutrients.sodiumMg).toBeGreaterThan(10000);
+  });
+});
+
+/**
+ * Kameda's 野菜ハイハイン (#41) is the iron-fortified baby rice cracker: 20 mg
+ * iron per 100 g from iron pyrophosphate, 0.7 mg per 2-piece bag. Plain
+ * ハイハイン is fortified with calcium, not iron, so it is not this row.
+ */
+describe('iron-fortified baby rice cracker', () => {
+  const haihain = () => FOOD_SEED.find((f) => f.id === 'yasai-haihain');
+
+  it('should be found by searching ハイハイン, haihain or senbei', () => {
+    expect(rankSuggestions('ハイハイン', [], FOOD_SEED)[0]?.id).toBe('yasai-haihain');
+    expect(rankSuggestions('haihain', [], FOOD_SEED)[0]?.id).toBe('yasai-haihain');
+    expect(rankSuggestions('senbei', [], FOOD_SEED).map((s) => s.id)).toContain('yasai-haihain');
+  });
+
+  it('should carry the label iron and declare none of the 28 allergens', () => {
+    expect(haihain()?.nutrients.ironMg).toBe(20);
+    expect(haihain()?.allergens).toEqual([]);
+    expect(haihain()?.group).toBe('grain');
+  });
+
+  it('should stay out of the iron suggestions, where per-100 g it would outrank liver', () => {
+    expect(haihain()?.suggest).toBe(false);
+  });
+});
