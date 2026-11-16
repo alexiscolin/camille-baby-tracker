@@ -1,4 +1,5 @@
 import type { Food, SeedFood, FoodGroup } from '../types/food';
+import { foldText } from './custom-food';
 
 export interface FoodSuggestion {
   id: string;
@@ -29,7 +30,7 @@ function toSeedSuggestion(seed: SeedFood): FoodSuggestion {
 
 /** 0 prefix, 1 substring, null no match — on the English or the Japanese name. */
 function matchTier(q: string, name: string, nameJa: string | undefined): 0 | 1 | null {
-  const names = [name.toLowerCase(), nameJa ?? ''];
+  const names = [foldText(name), foldText(nameJa ?? '')];
   if (names.some((n) => n.startsWith(q))) return 0;
   if (names.some((n) => n.includes(q))) return 1;
   return null;
@@ -47,7 +48,7 @@ export function rankSuggestions(
   seed: readonly SeedFood[],
   limit = DEFAULT_LIMIT,
 ): FoodSuggestion[] {
-  const q = query.trim().toLowerCase();
+  const q = foldText(query.trim());
 
   const nameJaById = new Map(seed.map((s) => [s.id, s.nameJa]));
 

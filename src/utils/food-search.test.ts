@@ -65,6 +65,12 @@ describe('rankSuggestions', () => {
     expect(result[0].nameJa).toBe('にんじん');
   });
 
+  it('should find a food typed in katakana or full-width letters', () => {
+    const udon = [seedFood('udon-boiled', 'Udon, boiled', 'ゆでうどん')];
+    expect(rankSuggestions('ウドン', [], udon).map((r) => r.id)).toEqual(['udon-boiled']);
+    expect(rankSuggestions('ｕｄｏｎ', [], udon).map((r) => r.id)).toEqual(['udon-boiled']);
+  });
+
   it('should give a catalog food the Japanese name of its seed row', () => {
     const result = rankSuggestions('', [catalogFood('carrot', 'Carrot, boiled', 3)],
       [seedFood('carrot', 'Carrot, boiled', 'にんじん')]);
