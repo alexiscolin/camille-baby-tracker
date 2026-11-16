@@ -127,6 +127,12 @@ describe('food seed table', () => {
     }
   });
 
+  it('should file butter and cream as fats, not with the protein foods', () => {
+    for (const id of ['butter-unsalted', 'butter-salted', 'fresh-cream']) {
+      expect(FOOD_SEED.find((f) => f.id === id)?.group, id).toBe('fat');
+    }
+  });
+
   it('should offer at least 20 suggestible stage-1 foods', () => {
     expect(FOOD_SEED.filter((f) => f.minStage === 1 && f.suggest !== false).length)
       .toBeGreaterThanOrEqual(20);

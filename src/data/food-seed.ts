@@ -37,7 +37,8 @@ export const NUTRIENT_CEILINGS: Record<NutrientKey, number> = {
 /** Slug segment → allergen it necessarily implies. Guards the data. */
 export const IMPLIED_ALLERGENS: Record<string, Allergen> = {
   tofu: 'soy', natto: 'soy', kinako: 'soy', miso: 'soy', edamame: 'soy',
-  udon: 'wheat', somen: 'wheat', bread: 'wheat', soba: 'buckwheat',
+  udon: 'wheat', somen: 'wheat', bread: 'wheat', wheat: 'wheat', soba: 'buckwheat',
+  egg: 'egg',
   yoghurt: 'milk', cheese: 'milk', butter: 'milk',
   shrimp: 'shrimp', crab: 'crab', peanut: 'peanut', walnut: 'walnut',
   salmon: 'salmon', mackerel: 'mackerel', chicken: 'chicken',
@@ -3577,10 +3578,11 @@ export const FOOD_SEED: readonly SeedFood[] = [
     id: 'butter-unsalted',
     name: 'Butter, unsalted',
     nameJa: '無塩バター',
-    group: 'dairy',
+    group: 'fat',
     allergens: ['milk'],
     gramsPerTsp: 4,
     minStage: 2,
+    suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), butter, unsalted',
     nutrients: {
       energyKcal: 720, proteinG: 0.5, fatG: 83.0, carbsG: 0.2, fiberG: 0,
@@ -3593,10 +3595,11 @@ export const FOOD_SEED: readonly SeedFood[] = [
     id: 'butter-salted',
     name: 'Butter, salted',
     nameJa: '有塩バター',
-    group: 'dairy',
+    group: 'fat',
     allergens: ['milk'],
     gramsPerTsp: 4,
     minStage: 3,
+    suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), butter, salted',
     nutrients: {
       energyKcal: 700, proteinG: 0.6, fatG: 81.0, carbsG: 0.2, fiberG: 0,
@@ -3609,10 +3612,11 @@ export const FOOD_SEED: readonly SeedFood[] = [
     id: 'fresh-cream',
     name: 'Fresh cream, dairy fat',
     nameJa: '生クリーム',
-    group: 'dairy',
+    group: 'fat',
     allergens: ['milk'],
     gramsPerTsp: 5,
     minStage: 4,
+    suggest: false,
     sourceRef: 'Japanese Standard Tables of Food Composition (8th ed.), cream, dairy fat',
     nutrients: {
       energyKcal: 404, proteinG: 1.9, fatG: 43.0, carbsG: 6.5, fiberG: 0,

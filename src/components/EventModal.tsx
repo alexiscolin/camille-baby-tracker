@@ -4,6 +4,8 @@ import { Timestamp, deleteField, increment } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { addEvent, updateEvent, deleteEvent } from '../services/events';
 import { upsertFood, updateFood, foodFromSeed } from '../services/food-catalog';
+import { inferCustomFood } from '../utils/custom-food';
+import { runAll } from '../utils/run-all';
 import { useFoods } from '../hooks/useFoods';
 import { FOOD_SEED } from '../data/food-seed';
 import { applyReaction, withdrawReaction } from '../utils/food-status';
@@ -63,8 +65,7 @@ function minimalFood(foodId: string, name: string): Food {
   return {
     id: foodId,
     name: sanitizeText(name, MAX_FOOD_NAME_LENGTH) || foodId,
-    group: 'other',
-    allergens: [],
+    ...inferCustomFood(name),
     gramsPerTsp: DEFAULT_GRAMS_PER_TSP,
     minStage: 1,
     status: 'untried',
@@ -309,15 +310,15 @@ export function EventModal(props: EventModalProps) {
     prepared: NonNullable<Awaited<ReturnType<typeof prepareMeal>>>,
     ids: string[],
   ) {
-    for (const id of ids) {
+    await runAll(ids.map((id) => () => {
       const food = prepared.catalog.get(id)!;
-      await updateFood(familyId, id, {
+      return updateFood(familyId, id, {
         usageCount: increment(1),
         exposureCount: increment(1),
         lastTriedAt: prepared.stamp,
         ...(food.firstTriedAt ? {} : { firstTriedAt: prepared.stamp }),
       });
-    }
+    }));
   }
 
   /**
@@ -541,15 +542,7 @@ export function EventModal(props: EventModalProps) {
           // the matching comment on the edit path for why.
           await persistAttribution(prepared, ref.id);
 
-          for (const id of prepared.uniqueIds) {
-            const food = prepared.catalog.get(id)!;
-            await updateFood(familyId, id, {
-              usageCount: increment(1),
-              exposureCount: increment(1),
-              lastTriedAt: prepared.stamp,
-              ...(food.firstTriedAt ? {} : { firstTriedAt: prepared.stamp }),
-            });
-          }
+          await countExposures(prepared, prepared.uniqueIds);
         } else if (selectedType === 'poop' && stoolColor) {
           await addEvent(familyId, {
             ...base,

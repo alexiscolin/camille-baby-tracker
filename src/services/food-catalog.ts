@@ -9,6 +9,7 @@ import type { FieldValue } from 'firebase/firestore';
 import { db } from './firebase';
 import { FOOD_GROUPS, FOOD_STATUSES } from '../types/food';
 import type { Food, SeedFood, FoodGroup, FoodStatus } from '../types/food';
+import { repairCustomFood } from '../utils/custom-food';
 
 const VALID_GROUPS = new Set<FoodGroup>(FOOD_GROUPS);
 const VALID_STATUSES = new Set<FoodStatus>(FOOD_STATUSES);
@@ -145,7 +146,7 @@ export function subscribeToFoods(
       for (const d of snapshot.docs) {
         const raw = d.data();
         if (!isValidFoodData(raw)) continue;
-        foods.push({ id: d.id, ...raw } as Food);
+        foods.push(repairCustomFood({ id: d.id, ...raw } as Food));
       }
       callback({
         foods,
